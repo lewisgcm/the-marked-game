@@ -1,0 +1,25 @@
+{
+	"triangles": 312,
+	"vertices": 160,
+	"size": [
+		10.0,
+		10.0,
+		0.786
+	],
+	"name": "teleport_pad",
+	"size_roblox": [
+		10.0,
+		0.786,
+		10.0
+	],
+	"materials": [
+		"PadDisc",
+		"PadMetal"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/teleport_pad/teleport_pad.fbx",
+		"assets/models/teleport_pad/teleport_pad.glb",
+		"assets/models/teleport_pad/preview.png"
+	]
+}

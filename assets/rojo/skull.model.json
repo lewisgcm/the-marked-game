@@ -1,0 +1,25 @@
+{
+  "ClassName": "MeshPart",
+  "Properties": {
+    "Size": [
+      1,
+      1,
+      1
+    ],
+    "MeshId": "rbxassetid://82056571630602",
+    "Anchored": true,
+    "CanCollide": false,
+    "CanQuery": true,
+    "CanTouch": false,
+    "CollisionFidelity": "Box",
+    "Material": "SmoothPlastic",
+    "Color": [
+      1,
+      1,
+      1
+    ],
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "TextureID": "rbxassetid://115331451965034"
+  }
+}

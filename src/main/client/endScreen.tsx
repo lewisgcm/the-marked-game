@@ -1,0 +1,182 @@
+import React from "@rbxts/react";
+import { Workspace } from "@rbxts/services";
+import { EndReason, Winner } from "shared/round";
+import { ScoreCard } from "shared/scoreboard";
+import { scoreboardStore, useStore } from "./gameState";
+
+/**
+ * The end screen: who won and why, a card per player (avatar, name, fun title, a few stats —
+ * the ghost first, unmasked), and a "Back to lobby" button so nobody has to wait for the timer.
+ * Designed at a fixed size and shrunk with a UIScale to fit small screens.
+ */
+
+const END_TEXT: Record<EndReason, string> = {
+	Time: "It survived until the clock ran out.",
+	AllDead: "Every hunter is dead.",
+	Banished: "The ghost has been banished.",
+	Destroyed: "The ghost has been destroyed.",
+};
+
+const CARD_WIDTH = 170;
+const CARD_HEIGHT = 200;
+const GAP = 12;
+const PER_ROW = 5;
+const HEADER_HEIGHT = 130;
+const FOOTER_HEIGHT = 80;
+
+const GHOST_COLOR = new Color3(1, 0.35, 0.35);
+const HUNTER_COLOR = new Color3(1, 0.8, 0.45);
+
+function useViewport(): Vector2 {
+	const camera = Workspace.CurrentCamera;
+	const [size, setSize] = React.useState(camera ? camera.ViewportSize : new Vector2(1280, 720));
+	React.useEffect(() => {
+		if (!camera) {
+			return;
+		}
+		const connection = camera.GetPropertyChangedSignal("ViewportSize").Connect(() => setSize(camera.ViewportSize));
+		return () => connection.Disconnect();
+	}, [camera]);
+	return size;
+}
+
+function Card({ card, order }: { card: ScoreCard; order: number }) {
+	const isGhost = card.role === "Ghost";
+	const accent = isGhost ? GHOST_COLOR : HUNTER_COLOR;
+	const text = (y: number, height: number, value: string, size: number, color: Color3, bold = false) => (
+		<textlabel
+			Size={new UDim2(1, -12, 0, height)}
+			Position={new UDim2(0, 6, 0, y)}
+			BackgroundTransparency={1}
+			Font={bold ? Enum.Font.GothamBold : Enum.Font.Gotham}
+			TextSize={size}
+			TextColor3={color}
+			TextTruncate={Enum.TextTruncate.AtEnd}
+			Text={value}
+		/>
+	);
+	return (
+		<frame
+			LayoutOrder={order}
+			Size={new UDim2(0, CARD_WIDTH, 0, CARD_HEIGHT)}
+			BackgroundColor3={isGhost ? new Color3(0.2, 0.05, 0.07) : new Color3(0.08, 0.08, 0.11)}
+			BackgroundTransparency={0.1}
+			BorderSizePixel={0}
+		>
+			<uicorner CornerRadius={new UDim(0, 10)} />
+			<uistroke Color={accent} Thickness={isGhost ? 2 : 1} Transparency={isGhost ? 0 : 0.5} />
+			<imagelabel
+				Size={new UDim2(0, 64, 0, 64)}
+				Position={new UDim2(0.5, 0, 0, 8)}
+				AnchorPoint={new Vector2(0.5, 0)}
+				BackgroundColor3={new Color3(0.15, 0.15, 0.18)}
+				Image={`rbxthumb://type=AvatarHeadShot&id=${card.userId}&w=150&h=150`}
+				ImageTransparency={card.dead ? 0.5 : 0}
+				ImageColor3={card.dead ? new Color3(0.6, 0.6, 0.6) : new Color3(1, 1, 1)}
+			>
+				<uicorner CornerRadius={new UDim(1, 0)} />
+			</imagelabel>
+			{text(76, 18, isGhost ? `${card.name} (the ghost)` : card.name, 14, new Color3(0.92, 0.92, 0.95), true)}
+			{text(96, 22, card.title, 18, accent, true)}
+			{text(118, 14, card.titleHint, 11, new Color3(0.6, 0.6, 0.66))}
+			{card.lines.map((line, i) => text(140 + i * 17, 16, line, 13, new Color3(0.82, 0.82, 0.86)))}
+		</frame>
+	);
+}
+
+export function EndScreen({
+	winner,
+	reason,
+	secondsLeft,
+	onLeave,
+}: {
+	winner?: Winner;
+	reason?: EndReason;
+	secondsLeft: number;
+	onLeave: () => void;
+}) {
+	const cards = useStore(scoreboardStore) ?? [];
+	const viewport = useViewport();
+	const [leaving, setLeaving] = React.useState(false);
+	const ghostWon = winner !== "Hunters";
+
+	// Lay the cards out in rows of up to PER_ROW, then scale the whole thing to fit the screen.
+	const perRow = math.max(1, math.min(cards.size(), PER_ROW));
+	const rows = math.max(1, math.ceil(cards.size() / PER_ROW));
+	const width = math.max(560, perRow * (CARD_WIDTH + GAP) + GAP);
+	const height = HEADER_HEIGHT + rows * (CARD_HEIGHT + GAP) + FOOTER_HEIGHT;
+	const scale = math.min(1, (viewport.X * 0.96) / width, (viewport.Y * 0.94) / height);
+
+	return (
+		<frame
+			Size={new UDim2(1, 0, 1, 0)}
+			BackgroundColor3={new Color3(0, 0, 0)}
+			BackgroundTransparency={0.3}
+			BorderSizePixel={0}
+		>
+			<frame
+				Size={new UDim2(0, width, 0, height)}
+				Position={new UDim2(0.5, 0, 0.5, 0)}
+				AnchorPoint={new Vector2(0.5, 0.5)}
+				BackgroundTransparency={1}
+			>
+				<uiscale Scale={scale} />
+				<textlabel
+					Size={new UDim2(1, 0, 0, 70)}
+					BackgroundTransparency={1}
+					Font={Enum.Font.GothamBlack}
+					TextSize={60}
+					TextColor3={ghostWon ? new Color3(0.7, 0.82, 1) : HUNTER_COLOR}
+					TextStrokeTransparency={0.5}
+					Text={ghostWon ? "THE GHOST WINS" : "HUNTERS WIN"}
+				/>
+				<textlabel
+					Size={new UDim2(1, 0, 0, 30)}
+					Position={new UDim2(0, 0, 0, 74)}
+					BackgroundTransparency={1}
+					Font={Enum.Font.GothamBold}
+					TextSize={20}
+					TextColor3={new Color3(0.9, 0.9, 0.92)}
+					Text={END_TEXT[reason ?? "Time"]}
+				/>
+				<frame
+					Size={new UDim2(1, 0, 0, rows * (CARD_HEIGHT + GAP))}
+					Position={new UDim2(0, 0, 0, HEADER_HEIGHT)}
+					BackgroundTransparency={1}
+				>
+					<uigridlayout
+						CellSize={new UDim2(0, CARD_WIDTH, 0, CARD_HEIGHT)}
+						CellPadding={new UDim2(0, GAP, 0, GAP)}
+						HorizontalAlignment={Enum.HorizontalAlignment.Center}
+						SortOrder={Enum.SortOrder.LayoutOrder}
+					/>
+					{cards.map((card, i) => (
+						<Card key={`card${card.userId}`} card={card} order={i} />
+					))}
+				</frame>
+				<textbutton
+					Size={new UDim2(0, 280, 0, 52)}
+					Position={new UDim2(0.5, 0, 1, -10)}
+					AnchorPoint={new Vector2(0.5, 1)}
+					BackgroundColor3={leaving ? new Color3(0.2, 0.2, 0.24) : new Color3(0.3, 0.5, 0.35)}
+					BorderSizePixel={0}
+					AutoButtonColor={!leaving}
+					Font={Enum.Font.GothamBold}
+					TextSize={20}
+					TextColor3={new Color3(1, 1, 1)}
+					Text={leaving ? "Heading back..." : `Back to lobby (${secondsLeft})`}
+					Event={{
+						Activated: () => {
+							if (!leaving) {
+								setLeaving(true);
+								onLeave();
+							}
+						},
+					}}
+				>
+					<uicorner CornerRadius={new UDim(0, 10)} />
+				</textbutton>
+			</frame>
+		</frame>
+	);
+}

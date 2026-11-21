@@ -1,0 +1,16 @@
+{
+  "ClassName": "MeshPart",
+  "Properties": {
+    "Size": [1, 1, 1],
+    "MeshId": "rbxassetid://82991005433046",
+    "Anchored": true,
+    "CanCollide": false,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false,
+    "CollisionFidelity": "Box",
+    "Material": "Neon",
+    "Color": [1, 0.95, 0.82],
+    "Transparency": 0.92
+  }
+}

@@ -1,0 +1,13 @@
+/node_modules
+/out
+/include
+/build
+*.tsbuildinfo
+
+# IDE
+/.idea
+
+# Blender asset build cache
+__pycache__/
+*.pyc
+.DS_Store

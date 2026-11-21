@@ -1,0 +1,24 @@
+{
+	"triangles": 604,
+	"vertices": 378,
+	"size": [
+		9.281,
+		7.874,
+		11.05
+	],
+	"name": "sample_tree",
+	"size_roblox": [
+		9.281,
+		11.05,
+		7.874
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/sample_tree/sample_tree.fbx",
+		"assets/models/sample_tree/sample_tree.glb",
+		"assets/models/sample_tree/preview.png"
+	]
+}

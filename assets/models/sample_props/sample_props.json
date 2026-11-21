@@ -1,0 +1,24 @@
+{
+	"triangles": 584,
+	"vertices": 352,
+	"size": [
+		14.026,
+		2.338,
+		7.0
+	],
+	"name": "sample_props",
+	"size_roblox": [
+		14.026,
+		7.0,
+		2.338
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/sample_props/sample_props.fbx",
+		"assets/models/sample_props/sample_props.glb",
+		"assets/models/sample_props/preview.png"
+	]
+}

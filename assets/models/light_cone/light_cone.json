@@ -1,0 +1,24 @@
+{
+	"triangles": 128,
+	"vertices": 192,
+	"size": [
+		36.95,
+		32.0,
+		36.95
+	],
+	"name": "light_cone",
+	"size_roblox": [
+		36.95,
+		36.95,
+		32.0
+	],
+	"materials": [
+		"LightCone"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/light_cone/light_cone.fbx",
+		"assets/models/light_cone/light_cone.glb",
+		"assets/models/light_cone/preview.png"
+	]
+}

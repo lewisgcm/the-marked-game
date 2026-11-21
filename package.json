@@ -1,0 +1,44 @@
+{
+  "name": "roblox_game_as_code",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rbxtsc",
+    "watch": "rbxtsc -w",
+    "serve": "rojo serve",
+    "serve:lobby": "rojo serve lobby.project.json",
+    "serve:main": "rojo serve main.project.json",
+    "build:lobby": "rojo build lobby.project.json -o build/lobby.rbxlx",
+    "build:main": "rojo build main.project.json -o build/main.rbxlx",
+    "build:dev": "rojo build default.project.json -o build/dev.rbxlx",
+    "models": "bash tools/blender/build.sh",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "test": "rbxtsc && lune run tests/run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@rbxts/compiler-types": "^3.0.0-types.0",
+    "@rbxts/types": "^1.0.962",
+    "@typescript-eslint/eslint-plugin": "^8.72.2",
+    "@typescript-eslint/parser": "^8.72.2",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.7",
+    "eslint-plugin-roblox-ts": "^1.4.1",
+    "prettier": "^3.10.1",
+    "roblox-ts": "^3.0.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@rbxts/react": "^17.3.13-ts.1",
+    "@rbxts/react-roblox": "^17.3.13-ts.1",
+    "@rbxts/services": "^1.6.0",
+    "@rbxts/zone-plus": "^3.2.0"
+  }
+}

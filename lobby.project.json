@@ -1,0 +1,83 @@
+{
+	"name": "lobby",
+	"globIgnorePaths": [
+		"**/package.json",
+		"**/tsconfig.json"
+	],
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"rbxts_include": {
+				"$path": "include",
+				"node_modules": {
+					"$className": "Folder",
+					"@rbxts": {
+						"$path": "node_modules/@rbxts"
+					},
+					"@rbxts-js": {
+						"$path": "node_modules/@rbxts-js"
+					}
+				}
+			},
+			"Shared": {
+				"$path": "out/shared"
+			},
+			"Assets": {
+				"$className": "Folder",
+				"TeleportPad": {
+					"$path": "assets/rojo/teleport_pad.model.json"
+				},
+				"Skull": {
+					"$path": "assets/rojo/skull.model.json"
+				},
+				"Book": {
+					"$path": "assets/rojo/book.model.json"
+				},
+				"Candles": {
+					"$path": "assets/rojo/candles.model.json"
+				},
+				"LobbyKit": {
+					"$path": "assets/rojo/kit"
+				},
+				"LobbyGround": {
+					"$path": "assets/rojo/lobby_ground.model.json"
+				}
+			}
+		},
+		"ServerScriptService": {
+			"$className": "ServerScriptService",
+			"Lobby": {
+				"$path": "out/lobby/server"
+			}
+		},
+		"StarterPlayer": {
+			"$className": "StarterPlayer",
+			"StarterPlayerScripts": {
+				"$className": "StarterPlayerScripts",
+				"Lobby": {
+					"$path": "out/lobby/client"
+				}
+			}
+		},
+		"Workspace": {
+			"$className": "Workspace",
+			"$properties": {
+				"FilteringEnabled": true,
+				"StreamingEnabled": false
+			}
+		},
+		"HttpService": {
+			"$className": "HttpService",
+			"$properties": {
+				"HttpEnabled": true
+			}
+		},
+		"SoundService": {
+			"$className": "SoundService",
+			"$properties": {
+				"RespectFilteringEnabled": true
+			}
+		}
+	}
+}

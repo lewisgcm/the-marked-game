@@ -1,0 +1,24 @@
+{
+	"triangles": 880,
+	"vertices": 538,
+	"size": [
+		25.923,
+		14.56,
+		12.079
+	],
+	"name": "sample_kit_small",
+	"size_roblox": [
+		25.923,
+		12.079,
+		14.56
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/sample_kit_small/sample_kit_small.fbx",
+		"assets/models/sample_kit_small/sample_kit_small.glb",
+		"assets/models/sample_kit_small/preview.png"
+	]
+}

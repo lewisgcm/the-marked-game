@@ -1,0 +1,24 @@
+{
+	"triangles": 256,
+	"vertices": 140,
+	"size": [
+		1.124,
+		1.306,
+		1.272
+	],
+	"name": "sample_skull",
+	"size_roblox": [
+		1.124,
+		1.272,
+		1.306
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/sample_skull/sample_skull.fbx",
+		"assets/models/sample_skull/sample_skull.glb",
+		"assets/models/sample_skull/preview.png"
+	]
+}
