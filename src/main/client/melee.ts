@@ -1,20 +1,19 @@
-import { Players, RunService, Workspace } from "@rbxts/services";
-import { KNIFE_TOOL_NAME, WEAPON_TOOL_NAME } from "shared/combat";
+import { CollectionService, Players, RunService, Workspace } from "@rbxts/services";
+import { INFECTED_TAG, MELEE_TOOL_NAMES } from "shared/combat";
 import { checkMeleeReach, MAX_SWING_CANDIDATES } from "shared/melee";
 import { serverSender } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
 
 /**
- * Melee on the attacker's client (knife for the ghost, fire poker for hunters):
+ * Melee on the attacker's client (the baseball bat, and later the other melee weapons):
  *
  * - **Face the camera** while a weapon is held: the character turns smoothly to where the
  *   camera looks (like shift-lock), so you swing at what you're looking at — on PC and touch.
  * - **Swing:** plays the built-in slash animation (a "toolanim" value the default Animate script
- *   watches for), then sends "Swing" with the players in reach, nearest first. The server
+ *   watches for), then sends "Swing" with the infected in reach, nearest first. The server
  *   re-checks every one with its own positions; this side only makes it feel instant.
  */
 
-const MELEE_TOOLS = [KNIFE_TOOL_NAME, WEAPON_TOOL_NAME];
 /**
  * Client-side reach used to pick candidates. Deliberately generous (the server applies the real
  * reach per weapon, plus lag tolerance), so a hit that looked right is never dropped here.
@@ -34,12 +33,15 @@ function rootOf(model: Model | undefined): BasePart | undefined {
 	return hrp && hrp.IsA("BasePart") ? hrp : undefined;
 }
 
-/** Players in reach and in front of us, nearest first. */
-function candidatesInReach(root: BasePart): number[] {
-	const found: Array<{ userId: number; distance: number }> = [];
-	for (const other of Players.GetPlayers()) {
-		const theirs = rootOf(other.Character);
-		if (other === player || !theirs) {
+/** Infected in reach and in front of us, nearest first. */
+function candidatesInReach(root: BasePart): Model[] {
+	const found: Array<{ model: Model; distance: number }> = [];
+	for (const tagged of CollectionService.GetTagged(INFECTED_TAG)) {
+		if (!tagged.IsA("Model")) {
+			continue;
+		}
+		const theirs = rootOf(tagged);
+		if (!theirs) {
 			continue;
 		}
 		if (
@@ -51,18 +53,18 @@ function candidatesInReach(root: BasePart): number[] {
 				CANDIDATE_HALF_ARC,
 			) === "ok"
 		) {
-			found.push({ userId: other.UserId, distance: theirs.Position.sub(root.Position).Magnitude });
+			found.push({ model: tagged, distance: theirs.Position.sub(root.Position).Magnitude });
 		}
 	}
 	found.sort((a, b) => a.distance < b.distance);
-	const ids: number[] = [];
+	const models: Model[] = [];
 	for (const entry of found) {
-		if (ids.size() >= MAX_SWING_CANDIDATES) {
+		if (models.size() >= MAX_SWING_CANDIDATES) {
 			break;
 		}
-		ids.push(entry.userId);
+		models.push(entry.model);
 	}
-	return ids;
+	return models;
 }
 
 export function startMelee(remote: RemoteEvent) {
@@ -135,7 +137,7 @@ export function startMelee(remote: RemoteEvent) {
 	const watch = (character: Model) => {
 		// An equipped Tool is parented to the character; unequipping moves it back out.
 		character.ChildAdded.Connect((child) => {
-			if (child.IsA("Tool") && MELEE_TOOLS.includes(child.Name)) {
+			if (child.IsA("Tool") && MELEE_TOOL_NAMES.includes(child.Name)) {
 				onEquipped(character, child);
 			}
 		});

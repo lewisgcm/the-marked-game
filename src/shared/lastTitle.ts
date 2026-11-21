@@ -1,7 +1,7 @@
 import { MemoryStoreService } from "@rbxts/services";
 
 /**
- * A player's title from their last round (e.g. "The Banisher"), handed from the main game to
+ * A player's title from their last run (e.g. "Slugger"), handed from the main game to
  * the lobby so it can float above their head until they play again. Server to server through
  * MemoryStore (never TeleportData, which the client could forge). Expires after a while, so an
  * old title doesn't follow someone around forever.
@@ -13,8 +13,8 @@ const TITLE_TTL_SECONDS = 60 * 60;
 
 export interface LastTitle {
 	title: string;
-	role: "Ghost" | "Hunter";
-	won: boolean;
+	/** Whether they were taken during the run. */
+	taken: boolean;
 }
 
 export function saveLastTitleAsync(userId: number, entry: LastTitle) {
@@ -32,9 +32,9 @@ export function loadLastTitleAsync(userId: number): LastTitle | undefined {
 	if (!ok || !typeIs(value, "table")) {
 		return undefined;
 	}
-	const raw = value as { title?: unknown; role?: unknown; won?: unknown };
-	if (!typeIs(raw.title, "string") || raw.title.size() > 40 || (raw.role !== "Ghost" && raw.role !== "Hunter")) {
+	const raw = value as { title?: unknown; taken?: unknown };
+	if (!typeIs(raw.title, "string") || raw.title.size() > 40) {
 		return undefined;
 	}
-	return { title: raw.title, role: raw.role, won: raw.won === true };
+	return { title: raw.title, taken: raw.taken === true };
 }

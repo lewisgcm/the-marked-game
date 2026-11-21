@@ -28,15 +28,6 @@
 				"TeleportPad": {
 					"$path": "assets/rojo/teleport_pad.model.json"
 				},
-				"Skull": {
-					"$path": "assets/rojo/skull.model.json"
-				},
-				"Book": {
-					"$path": "assets/rojo/book.model.json"
-				},
-				"Candles": {
-					"$path": "assets/rojo/candles.model.json"
-				},
 				"LightCone": {
 					"$path": "assets/rojo/light_cone.model.json"
 				}

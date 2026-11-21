@@ -2,13 +2,13 @@ import { Players } from "@rbxts/services";
 import { LastTitle, loadLastTitleAsync } from "shared/lastTitle";
 
 /**
- * Shows each player's title from their last round (e.g. "The Banisher") floating above their
+ * Shows each player's title from their last run (e.g. "Slugger") floating above their
  * head in the lobby, until they play again. The main game saves it (shared/lastTitle.ts) at the
- * end of each round; it expires after an hour.
+ * end of each run; it expires after an hour.
  */
 
-const GHOST_COLOR = new Color3(1, 0.4, 0.4);
-const HUNTER_COLOR = new Color3(1, 0.8, 0.45);
+const SURVIVED_COLOR = new Color3(1, 0.8, 0.45);
+const TAKEN_COLOR = new Color3(1, 0.4, 0.4);
 
 function attach(character: Model, entry: LastTitle) {
 	const head = character.WaitForChild("Head", 10);
@@ -28,7 +28,7 @@ function attach(character: Model, entry: LastTitle) {
 	label.BackgroundTransparency = 1;
 	label.Font = Enum.Font.Fondamento;
 	label.TextScaled = true;
-	label.TextColor3 = entry.role === "Ghost" ? GHOST_COLOR : HUNTER_COLOR;
+	label.TextColor3 = entry.taken ? TAKEN_COLOR : SURVIVED_COLOR;
 	label.TextStrokeTransparency = 0.4;
 	label.Text = entry.title;
 	label.Parent = board;

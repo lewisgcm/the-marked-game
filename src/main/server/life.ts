@@ -1,19 +1,19 @@
 import { Players } from "@rbxts/services";
-import { DEAD_ATTRIBUTE } from "shared/combat";
+import { TAKEN_ATTRIBUTE } from "shared/combat";
 import { gameConfig } from "./config";
-import { recordDeath } from "./roundStats";
+import { recordTaken } from "./roundStats";
 
 /**
  * Spawning and death. The server spawns characters itself (CharacterAutoLoads off), so it can
  * decide who comes back:
  *
- * - A hunter **killed by the ghost** is out for the round: no respawn, they spectate.
+ * - A kid who is **taken** is out: no respawn, they spectate. (M1: back at dawn instead.)
  * - Any other death (e.g. resetting) respawns after RespawnDelay, as normal.
  */
 
 export interface LifeHooks {
-	/** A hunter was killed by the ghost, at `position`. Runs before their character dies. */
-	onKilled: (player: Player, position: Vector3 | undefined) => void;
+	/** A kid was taken, at `position`. Runs before their character is removed. */
+	onTaken: (player: Player, position: Vector3 | undefined) => void;
 }
 
 const dead = new Set<Player>();
@@ -45,18 +45,18 @@ function watch(player: Player) {
 	}
 }
 
-/** Kills `player` for the rest of the round (the ghost's knife). */
-export function killHunter(player: Player) {
+/** Takes `player` out of the run: they spectate instead of respawning. */
+export function takeKid(player: Player) {
 	if (dead.has(player)) {
 		return;
 	}
 	dead.add(player);
-	recordDeath(player);
-	player.SetAttribute(DEAD_ATTRIBUTE, true);
+	recordTaken(player);
+	player.SetAttribute(TAKEN_ATTRIBUTE, true);
 
 	const character = player.Character;
 	const hrp = character?.FindFirstChild("HumanoidRootPart");
-	hooks?.onKilled(player, hrp && hrp.IsA("BasePart") ? hrp.Position : undefined);
+	hooks?.onTaken(player, hrp && hrp.IsA("BasePart") ? hrp.Position : undefined);
 
 	const humanoid = character?.FindFirstChildOfClass("Humanoid");
 	if (humanoid) {

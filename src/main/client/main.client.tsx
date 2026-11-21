@@ -3,17 +3,13 @@ import { createPortal, createRoot } from "@rbxts/react-roblox";
 import { Players, ReplicatedStorage } from "@rbxts/services";
 import { startFlicker } from "shared/flicker";
 import { GAME_REMOTE_NAME } from "shared/remotes";
-import { startBanishCamera } from "./banishCamera";
 import { CombatFeedback } from "./combatFeedback";
 import { startFlashlight } from "./flashlight";
-import { attackWindowStore, roleStore, spookStore, startGameState, useStore } from "./gameState";
-import { GhostHud } from "./ghostHud";
+import { startGameState } from "./gameState";
 import { startMelee } from "./melee";
-import { ObjectiveHud } from "./objectiveHud";
-import { RoleBanner } from "./roleBanner";
+import { NoticeHud } from "./noticeHud";
 import { RoundHud } from "./roundHud";
-import { SanityHud } from "./sanityHud";
-import { Spectate, useDead } from "./spectate";
+import { Spectate } from "./spectate";
 
 startFlicker();
 
@@ -24,32 +20,14 @@ startFlashlight();
 // server to re-send our state, so UI that mounts later never misses a message.
 startGameState(remote);
 startMelee(remote);
-startBanishCamera();
 
 function App() {
-	const role = useStore(roleStore);
-	const spooks = useStore(spookStore);
-	const attackWindow = useStore(attackWindowStore);
-	const dead = useDead();
-	const livingHunter = role === "Hunter" && !dead;
-
 	return (
 		<>
-			<RoleBanner role={role} />
 			<RoundHud remote={remote} />
-			<ObjectiveHud isHunter={livingHunter} />
-			<SanityHud isHunter={livingHunter} />
+			<NoticeHud />
 			<Spectate />
 			<CombatFeedback />
-			{role === "Ghost" ? (
-				<GhostHud
-					remote={remote}
-					state={spooks?.state}
-					receivedAt={spooks?.receivedAt ?? 0}
-					attackWindow={attackWindow?.state}
-					attackWindowReceivedAt={attackWindow?.receivedAt ?? 0}
-				/>
-			) : undefined}
 		</>
 	);
 }

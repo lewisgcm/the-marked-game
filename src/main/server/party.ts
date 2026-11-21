@@ -1,27 +1,22 @@
 import { Players } from "@rbxts/services";
 import { loadPartyAsync, PartyRecord } from "shared/partyHandoff";
-import { Role } from "shared/roles";
 
 /**
- * Authoritative role table. Server-only: roles are never stored on replicated instances
- * (e.g. attributes), so a client can't read or spoof who the ghost is.
+ * Who's in this run. Everyone in the party is a kid (there are no roles). Server-only: the
+ * member list is never stored on replicated instances, so a client can't spoof membership.
  */
-const roles = new Map<Player, Role>();
+const members = new Set<Player>();
 
-Players.PlayerRemoving.Connect((player) => roles.delete(player));
+Players.PlayerRemoving.Connect((player) => members.delete(player));
 
-export function getRole(player: Player): Role | undefined {
-	return roles.get(player);
+/** Whether `player` is one of this run's kids. */
+export function isMember(player: Player): boolean {
+	return members.has(player);
 }
 
-/** The current ghost, if roles have been assigned and they're still here. */
-export function getGhost(): Player | undefined {
-	for (const [player, role] of roles) {
-		if (role === "Ghost") {
-			return player;
-		}
-	}
-	return undefined;
+/** Every kid in the run who is still in the server. */
+export function getMembers(): Player[] {
+	return [...members];
 }
 
 /** The lobby's party record, once loaded (in a reserved server). */
@@ -104,30 +99,22 @@ export function waitForParty(timeout: number): Player[] {
 	return Players.GetPlayers().filter((p) => expected!.includes(p.UserId));
 }
 
-/** Randomly picks one ghost from the party; everyone else is a hunter. */
-export function assignRoles(party: Player[]): Player | undefined {
-	roles.clear();
-	if (party.size() === 0) {
-		return undefined;
-	}
-	const ghost = party[new Random().NextInteger(0, party.size() - 1)];
-	for (const player of party) {
-		roles.set(player, player === ghost ? "Ghost" : "Hunter");
-	}
-	return ghost;
+/** Starts the run with `party` as its kids. */
+export function setMembers(party: Player[]) {
+	members.clear();
+	party.forEach((player) => members.add(player));
 }
 
 /**
- * Gives a hunter role to anyone who arrives after roles were assigned (e.g. a party member
- * whose teleport was slow), then calls `onAssigned`. Only invited players can join a
- * reserved server.
+ * Adds anyone from the party who arrives after the run started (e.g. a slow teleport), then
+ * calls `onJoined`. Only invited players can join a reserved server.
  */
-export function assignLateJoiners(onAssigned: (player: Player) => void) {
+export function addLateJoiners(onJoined: (player: Player) => void) {
 	Players.PlayerAdded.Connect((player) => {
 		// Only the party's own late arrivals; anyone else is sent to the lobby (gatekeeper.ts).
-		if (roles.size() > 0 && !roles.has(player) && isInvited(player)) {
-			roles.set(player, "Hunter");
-			onAssigned(player);
+		if (members.size() > 0 && !members.has(player) && isInvited(player)) {
+			members.add(player);
+			onJoined(player);
 		}
 	});
 }

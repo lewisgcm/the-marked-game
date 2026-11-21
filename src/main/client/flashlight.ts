@@ -3,7 +3,7 @@ import { findMeshAsset } from "shared/assets";
 import { BEAM_VISUAL_LENGTH, FLASHLIGHT_TOOL_NAME, beamDirection, findConePlanes, pointCone } from "shared/flashlight";
 
 /**
- * Points every hunter's flashlight cone, on this client, every frame.
+ * Points every kid's flashlight cone, on this client, every frame.
  *
  * The cone comes straight out of the flashlight's lens (as this client renders the hand
  * holding it), in the direction the character faces — the same direction the server uses

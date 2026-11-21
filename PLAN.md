@@ -38,28 +38,45 @@ How we get from the ghost-hunt prototype to the game in [GAMEPLAY.md](GAMEPLAY.m
 
 ---
 
-## M0 — Snapshot and strip the prototype
+## M0 — Snapshot and strip the prototype ✅
 
 Goal: a clean base that still compiles, lints and passes tests, with only the generic parts left.
 
-- [ ] **Commit the prototype first** (nothing is committed yet) and tag it `ghost-prototype`, so
-      everything we delete stays recoverable.
-- [ ] Remove ghost-only code: `spooks.ts`, `ghostVisibility.ts`, `sanity.ts`, `panic.ts`,
-      `banishing.ts` (keep its camera rig, see below), `objectives.ts` (ritual), server and shared;
-      client `ghostHud.tsx`, `ghostSelf.ts`, `sanityHud.tsx`, `objectiveHud.tsx`, `roleBanner.tsx`;
-      shared `ghost.ts`, `sanity.ts`, `spooks.ts`, `ritualItems.ts`, `objectives.ts`, and their
-      remotes, config values and specs.
-- [ ] Keep and generalise:
-  - `banishCamera.ts` → `cutsceneCamera.ts` (a reusable camera-shot player).
-  - `melee.ts` / `combat.ts` → melee against **NPC targets** (drop the ghost/hunter rules; keep
-    client-picked hits + server re-check, hit markers, damage flash).
-  - `flashlight.ts` → beam + cone check (becomes the stun in M1).
-  - `roles.ts` → party membership only (everyone is a kid); `teams.ts` → "living kids".
-  - `round.ts` → replaced by the run/phase clock in M1.
-  - `roundEnd.ts`, `roundStats.ts`, `scoreboard.ts`, `endScreen.tsx` → end-of-run screen.
-  - Party handoff, gatekeeper, admission, safe teleport, stats/leaderboard: unchanged.
-- [ ] Rename `package.json` `name` to `marked`.
-- [ ] `npm run lint` and `npm test` pass; Studio Play loads the house and nothing errors.
+- [x] **Commit the prototype first** and tag it `ghost-prototype`, so everything we delete stays
+      recoverable.
+- [x] Remove ghost-only code: `spooks.ts`, `ghostVisibility.ts`, `sanity.ts`, `panic.ts`,
+      `banishing.ts`, `objectives.ts` (ritual), `traps.ts`, `systems.ts`; client `ghostHud.tsx`,
+      `ghostSelf.ts`, `sanityHud.tsx`, `objectiveHud.tsx`, `roleBanner.tsx`, `banishCamera.ts`;
+      shared `ghost.ts`, `sanity.ts`, `spooks.ts`, `objectives.ts`, `roles.ts`, and their remotes,
+      config values and specs.
+- [x] Keep and generalise:
+  - `melee.ts` / `combat.ts` → the **baseball bat** against models tagged `Infected` (client
+    picks hits, server re-checks; hit markers, red flash). Swing candidates are now Models,
+    validated by `parseSwingCandidates(payload, accept)`.
+  - `flashlight.ts` → beam + cone; `litBy(target)` kept for the M1 stun.
+  - `roles.ts` → `party.ts` (membership only; everyone is a kid); `teams.ts` → living kids.
+  - `round.ts` → a placeholder run (Countdown → Playing → Ended), replaced by the phase clock
+    in M1.
+  - `life.ts` → `takeKid` (spectate until the run ends); `elimination.ts` ends the run when every
+    kid is taken.
+  - `roundEnd.ts`, `roundStats.ts`, `scoreboard.ts`, `endScreen.tsx` → end-of-run screen with kid
+    titles (Slugger, First Taken, Survivor, Taken).
+  - Party handoff, gatekeeper, admission, safe teleport: unchanged.
+- [x] `npm run lint` and `npm test` pass (44 tests).
+- [ ] **Studio check** (you): Play loads the house, the countdown runs, the bat hits the practice
+      infected, the end screen shows. README → Regression test checklist, "Main game".
+
+Notes — what changed from the plan:
+- `banishCamera.ts` was **deleted, not generalised**: it only orbited the altar. M7 writes a
+  proper shot-list camera (get the old one from the tag if useful).
+- `ritualItems.ts` and the skull/book/candles models **stay until M6**: the lobby pedestals still
+  use them. They were removed from `main.project.json`.
+- Added a **Studio-only practice infected** (`practiceDummy.ts`) so melee can be tested; delete it
+  once real infected exist (M1).
+- Added `noticeHud.tsx` (notices used to live in the objective HUD).
+- The lobby's Wins board no longer gets wins (there's no winning side). M6 replaces it.
+- The lobby party minimum is still 2 (M6 makes it 1); solo only works in Studio for now.
+- `package.json` name is now `marked`.
 
 ## M1 — Vertical slice: one night in the house
 
@@ -93,6 +110,7 @@ Playtest question: *is holding the house fun, with 1 player and with 4?*
 - [ ] `shared/waves.ts` (pure): wave composition from night number and party size. Spec.
 
 **Kids**
+- [ ] Delete `practiceDummy.ts` once real infected spawn.
 - [ ] Health 100 (server-owned), damage flash (reuse `combatFeedback.tsx`), heal to full at dawn.
 - [ ] **Taken** at 0: spectate (reuse `spectate.tsx`), back in the basement at dawn. The run ends
       when every kid is taken at once.

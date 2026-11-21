@@ -1,12 +1,8 @@
-import { publishAttackWindow } from "./combat";
 import { send } from "./gameRemote";
-import { isRevealed } from "./ghostVisibility";
 import { isAlive } from "./life";
-import { resendInventory } from "./objectives";
-import { getRole } from "./roles";
+import { isMember } from "./party";
 import { getScoreboard } from "./roundEnd";
-import { resendSpooks } from "./spooks";
-import { livingHunters } from "./teams";
+import { livingKids } from "./teams";
 
 /**
  * Re-sends a player everything about their own state. Called when their client reports it has
@@ -14,27 +10,18 @@ import { livingHunters } from "./teams";
  * lost. Every per-player message the server sends should be covered here.
  */
 export function resync(player: Player) {
-	const role = getRole(player);
-	if (role === undefined) {
-		return; // nothing assigned yet; they'll get it when roles are picked
+	if (!isMember(player)) {
+		return; // not in the run yet; they'll get their state when they join
 	}
-	send(player, "Role", role);
 	const scoreboard = getScoreboard();
 	if (scoreboard) {
 		send(player, "Scoreboard", scoreboard);
 	}
-	if (role === "Ghost") {
-		send(player, "GhostRevealed", isRevealed(player));
-		resendSpooks();
-		publishAttackWindow();
-		return;
-	}
-	resendInventory(player);
 	if (!isAlive(player)) {
 		send(
 			player,
 			"Spectate",
-			livingHunters().map((p) => p.UserId),
+			livingKids().map((p) => p.UserId),
 		);
 	}
 }

@@ -37,25 +37,26 @@ export function checkMeleeReach(
 	return cosine >= math.cos(math.rad(halfArcDegrees)) ? "ok" : "outsideArc";
 }
 
-/** What a client may send as its swing's candidate targets: up to this many user IDs. */
+/** What a client may send as its swing's candidate targets: at most this many. */
 export const MAX_SWING_CANDIDATES = 6;
 
 /**
- * Parses a client's "Swing" payload: a list of user IDs, nearest first. Anything else is
- * reduced to a safe list (non-numbers dropped, NaN dropped, at most MAX_SWING_CANDIDATES).
+ * Parses a client's "Swing" payload: a list of targets, nearest first. Keeps only values that
+ * pass `accept` (e.g. "is a Model tagged Infected"), at most MAX_SWING_CANDIDATES. Anything that
+ * isn't a list gives an empty list. The server still re-checks every candidate it keeps.
  */
-export function parseSwingCandidates(payload: unknown): number[] {
+export function parseSwingCandidates<T extends defined>(payload: unknown, accept: (value: unknown) => value is T): T[] {
 	if (!typeIs(payload, "table")) {
 		return [];
 	}
-	const ids: number[] = [];
+	const kept: T[] = [];
 	for (const value of payload as unknown[]) {
-		if (ids.size() >= MAX_SWING_CANDIDATES) {
+		if (kept.size() >= MAX_SWING_CANDIDATES) {
 			break;
 		}
-		if (typeIs(value, "number") && value === value) {
-			ids.push(value);
+		if (accept(value)) {
+			kept.push(value);
 		}
 	}
-	return ids;
+	return kept;
 }

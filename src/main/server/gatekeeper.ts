@@ -2,7 +2,7 @@ import { Players, RunService } from "@rbxts/services";
 import { LOBBY_PLACE_ID } from "shared/placeIds";
 import { safeTeleport } from "shared/safeTeleport";
 import { decideAdmission } from "./admission";
-import { getLobbyPlaceId, whenPartyKnown } from "./roles";
+import { getLobbyPlaceId, whenPartyKnown } from "./party";
 
 /**
  * Keeps people who aren't part of this round out of it.

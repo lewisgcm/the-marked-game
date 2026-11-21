@@ -1,26 +1,20 @@
-import { Players } from "@rbxts/services";
 import { isAlive } from "./life";
-import { getRole } from "./roles";
+import { getMembers, isMember } from "./party";
 import { getPhase } from "./round";
 
-/** Who's who, combining roles (roles.ts), life (life.ts) and the round phase (round.ts). */
+/** Who can do what, combining the party (party.ts), life (life.ts) and the run phase (round.ts). */
 
-/** Every hunter in the server, alive or dead. */
-export function allHunters(): Player[] {
-	return Players.GetPlayers().filter((p) => getRole(p) === "Hunter");
+/** Kids still in the run (not taken). */
+export function livingKids(): Player[] {
+	return getMembers().filter((p) => isAlive(p));
 }
 
-/** Hunters still in the round (not killed by the ghost). */
-export function livingHunters(): Player[] {
-	return allHunters().filter((p) => isAlive(p));
+/** Whether the run is being played (after the countdown, before the end screen). */
+export function isPlaying(): boolean {
+	return getPhase() === "Playing";
 }
 
-/** Whether the hunt is running (after the countdown, before the end screen). */
-export function isHunting(): boolean {
-	return getPhase() === "Hunt";
-}
-
-/** A living hunter during the hunt: may use prompts, traps, weapons. */
-export function canHunterAct(player: Player): boolean {
-	return getRole(player) === "Hunter" && isAlive(player) && isHunting();
+/** A kid who's still in, while the run is being played: may use prompts and weapons. */
+export function canKidAct(player: Player): boolean {
+	return isMember(player) && isAlive(player) && isPlaying();
 }

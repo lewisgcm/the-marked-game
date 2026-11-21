@@ -1,28 +1,27 @@
 import React from "@rbxts/react";
 import { ContextActionService, Players, Workspace } from "@rbxts/services";
-import { DEAD_ATTRIBUTE } from "shared/combat";
+import { TAKEN_ATTRIBUTE } from "shared/combat";
 import { spectateStore, useStore } from "./gameState";
 
 /**
- * Spectating for hunters the ghost has killed. The server sends the user IDs of hunters still
- * alive (never the ghost, so a dead player can't use spectating to track it); the camera
- * follows one, and the arrow keys or buttons switch between them.
+ * Spectating for kids who were taken. The server sends the user IDs of the kids still in; the
+ * camera follows one, and the arrow keys or buttons switch between them.
  */
 
 const player = Players.LocalPlayer;
 
-export function useDead(): boolean {
-	const read = () => player.GetAttribute(DEAD_ATTRIBUTE) === true;
-	const [dead, setDead] = React.useState(read());
+export function useTaken(): boolean {
+	const read = () => player.GetAttribute(TAKEN_ATTRIBUTE) === true;
+	const [dead, setTaken] = React.useState(read());
 	React.useEffect(() => {
-		const connection = player.GetAttributeChangedSignal(DEAD_ATTRIBUTE).Connect(() => setDead(read()));
+		const connection = player.GetAttributeChangedSignal(TAKEN_ATTRIBUTE).Connect(() => setTaken(read()));
 		return () => connection.Disconnect();
 	}, []);
 	return dead;
 }
 
 export function Spectate() {
-	const dead = useDead();
+	const dead = useTaken();
 	const targets = useStore(spectateStore);
 	const [index, setIndex] = React.useState(0);
 
@@ -101,7 +100,7 @@ export function Spectate() {
 					Font={Enum.Font.GothamBold}
 					TextSize={18}
 					TextColor3={new Color3(0.95, 0.85, 0.85)}
-					Text={target ? `You're dead — spectating ${target.DisplayName}` : "You're dead — no hunters left"}
+					Text={target ? `You were taken — spectating ${target.DisplayName}` : "You were taken — no one left"}
 				/>
 				{arrow(">", 1, 1)}
 			</frame>

@@ -1,51 +1,43 @@
 import { Players, ReplicatedStorage, Workspace } from "@rbxts/services";
-import {
-	EndReason,
-	ROUND_ENDS_AT_ATTRIBUTE,
-	ROUND_PHASE_ATTRIBUTE,
-	ROUND_REASON_ATTRIBUTE,
-	ROUND_WINNER_ATTRIBUTE,
-	RoundPhase,
-	Winner,
-} from "shared/round";
+import { EndReason, RUN_ENDS_AT_ATTRIBUTE, RUN_PHASE_ATTRIBUTE, RUN_REASON_ATTRIBUTE, RunPhase } from "shared/round";
 
 /**
- * The round: countdown -> hunt -> end screen -> back to the lobby.
+ * The run: countdown -> playing -> end screen -> back to the lobby.
  *
- * Server-authoritative: the server owns the phase, the clock and the winner, and publishes
- * them as attributes (shared/round.ts) for clients to display. During the countdown every
- * character's root part is anchored by the server, so no one can move early.
+ * M0 placeholder: "Playing" is one timed phase. M1 replaces it with the day/night clock.
+ *
+ * Server-authoritative: the server owns the phase and the clock, and publishes them as
+ * attributes (shared/round.ts) for clients to display. During the countdown every character's
+ * root part is anchored by the server, so no one can move early.
  */
 
-export interface RoundSettings {
+export interface RunSettings {
 	countdownSeconds: number;
-	roundSeconds: number;
+	runSeconds: number;
 	endScreenSeconds: number;
 }
 
-export interface RoundHooks {
-	/** Called as the round ends, e.g. to show the ghost to everyone. */
-	onEnd: (winner: Winner, reason: EndReason) => void;
-	/** Plays the banishing cutscene (yields until it's done). Everyone is frozen meanwhile. */
-	playBanishing: () => void;
+export interface RunHooks {
+	/** Called as the run ends, before the end screen shows. */
+	onEnd: (reason: EndReason) => void;
 	/** Called after the end screen, with everyone still in the server. */
 	returnToLobby: (players: Player[]) => void;
 }
 
-let phase: RoundPhase = "Waiting";
+let phase: RunPhase = "Waiting";
 
-function setPhase(newPhase: RoundPhase, duration?: number) {
+function setPhase(newPhase: RunPhase, duration?: number) {
 	phase = newPhase;
-	ReplicatedStorage.SetAttribute(ROUND_PHASE_ATTRIBUTE, newPhase);
+	ReplicatedStorage.SetAttribute(RUN_PHASE_ATTRIBUTE, newPhase);
 	ReplicatedStorage.SetAttribute(
-		ROUND_ENDS_AT_ATTRIBUTE,
+		RUN_ENDS_AT_ATTRIBUTE,
 		duration !== undefined ? Workspace.GetServerTimeNow() + duration : undefined,
 	);
 }
 
 setPhase("Waiting");
 
-export function getPhase(): RoundPhase {
+export function getPhase(): RunPhase {
 	return phase;
 }
 
@@ -69,55 +61,45 @@ function freezeAll(frozen: boolean) {
 	}
 }
 
-let huntStartedAt: number | undefined;
-let huntEndedAt: number | undefined;
+let startedAt: number | undefined;
+let endedAt: number | undefined;
 
-/** Seconds since the hunt started (frozen once it ends); 0 before it starts. */
-export function huntElapsed(): number {
-	if (huntStartedAt === undefined) {
+/** Seconds since play started (frozen once it ends); 0 before it starts. */
+export function runElapsed(): number {
+	if (startedAt === undefined) {
 		return 0;
 	}
-	return (huntEndedAt ?? os.clock()) - huntStartedAt;
+	return (endedAt ?? os.clock()) - startedAt;
 }
 
-let pendingWinner: Winner | undefined;
 let pendingReason: EndReason | undefined;
 
-/** Ends the hunt early: e.g. ("Hunters", "Banished") or ("Ghost", "AllDead"). */
-export function endRound(winner: Winner, reason: EndReason) {
-	if (phase === "Hunt" && pendingWinner === undefined) {
-		pendingWinner = winner;
+/** Ends the run early, e.g. "AllTaken". */
+export function endRun(reason: EndReason) {
+	if (phase === "Playing" && pendingReason === undefined) {
 		pendingReason = reason;
 	}
 }
 
-/** Runs one full round. Yields until the round is over; call it from task.spawn. */
-export function runRound(settings: RoundSettings, hooks: RoundHooks) {
+/** Runs the whole run. Yields until it's over; call it from task.spawn. */
+export function runRun(settings: RunSettings, hooks: RunHooks) {
 	setPhase("Countdown", settings.countdownSeconds);
 	freezeAll(true);
 	task.wait(settings.countdownSeconds);
 
-	setPhase("Hunt", settings.roundSeconds);
-	huntStartedAt = os.clock();
+	setPhase("Playing", settings.runSeconds);
+	startedAt = os.clock();
 	freezeAll(false);
-	const deadline = os.clock() + settings.roundSeconds;
-	while (pendingWinner === undefined && os.clock() < deadline) {
+	const deadline = os.clock() + settings.runSeconds;
+	while (pendingReason === undefined && os.clock() < deadline) {
 		task.wait(0.25);
 	}
 
-	huntEndedAt = os.clock();
-	// Time running out means the ghost survived.
-	const winner = pendingWinner ?? "Ghost";
+	endedAt = os.clock();
 	const reason = pendingReason ?? "Time";
-	if (reason === "Banished") {
-		setPhase("Banishing");
-		freezeAll(true);
-		hooks.playBanishing();
-	}
-	ReplicatedStorage.SetAttribute(ROUND_WINNER_ATTRIBUTE, winner);
-	ReplicatedStorage.SetAttribute(ROUND_REASON_ATTRIBUTE, reason);
+	ReplicatedStorage.SetAttribute(RUN_REASON_ATTRIBUTE, reason);
 	setPhase("Ended", settings.endScreenSeconds);
-	hooks.onEnd(winner, reason);
+	hooks.onEnd(reason);
 
 	task.wait(settings.endScreenSeconds);
 	hooks.returnToLobby(Players.GetPlayers());

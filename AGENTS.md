@@ -9,11 +9,9 @@
 - **`GAMEPLAY.md`** is the design and the source of truth for how the game should play.
 - **`PLAN.md`** is the build plan. Work through it in milestone order, tick tasks off as they
   land, and note anything that changed.
-- The code is mid-rework from a **ghost-hunt prototype** (archived design:
-  `docs/archive/GAMEPLAY-ghost-prototype.md`). Ghost-only systems (ghost role, spooks, sanity,
-  panic, ritual objective) are being removed in PLAN.md Milestone 0. Don't extend them; reuse the
-  generic pieces the plan lists (party handoff, melee/combat hit checks, cutscene camera,
-  end screen, stats).
+- The code started as a **ghost-hunt prototype** (archived design:
+  `docs/archive/GAMEPLAY-ghost-prototype.md`; code at git tag `ghost-prototype`). M0 removed the
+  ghost-only systems; recover anything useful from the tag rather than rewriting it.
 
 ## Build & run
 
@@ -52,7 +50,7 @@ playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
 
 ## Server authority (anti-exploit)
 
-Anything that decides the game stays **server-side**: party lists, ghost/role selection, and
+Anything that decides the game stays **server-side**: party lists, who's in the run, damage, and
 config. Concretely:
 
 - Config goes in `Configuration` instances in **ServerStorage** (`shared/serverConfig.ts`), not
@@ -60,7 +58,8 @@ config. Concretely:
   test-only values use `configInt`'s Studio override, never a value saved in the place.
 - Lobby → main-game data goes through **MemoryStore** (`shared/partyHandoff.ts`), never
   `TeleportData` — it passes through the client and can be forged.
-- Roles live in a server-side map (`src/main/server/roles.ts`), not on replicated attributes.
+- Party membership lives in a server-side set (`src/main/server/party.ts`), not on replicated
+  attributes. The same goes for health, inventory and coins as they arrive.
 - Treat every `RemoteEvent` argument as hostile: type-check and validate it against server state.
 - Send and receive remote messages only through `shared/net.ts`, with the message maps in
   `shared/remotes.ts`. Client -> server payloads arrive as `unknown` by design: validate them.

@@ -1,39 +1,24 @@
 import { Players } from "@rbxts/services";
-import { giveKnife, giveWeapon } from "./combat";
-import { giveFlashlight, removeFlashlight } from "./flashlight";
-import { send } from "./gameRemote";
-import { clearGhost, makeGhost } from "./ghostVisibility";
-import { getRole } from "./roles";
+import { giveBat } from "./combat";
+import { giveFlashlight } from "./flashlight";
+import { isMember } from "./party";
 import { isFrozen, setFrozen } from "./round";
-import { giveTrapTool, removeTrapTool } from "./traps";
 import { MainWorld } from "./world";
 
 /**
- * Sets each character up for its role, on every spawn: the ghost becomes invisible with a
- * knife; hunters get a flashlight, traps and a fire poker. Then the character is moved to its
- * role's start room (and frozen if the countdown is running).
+ * Sets each kid's character up on every spawn: a flashlight and a baseball bat, moved to the
+ * kids' start (and frozen if the countdown is running).
  */
 
 let world: MainWorld | undefined;
 
 export function setUpCharacter(player: Player, character: Model) {
-	const role = getRole(player);
-	if (role === undefined || !world) {
-		return; // roles not picked yet; this runs again once they are
+	if (!isMember(player) || !world) {
+		return; // the run hasn't started yet; this runs again once it has
 	}
-	if (role === "Ghost") {
-		removeFlashlight(player);
-		removeTrapTool(player);
-		makeGhost(player, character);
-		giveKnife(player);
-		send(player, "GhostRevealed", false);
-	} else {
-		clearGhost(player);
-		task.spawn(() => giveFlashlight(player, character));
-		giveTrapTool(player);
-		giveWeapon(player);
-	}
-	const spawnAt = role === "Ghost" ? world.ghostSpawn : world.hunterSpawn;
+	task.spawn(() => giveFlashlight(player, character));
+	giveBat(player);
+	const spawnAt = world.kidSpawn;
 	// Wait a frame so the character is fully parented before moving it.
 	task.defer(() => {
 		character.PivotTo(spawnAt);
@@ -41,13 +26,9 @@ export function setUpCharacter(player: Player, character: Model) {
 	});
 }
 
-/** Tells each of `players` their role and sets up their current character. */
-export function announceRoles(players: Player[]) {
+/** Sets up the current character of each of `players`. */
+export function setUpAll(players: Player[]) {
 	for (const player of players) {
-		const role = getRole(player);
-		if (role) {
-			send(player, "Role", role);
-		}
 		if (player.Character) {
 			setUpCharacter(player, player.Character);
 		}
@@ -60,5 +41,4 @@ export function startLoadouts(mainWorld: MainWorld) {
 	const watch = (player: Player) => player.CharacterAdded.Connect((character) => setUpCharacter(player, character));
 	Players.GetPlayers().forEach(watch);
 	Players.PlayerAdded.Connect(watch);
-	Players.PlayerRemoving.Connect(clearGhost);
 }

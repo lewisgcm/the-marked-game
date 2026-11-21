@@ -3,62 +3,53 @@ import { removeWeapon } from "./combat";
 import { removeFlashlight } from "./flashlight";
 import { notify, notifyAllBut, send } from "./gameRemote";
 import { startLife } from "./life";
-import { dropCarried } from "./objectives";
-import { setPanicEffects } from "./panic";
-import { getRole } from "./roles";
-import { endRound } from "./round";
-import { isHunting, livingHunters } from "./teams";
-import { removeTrapTool } from "./traps";
+import { isMember } from "./party";
+import { endRun } from "./round";
+import { isPlaying, livingKids } from "./teams";
 
 /**
- * Hunters being taken out of the round: killed by the ghost's knife (life.ts decides who stays
- * dead), or leaving. Handles what a dead hunter drops and loses, who they can spectate, and
- * the ghost's win when no hunter is left.
+ * Kids being taken out of the run (life.ts decides who stays out), or leaving. Handles what a
+ * taken kid loses, who they can spectate, and the run ending when no kid is left.
  */
 
-/** Tells every dead hunter who they can spectate: living hunters only, never the ghost. */
+/** Tells every taken kid who they can spectate: the kids still in. */
 export function updateSpectators() {
-	const alive = livingHunters();
+	const alive = livingKids();
 	const aliveIds = alive.map((p) => p.UserId);
 	for (const player of Players.GetPlayers()) {
-		if (getRole(player) === "Hunter" && !alive.includes(player)) {
+		if (isMember(player) && !alive.includes(player)) {
 			send(player, "Spectate", aliveIds);
 		}
 	}
 }
 
-/** The ghost wins once no hunter is left alive (`leaving` is about to go). */
-function checkAllDead(leaving?: Player) {
+/** The run ends once no kid is left (`leaving` is about to go). */
+function checkAllTaken(leaving?: Player) {
 	if (
-		isHunting() &&
-		livingHunters()
+		isPlaying() &&
+		livingKids()
 			.filter((p) => p !== leaving)
 			.size() === 0
 	) {
-		endRound("Ghost", "AllDead");
+		endRun("AllTaken");
 	}
 }
 
-function onKilled(player: Player, position: Vector3 | undefined) {
-	if (position) {
-		dropCarried(player, position);
-	}
+function onTaken(player: Player) {
 	removeFlashlight(player);
-	removeTrapTool(player);
 	removeWeapon(player);
-	setPanicEffects(player, false);
-	notify(player, "The ghost got you. You're out — spectating.");
-	notifyAllBut(livingHunters(), player, `${player.DisplayName} was killed by the ghost!`);
+	notify(player, "You were taken. Spectating.");
+	notifyAllBut(livingKids(), player, `${player.DisplayName} was taken!`);
 	updateSpectators();
-	checkAllDead();
+	checkAllTaken();
 }
 
-/** Takes over spawning and death. Call once, before players join if possible. */
+/** Takes over spawning and being taken. Call once, before players join if possible. */
 export function startElimination() {
-	startLife({ onKilled });
+	startLife({ onTaken });
 	Players.PlayerRemoving.Connect((player) => {
-		if (getRole(player) === "Hunter") {
-			checkAllDead(player);
+		if (isMember(player)) {
+			checkAllTaken(player);
 			task.defer(updateSpectators);
 		}
 	});

@@ -1,31 +1,28 @@
-import { Players, RunService, Workspace } from "@rbxts/services";
+import { Players, Workspace } from "@rbxts/services";
 import {
 	BEAM_VISUAL_LENGTH,
 	CONE_PLANES,
 	coneAttachmentNames,
 	FLASHLIGHT_HALF_ANGLE,
 	FLASHLIGHT_RANGE,
-	FLASHLIGHT_TICK_RATE,
 	FLASHLIGHT_TOOL_NAME,
 	beamDirection,
 	inBeamCone,
 	pointCone,
 } from "shared/flashlight";
-import { gameConfig } from "./config";
-import { recordStat } from "./roundStats";
-import { isForceRevealed, setRevealed } from "./ghostVisibility";
 
 /**
- * Hunters' flashlights, and the server-side check that reveals the ghost.
+ * Kids' flashlights, and the server-side check of what a beam is shining on (`litBy`, which the
+ * M1 flashlight stun uses).
  *
- * The beam points the way the hunter's character faces (see `beamDirection`), so the server
- * needs no client input at all: it owns whether a light is on (Tool equip/activate events),
- * where the check starts (the hunter's head) and which way it points (the character's root),
- * and what it hits (cone + raycast against the ghost's server-side position).
+ * The beam points the way the kid's character faces (see `beamDirection`), so the server needs
+ * no client input at all: it owns whether a light is on (Tool equip/activate events), where the
+ * check starts (the kid's head) and which way it points (the character's root), and what it
+ * hits (cone + raycast against the target's server-side position).
  *
- * Visuals: the light and cone live on the flashlight's lens. Each client points every
- * hunter's beam from that lens along the same direction, so it comes straight out of the
- * torch in the hand (see client/flashlight).
+ * Visuals: the light and cone live on the flashlight's lens. Each client points every kid's
+ * beam from that lens along the same direction, so it comes straight out of the torch in the
+ * hand (see client/flashlight).
  */
 
 const BEAM_COLOR = new Color3(1, 0.95, 0.82);
@@ -39,7 +36,7 @@ interface FlashlightParts {
 	cones: Beam[];
 }
 
-interface HunterLight extends FlashlightParts {
+interface KidLight extends FlashlightParts {
 	owner: Player;
 	head: BasePart;
 	equipped: boolean;
@@ -47,7 +44,7 @@ interface HunterLight extends FlashlightParts {
 	connections: RBXScriptConnection[];
 }
 
-const lights = new Map<Player, HunterLight>();
+const lights = new Map<Player, KidLight>();
 const cosHalfAngle = math.cos(math.rad(FLASHLIGHT_HALF_ANGLE));
 
 function buildTool(): FlashlightParts {
@@ -138,11 +135,8 @@ function buildConePlane(start: Attachment, finish: Attachment): Beam {
 	return cone;
 }
 
-/** Players whose flashlight is forced off (e.g. panicking). Survives respawns. */
-const disabled = new Set<Player>();
-
-function refresh(state: HunterLight) {
-	const lit = state.equipped && state.on && !disabled.has(state.owner);
+function refresh(state: KidLight) {
+	const lit = state.equipped && state.on;
 	state.light.Enabled = lit;
 	state.cones.forEach((cone) => (cone.Enabled = lit));
 	state.lens.Color = lit ? LENS_ON : LENS_OFF;
@@ -168,7 +162,7 @@ export function giveFlashlight(player: Player, character: Model) {
 	}
 
 	const parts = buildTool();
-	const state: HunterLight = {
+	const state: KidLight = {
 		...parts,
 		owner: player,
 		head,
@@ -187,9 +181,6 @@ export function giveFlashlight(player: Player, character: Model) {
 			refresh(state);
 		}),
 		tool.Activated.Connect(() => {
-			if (disabled.has(player)) {
-				return; // dead flashlight: clicking does nothing
-			}
 			state.on = !state.on;
 			refresh(state);
 		}),
@@ -199,44 +190,8 @@ export function giveFlashlight(player: Player, character: Model) {
 	refresh(state);
 }
 
-/**
- * Forces `player`'s flashlight off (with a short dying flicker) or lets it work again.
- * While disabled the light can't be switched on, including after a respawn.
- */
-export function setFlashlightDisabled(player: Player, value: boolean) {
-	if (value === disabled.has(player)) {
-		return;
-	}
-	if (value) {
-		disabled.add(player);
-	} else {
-		disabled.delete(player);
-	}
-	const state = lights.get(player);
-	if (!state) {
-		return;
-	}
-	if (!value || !(state.equipped && state.on)) {
-		refresh(state);
-		return;
-	}
-	// Dying flicker: stutter a few times, then go dark.
-	task.spawn(() => {
-		for (const on of [false, true, false, true, false]) {
-			if (lights.get(player) !== state) {
-				return;
-			}
-			state.light.Enabled = on;
-			state.cones.forEach((cone) => (cone.Enabled = on));
-			task.wait(0.12);
-		}
-		refresh(state);
-	});
-}
-
-/** Is any point of `target` inside a lit beam with nothing in the way? */
-/** The hunters whose beams are on `target` right now (walls block beams). */
-function litBy(target: Model): Player[] {
+/** The kids whose beams are on `target` right now (walls block beams). */
+export function litBy(target: Model): Player[] {
 	const lighters: Player[] = [];
 	const points: Vector3[] = [];
 	for (const name of ["Head", "HumanoidRootPart", "UpperTorso", "Torso", "LeftFoot", "RightFoot"]) {
@@ -272,46 +227,4 @@ function litBy(target: Model): Player[] {
 	return lighters;
 }
 
-/**
- * Checks the ghost against every beam FLASHLIGHT_TICK_RATE times a second, and reveals it
- * while lit (plus RevealLinger) or while a forced reveal (forceReveal) is active. `onChange` fires when the ghost's visibility flips.
- * Returns a function that stops the loop (e.g. when the round ends).
- */
-export function startRevealLoop(
-	getGhost: () => Player | undefined,
-	onChange: (ghost: Player, revealed: boolean) => void,
-): () => void {
-	let lastLitAt = -math.huge;
-	let elapsed = 0;
-	const connection = RunService.Heartbeat.Connect((dt) => {
-		elapsed += dt;
-		if (elapsed < 1 / FLASHLIGHT_TICK_RATE) {
-			return;
-		}
-		elapsed = 0;
-
-		const ghost = getGhost();
-		const character = ghost?.Character;
-		if (!ghost || !character) {
-			return;
-		}
-		const lighters = litBy(character);
-		if (lighters.size() > 0) {
-			lastLitAt = os.clock();
-		}
-		for (const hunter of lighters) {
-			recordStat(hunter, "lightSeconds", 1 / FLASHLIGHT_TICK_RATE);
-		}
-		// Lit by a beam (plus a short linger), or forced visible by something else (a trap).
-		const revealed = os.clock() - lastLitAt < gameConfig.revealLinger.Value || isForceRevealed(ghost);
-		if (setRevealed(ghost, revealed)) {
-			onChange(ghost, revealed);
-		}
-	});
-	return () => connection.Disconnect();
-}
-
-Players.PlayerRemoving.Connect((player) => {
-	removeFlashlight(player);
-	disabled.delete(player);
-});
+Players.PlayerRemoving.Connect(removeFlashlight);

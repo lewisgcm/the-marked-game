@@ -1,17 +1,15 @@
-/** The ghost's knife, the hunters' weapon and ghost health: shared names and state. */
+/** Melee weapons and their targets: shared names and attributes. */
 
-export const KNIFE_TOOL_NAME = "Knife";
-export const WEAPON_TOOL_NAME = "Fire Poker";
+export const BAT_TOOL_NAME = "Baseball Bat";
 
-/** ReplicatedStorage attributes (numbers): the ghost's current and maximum health. */
-export const GHOST_HEALTH_ATTRIBUTE = "GhostHealth";
-export const GHOST_MAX_HEALTH_ATTRIBUTE = "GhostMaxHealth";
+/** Melee tools the client treats as weapons (face the camera, swing on click). */
+export const MELEE_TOOL_NAMES = [BAT_TOOL_NAME];
 
-/** Player attribute (boolean): set when a hunter has been killed by the ghost and is spectating. */
-export const DEAD_ATTRIBUTE = "Dead";
+/**
+ * CollectionService tag on every infected NPC model (a Model with a Humanoid). Weapons can only
+ * hit models with this tag; the server checks it on every hit.
+ */
+export const INFECTED_TAG = "Infected";
 
-/** The ghost's knife window (opened by a scream), sent to the ghost whenever it changes. */
-export interface AttackWindowState {
-	/** Seconds left to use the knife, if the window is open now. */
-	activeFor?: number;
-}
+/** Player attribute (boolean): set while a kid has been taken and is spectating. */
+export const TAKEN_ATTRIBUTE = "Taken";

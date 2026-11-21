@@ -4,16 +4,16 @@ import { gameConfig } from "./config";
 import { FLICKER_LIGHT_TAG } from "shared/tags";
 
 /**
- * Test map for the main game: an abandoned house, 3×3 rooms joined by doorways, under one
- * roof. It's a blockout for testing the hunt (hiding, line of sight, the flashlight), not
- * the final map. Built at runtime from plain parts with a fixed seed.
+ * Placeholder map for the main game, kept from the ghost prototype: 3×3 rooms joined by
+ * doorways, under one roof. M1 replaces it with the family house. Built at runtime from plain
+ * parts with a fixed seed.
  *
  *   ┌────────┬────────┬────────┐
- *   │        │        │ ghost  │   +Z
+ *   │        │        │        │   +Z
  *   ├──  ────┼──  ────┼──  ────┤
  *   │        │        │        │
  *   ├──  ────┼──  ────┼──  ────┤
- *   │hunters │        │        │   -Z
+ *   │ kids   │        │        │   -Z
  *   └────────┴────────┴────────┘
  *    -X                     +X
  */
@@ -30,7 +30,7 @@ const WALL = { material: Enum.Material.Concrete, color: new Color3(0.42, 0.38, 0
 const FLOOR = { material: Enum.Material.WoodPlanks, color: new Color3(0.36, 0.27, 0.2) };
 const WOOD = { material: Enum.Material.Wood, color: new Color3(0.3, 0.22, 0.16) };
 
-/** A ceiling lamp. It comforts hunters only while `light.Enabled` (spooks can switch it off). */
+/** A ceiling lamp. */
 export interface Lamp {
 	/** The point on the floor directly below the lamp. */
 	floor: Vector3;
@@ -38,26 +38,9 @@ export interface Lamp {
 	bulb: BasePart;
 }
 
-export interface Room {
-	col: number;
-	row: number;
-	/** Centre of the room, on the floor. Kept clear of furniture within ~4 studs. */
-	centre: Vector3;
-}
-
 export interface MainWorld {
-	/** Where hunters start (bottom-left room) and the ghost starts (top-right room). */
-	hunterSpawn: CFrame;
-	ghostSpawn: CFrame;
-	rooms: Room[];
-	hunterRoom: Room;
-	ghostRoom: Room;
-	/** The centre room, where the banishing ritual happens. */
-	ritualRoom: Room;
-	/** Half the width of a room, wall to wall. */
-	roomHalfSize: number;
-	/** Height of the ceiling's underside. */
-	ceilingHeight: number;
+	/** Where kids start (bottom-left room). */
+	kidSpawn: CFrame;
 	/** Everything that makes up the house (walls, furniture), e.g. for raycasts. */
 	house: Folder;
 	lamps: Lamp[];
@@ -213,7 +196,7 @@ function applyAmbient(level: number) {
 /**
  * Dark, but navigable: a low, slightly blue ambient (DarkRoomLight in config) lets players make
  * out walls and furniture in unlit rooms, and the lamps make warm pools of light. The
- * flashlight is what lets hunters see clearly.
+ * flashlight is what lets kids see clearly.
  */
 function setupLighting() {
 	Lighting.ClockTime = 0;
@@ -243,11 +226,7 @@ export function buildMainWorld(): MainWorld {
 	for (let col = 0; col < GRID; col++) {
 		for (let row = 0; row < GRID; row++) {
 			const centre = roomCentre(col, row);
-			// The centre room holds the ritual circle, so it stays empty.
-			const isRitualRoom = col === math.floor(GRID / 2) && row === math.floor(GRID / 2);
-			if (!isRitualRoom) {
-				furnishRoom(furniture, centre);
-			}
+			furnishRoom(furniture, centre);
 			// About half the rooms have a working lamp, and some of those flicker.
 			if (rng.NextNumber() < 0.55) {
 				lampList.push(ceilingLamp(lamps, centre, rng.NextNumber() < 0.5));
@@ -255,21 +234,11 @@ export function buildMainWorld(): MainWorld {
 		}
 	}
 
-	const rooms: Room[] = [];
-	for (let col = 0; col < GRID; col++) {
-		for (let row = 0; row < GRID; row++) {
-			rooms.push({ col, row, centre: roomCentre(col, row) });
-		}
-	}
-	const roomAt = (col: number, row: number) => rooms.find((r) => r.col === col && r.row === row)!;
-	const hunterRoom = roomCentre(0, 0);
-	const ghostRoom = roomCentre(GRID - 1, GRID - 1);
-
-	// Players first load in the hunters' room; the ghost is moved once roles are picked.
+	const kidRoom = roomCentre(0, 0);
 	const spawn = new Instance("SpawnLocation");
 	spawn.Name = "StartSpawn";
 	spawn.Size = new Vector3(6, 0.2, 6);
-	spawn.Position = hunterRoom.add(new Vector3(0, 0.1, 0));
+	spawn.Position = kidRoom.add(new Vector3(0, 0.1, 0));
 	spawn.Anchored = true;
 	spawn.Neutral = true;
 	spawn.Duration = 0;
@@ -277,16 +246,8 @@ export function buildMainWorld(): MainWorld {
 	spawn.CanCollide = false;
 	spawn.Parent = house;
 
-	const middle = math.floor(GRID / 2);
 	return {
-		hunterSpawn: new CFrame(hunterRoom.add(new Vector3(0, 3, 0))),
-		ghostSpawn: new CFrame(ghostRoom.add(new Vector3(0, 3, 0))),
-		rooms,
-		hunterRoom: roomAt(0, 0),
-		ghostRoom: roomAt(GRID - 1, GRID - 1),
-		ritualRoom: roomAt(middle, middle),
-		roomHalfSize: ROOM / 2,
-		ceilingHeight: WALL_HEIGHT,
+		kidSpawn: new CFrame(kidRoom.add(new Vector3(0, 3, 0))),
 		house,
 		lamps: lampList,
 	};
