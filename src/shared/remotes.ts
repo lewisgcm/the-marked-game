@@ -42,6 +42,8 @@ export interface GameServerMessages {
 	HitResult: "Hit" | "Kill";
 	/** You were struck. */
 	Hurt: undefined;
+	/** How many planks you're carrying. */
+	Planks: number;
 	/** Everyone, at the end of the run: one card per kid. */
 	Scoreboard: ScoreCard[];
 }

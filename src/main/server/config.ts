@@ -23,13 +23,19 @@ function loadGameConfig() {
 		// --- Run ------------------------------------------------------------------------------
 		/** Seconds to wait for the whole party to arrive before starting without stragglers. */
 		arrivalTimeout: int("ArrivalTimeout", 30),
-		/** Seconds of "get ready" countdown before play, with everyone frozen. */
-		countdownSeconds: int("CountdownSeconds", 5),
-		/**
-		 * Length of the run. M0 placeholder until the day/night clock (M1) decides when a run
-		 * ends. Studio: 3 minutes.
-		 */
-		runSeconds: int("RunSeconds", 480, 180),
+		/** Seconds the "DAY 1" title card shows at the start, with everyone frozen. */
+		startSeconds: int("StartSeconds", 4),
+
+		// --- Day/night clock (GAMEPLAY.md §4). Studio values are short, to see a cycle quickly. --
+		/** Day: scavenge and trade. */
+		daySeconds: int("DaySeconds", 180, 40),
+		/** Dusk: get home, barricade, deal with screens; the broadcast hits partway through. */
+		duskSeconds: int("DuskSeconds", 45, 20),
+		/** Night: hold the house. */
+		nightSeconds: int("NightSeconds", 150, 60),
+		/** Dawn: recover and upgrade. */
+		dawnSeconds: int("DawnSeconds", 45, 15),
+
 		/** Seconds the end screen (scoreboard) shows before everyone goes back to the lobby. */
 		endScreenSeconds: int("EndScreenSeconds", 15),
 		/** Seconds before a kid who reset (not taken) respawns. */
@@ -42,6 +48,52 @@ function loadGameConfig() {
 		 * Applies live when edited in Studio.
 		 */
 		darkness: num("DarkRoomLight", 0.8),
+
+		// --- Barricades -------------------------------------------------------------------------
+		/** Planks each door or window holds. */
+		plankSlots: int("PlankSlots", 3),
+		/** Health of a plank. */
+		plankHealth: num("PlankHealth", 100),
+		/** Night 1 is forgiving: planks nailed on Day 1 or Night 1 get this much more health. */
+		firstNightPlankMultiplier: num("FirstNightPlankMultiplier", 2),
+		/** Planks a kid can carry. */
+		plankCarryMax: int("PlankCarryMax", 5),
+		/** Planks in the garage pile at the start of a run. */
+		plankPileStart: int("PlankPileStart", 30),
+		/** Planks added to the pile at every dawn. */
+		plankPileDawnRefill: int("PlankPileDawnRefill", 10),
+		/** Seconds to hold the prompt to nail a plank up (taking one down is quicker). */
+		boardHoldSeconds: num("BoardHoldSeconds", 1.2),
+
+		// --- Kids -------------------------------------------------------------------------------
+		/** A kid's health. It doesn't regenerate; everyone is healed to full at dawn. */
+		kidMaxHealth: num("KidMaxHealth", 100),
+		/** Night 1 is forgiving: a taken kid is back in the basement after this many seconds. */
+		firstNightTakenSeconds: num("FirstNightTakenSeconds", 15),
+
+		// --- The infected (shamblers for now; see shared/waves.ts for wave sizes) ---------------
+		/** Health on Night 1. */
+		infectedBaseHealth: num("InfectedBaseHealth", 60),
+		/** Extra health per night after the first, as a fraction (0.1 = +10% a night). */
+		infectedHealthPerNight: num("InfectedHealthPerNight", 0.1),
+		/** Walk speed (kids walk at 16). */
+		infectedWalkSpeed: num("InfectedWalkSpeed", 9),
+		/** Damage per hit on a kid. */
+		infectedKidDamage: num("InfectedKidDamage", 15),
+		/** Night 1 is forgiving: the infected's damage to kids is multiplied by this. */
+		firstNightDamageMultiplier: num("FirstNightDamageMultiplier", 0.5),
+		/** Seconds between an infected's hits on a kid. */
+		infectedKidHitSeconds: num("InfectedKidHitSeconds", 1.2),
+		/** Damage per hit on a plank. */
+		infectedPlankDamage: num("InfectedPlankDamage", 15),
+		/** Seconds between an infected's hits on a barricade. */
+		infectedPlankHitSeconds: num("InfectedPlankHitSeconds", 1.5),
+		/** How close an infected must be to hit a kid, in studs. */
+		infectedAttackRange: num("InfectedAttackRange", 5),
+		/** An infected outside goes for a kid it can see within this distance, in studs. */
+		infectedSightRange: num("InfectedSightRange", 40),
+		/** Most infected alive at once (the rest of a wave waits). */
+		maxInfected: int("MaxInfected", 20),
 
 		// --- Melee ----------------------------------------------------------------------------
 		/** Baseball bat damage per hit (infected health is their Humanoid's Health). */

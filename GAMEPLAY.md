@@ -261,6 +261,15 @@ back at the door the next night. A story thread for a later chapter.
 | Fire extinguisher | Knocks back and stuns a group | Found, limited uses |
 | Rope trap | Snares an infected for ~6 s | Blueprint |
 
+### Inventory
+- **Slot-based**: every kid starts with **5 slots**. A slot holds one weapon or tool, or a stack
+  of one resource (e.g. up to 5 planks, 20 stones, 12 pistol rounds; stack sizes to tune).
+  Coins don't take a slot.
+- **Rucksacks** add slots: a **school rucksack** (8 slots) and a **hiking rucksack** (12),
+  bought at the workbench (and maybe found or traded later).
+- Full inventory means choosing what to leave behind, which keeps trips out meaningful.
+- Taken kids drop everything they carried where they were taken.
+
 ### Health
 Each kid has **100 health**. Infected hits do damage (about 15 for a shambler, more for tougher
 types). Medkits heal; health doesn't regenerate on its own, but every kid is fully healed at dawn.
@@ -359,7 +368,8 @@ A typical day earns ~15–30 coins for the party. Ammo prices go up about 15% pe
 |---|---|---|
 | Reinforced planks | 20 | Planks have +50% health |
 | Door bar | 30 | Front/back door gets a 4th, sturdier slot |
-| Bigger backpack | 25 | Carry more per trip |
+| School rucksack | 25 | 5 → 8 inventory slots |
+| Hiking rucksack | 60 | 8 → 12 inventory slots (needs the school rucksack) |
 | Scrap press | 30 | Craft a little ammo (nails, stones) from scrap |
 | Generator tune-up | 35 | Uses half the fuel |
 | Window shutters | per shutter bought | Ground-floor window can't be fully breached by shamblers |

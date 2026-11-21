@@ -1,4 +1,4 @@
-import { Players } from "@rbxts/services";
+import { Players, StarterPlayer } from "@rbxts/services";
 import { TAKEN_ATTRIBUTE } from "shared/combat";
 import { gameConfig } from "./config";
 import { recordTaken } from "./roundStats";
@@ -7,7 +7,8 @@ import { recordTaken } from "./roundStats";
  * Spawning and death. The server spawns characters itself (CharacterAutoLoads off), so it can
  * decide who comes back:
  *
- * - A kid who is **taken** is out: no respawn, they spectate. (M1: back at dawn instead.)
+ * - A kid who is **taken** spectates until they're brought back (`returnKid`: at dawn, or sooner
+ *   on Night 1 — elimination.ts decides).
  * - Any other death (e.g. resetting) respawns after RespawnDelay, as normal.
  */
 
@@ -70,9 +71,37 @@ export function takeKid(player: Player) {
 	});
 }
 
+/** Brings a taken kid back: they respawn (in the basement, see loadout.ts). */
+export function returnKid(player: Player) {
+	if (!dead.delete(player)) {
+		return;
+	}
+	player.SetAttribute(TAKEN_ATTRIBUTE, false);
+	spawnCharacter(player);
+}
+
+/** Kids currently taken. */
+export function takenKids(): Player[] {
+	return [...dead];
+}
+
+/**
+ * Replaces Roblox's default health regeneration (a script named "Health" that every character
+ * gets) with an empty one: kids only heal at dawn.
+ */
+function disableRegeneration() {
+	const scripts = StarterPlayer.FindFirstChildOfClass("StarterCharacterScripts");
+	if (scripts && !scripts.FindFirstChild("Health")) {
+		const empty = new Instance("Script");
+		empty.Name = "Health";
+		empty.Parent = scripts;
+	}
+}
+
 /** Takes over spawning. Call once, before players join if possible. */
 export function startLife(lifeHooks: LifeHooks) {
 	hooks = lifeHooks;
+	disableRegeneration();
 	Players.CharacterAutoLoads = false;
 	Players.GetPlayers().forEach(watch);
 	Players.PlayerAdded.Connect(watch);

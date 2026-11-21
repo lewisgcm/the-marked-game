@@ -1,49 +1,79 @@
 import { Players, ReplicatedStorage, Workspace } from "@rbxts/services";
-import { EndReason, RUN_ENDS_AT_ATTRIBUTE, RUN_PHASE_ATTRIBUTE, RUN_REASON_ATTRIBUTE, RunPhase } from "shared/round";
+import { Clock, firstClock, nextClock, nightsSurvived, PhaseLengths, phaseLength } from "shared/phases";
+import {
+	DAY_PHASE_ATTRIBUTE,
+	EndReason,
+	NIGHT_ATTRIBUTE,
+	NIGHTS_SURVIVED_ATTRIBUTE,
+	PHASE_ENDS_AT_ATTRIBUTE,
+	RUN_PHASE_ATTRIBUTE,
+	RUN_REASON_ATTRIBUTE,
+	RunPhase,
+} from "shared/round";
 
 /**
- * The run: countdown -> playing -> end screen -> back to the lobby.
+ * The run: "DAY 1" title card -> the day/night clock, round and round -> end screen -> back to
+ * the lobby. The run only ends when every kid is taken (endRun); there's no last night.
  *
- * M0 placeholder: "Playing" is one timed phase. M1 replaces it with the day/night clock.
- *
- * Server-authoritative: the server owns the phase and the clock, and publishes them as
- * attributes (shared/round.ts) for clients to display. During the countdown every character's
- * root part is anchored by the server, so no one can move early.
+ * Server-authoritative: the server owns the run phase, the clock and the night count, and
+ * publishes them as attributes (shared/round.ts) for clients to display. During the title card
+ * every character's root part is anchored by the server, so no one can move early.
  */
 
 export interface RunSettings {
-	countdownSeconds: number;
-	runSeconds: number;
+	/** Seconds the "DAY 1" title card shows, with everyone frozen. */
+	startSeconds: number;
+	/** Seconds the end screen shows. */
 	endScreenSeconds: number;
+	/** Read at the start of every phase, so Studio edits to the lengths apply from the next one. */
+	phaseLengths: () => PhaseLengths;
 }
 
 export interface RunHooks {
+	/** Called at the start of every day/night phase (including Day 1). */
+	onPhase: (clock: Clock) => void;
 	/** Called as the run ends, before the end screen shows. */
 	onEnd: (reason: EndReason) => void;
 	/** Called after the end screen, with everyone still in the server. */
 	returnToLobby: (players: Player[]) => void;
 }
 
-let phase: RunPhase = "Waiting";
+let runPhase: RunPhase = "Waiting";
+let clock: Clock = firstClock();
 
-function setPhase(newPhase: RunPhase, duration?: number) {
-	phase = newPhase;
-	ReplicatedStorage.SetAttribute(RUN_PHASE_ATTRIBUTE, newPhase);
+function setRunPhase(phase: RunPhase, duration?: number) {
+	runPhase = phase;
+	ReplicatedStorage.SetAttribute(RUN_PHASE_ATTRIBUTE, phase);
+	setEndsAt(duration);
+}
+
+function setEndsAt(duration: number | undefined) {
 	ReplicatedStorage.SetAttribute(
-		RUN_ENDS_AT_ATTRIBUTE,
+		PHASE_ENDS_AT_ATTRIBUTE,
 		duration !== undefined ? Workspace.GetServerTimeNow() + duration : undefined,
 	);
 }
 
-setPhase("Waiting");
-
-export function getPhase(): RunPhase {
-	return phase;
+function publishClock() {
+	ReplicatedStorage.SetAttribute(DAY_PHASE_ATTRIBUTE, clock.phase);
+	ReplicatedStorage.SetAttribute(NIGHT_ATTRIBUTE, clock.night);
+	ReplicatedStorage.SetAttribute(NIGHTS_SURVIVED_ATTRIBUTE, nightsSurvived(clock));
 }
 
-/** Characters are frozen while the countdown runs. */
+setRunPhase("Waiting");
+
+export function getPhase(): RunPhase {
+	return runPhase;
+}
+
+/** The day/night clock (Day 1 until the run starts). */
+export function getClock(): Clock {
+	return clock;
+}
+
+/** Characters are frozen while the title card shows (and while waiting for the party). */
 export function isFrozen(): boolean {
-	return phase === "Countdown";
+	return runPhase === "Waiting" || runPhase === "Starting";
 }
 
 export function setFrozen(character: Model, frozen: boolean) {
@@ -74,31 +104,48 @@ export function runElapsed(): number {
 
 let pendingReason: EndReason | undefined;
 
-/** Ends the run early, e.g. "AllTaken". */
+/** Ends the run, e.g. "AllTaken". */
 export function endRun(reason: EndReason) {
-	if (phase === "Playing" && pendingReason === undefined) {
+	if (runPhase === "Playing" && pendingReason === undefined) {
 		pendingReason = reason;
 	}
 }
 
-/** Runs the whole run. Yields until it's over; call it from task.spawn. */
-export function runRun(settings: RunSettings, hooks: RunHooks) {
-	setPhase("Countdown", settings.countdownSeconds);
-	freezeAll(true);
-	task.wait(settings.countdownSeconds);
-
-	setPhase("Playing", settings.runSeconds);
-	startedAt = os.clock();
-	freezeAll(false);
-	const deadline = os.clock() + settings.runSeconds;
+/** Waits up to `seconds`, returning early if the run was ended. */
+function waitOrEnd(seconds: number) {
+	const deadline = os.clock() + seconds;
 	while (pendingReason === undefined && os.clock() < deadline) {
 		task.wait(0.25);
 	}
+}
+
+/** Runs the whole run. Yields until it's over. */
+export function runRun(settings: RunSettings, hooks: RunHooks) {
+	clock = firstClock();
+	publishClock();
+	setRunPhase("Starting", settings.startSeconds);
+	freezeAll(true);
+	task.wait(settings.startSeconds);
+
+	runPhase = "Playing";
+	ReplicatedStorage.SetAttribute(RUN_PHASE_ATTRIBUTE, "Playing");
+	startedAt = os.clock();
+	freezeAll(false);
+	while (pendingReason === undefined) {
+		const seconds = phaseLength(clock, settings.phaseLengths());
+		publishClock();
+		setEndsAt(seconds);
+		hooks.onPhase(clock);
+		waitOrEnd(seconds);
+		if (pendingReason === undefined) {
+			clock = nextClock(clock);
+		}
+	}
 
 	endedAt = os.clock();
-	const reason = pendingReason ?? "Time";
+	const reason = pendingReason;
 	ReplicatedStorage.SetAttribute(RUN_REASON_ATTRIBUTE, reason);
-	setPhase("Ended", settings.endScreenSeconds);
+	setRunPhase("Ended", settings.endScreenSeconds);
 	hooks.onEnd(reason);
 
 	task.wait(settings.endScreenSeconds);

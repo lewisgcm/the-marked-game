@@ -76,10 +76,21 @@ still join.
 
 1. **The party.** The server waits for the party to arrive (`party.ts`). Everyone in it is a kid;
    there are no roles.
-2. **Countdown.** 5 seconds with everyone frozen (the server anchors each character).
-3. **The run** — a placeholder 8 minutes on the clock (3 in Studio):
-   - Kids start in one corner room of a placeholder house (3×3 rooms, built at runtime by
-     `src/main/server/world.ts`) with a **flashlight** and a **baseball bat**.
+2. **"DAY 1" title card.** 4 seconds over a dark screen with everyone frozen (the server anchors
+   each character).
+3. **The day/night clock** (`shared/phases.ts`, driven by `round.ts`): Day (3:00) → Dusk (0:45)
+   → Night (2:30) → Dawn (0:45), then the next day, with no last night. In Studio the phases are
+   40/20/60/15 seconds. The top of the screen shows e.g. "NIGHT 2 · 1:12" in the phase's colour
+   (red in the last 10s of day or dusk); each new phase shows a big title with a hint and a
+   chime; the sky and indoor light blend to the phase over ~6s (`lighting.ts`). The phases don't
+   change anything else yet — the systems that use them arrive through M1.
+   - Kids start in the **basement** of the family house (a blockout built at runtime by
+     `src/main/server/world.ts`; layout diagram at the top of that file) with a **flashlight**
+     and a **baseball bat**. Ground floor: living room, dining room, kitchen, garage (workbench,
+     generator, plank pile), hall with stairs up and down. Upstairs: two bedrooms, the parents'
+     room, a bathroom. Front, back and garage doors and six ground-floor windows are open gaps,
+     each with an invisible tagged `BarricadeSlot` for the barricades to come. Outside: garden,
+     a street out front, a driveway, and invisible `InfectedSpawn` markers on all four sides.
    - **Flashlight:** a hotbar tool with a visible light cone (an uploaded cone mesh, nested ×3 for
      a fade), pointing the way the character faces. The server can tell what a beam is on
      (`litBy`), for the M1 stun.
@@ -89,13 +100,23 @@ still join.
      positions (reach and arc plus lag tolerance, a wall raycast, the tag, a cooldown) before
      taking 20 off their Humanoid's health. Feedback: a hit marker (red on a kill) and a red flash
      on the target.
-   - **Practice infected (Studio only):** a block figure with red eyes stands in the start room so
-     the bat can be tested; brought down, it comes back after a few seconds
-     (`practiceDummy.ts`).
-   - **Taken:** `takeKid` (`life.ts`) takes a kid out: they spectate the kids still in, and the run
-     ends when nobody is left. Nothing takes kids yet; the infected will in M1.
-4. **End.** When the clock runs out (or every kid is taken), the **end screen** (15s) shows
-   "RUN OVER" and a card per kid: avatar, a fun **title** (Slugger, First Taken, Survivor, Taken)
+   - **Barricades** (`barricades.ts`, rules in `shared/barricade.ts`): a **Take planks** prompt on
+     the garage pile fills a kid up to 5 (the pile starts at 30, +10 every dawn). Every door and
+     window takes 3 planks: hold **Board up** (E) to nail one, **Take down** (F) to pull one off
+     and get it back. While any plank is up the opening is blocked for everyone. Planks have 100
+     health (double if nailed on Day/Night 1); the infected will wear down the outermost one.
+     Carried planks show bottom-left and are lost when a kid is taken.
+   - **The infected** (`infected.ts`, waves in `shared/waves.ts`): at night they come in waves
+     from all four sides (Night 1: Dad + 1, then 2 more; from Night 2, three growing waves scaled
+     by party size). Grey R15 bodies with glowing red eyes; **Dad** wears a blue shirt and comes
+     every night. Each walks to the nearest door or window, bashes the planks (15 a hit every
+     1.5s), climbs in once it's open, then hunts the nearest kid with pathfinding and hits them
+     (15, or 7.5 on Night 1). They go for a kid they can see outside, and walk off at dawn.
+     Health 60 (+10% a night); at 0 they dissolve in a flicker of static.
+   - **Kids' health** (`health.ts`): 100, no regeneration, full again at dawn. At 0 a kid is
+     **taken** (`life.ts`): they spectate the others and come back in the basement at dawn (after
+     15s on Night 1). The run ends when every kid is taken at once, never on Night 1.
+4. **End.** The run ends when every kid is taken at once (never on Night 1). The **end screen** (15s) shows "SURVIVED N NIGHTS" and a card per kid: avatar, a fun **title** (Slugger, First Taken, Survivor, Taken)
    and a few stats, counted on the server (`src/main/server/roundStats.ts`, rules in
    `src/shared/scoreboard.ts`). **Back to lobby** leaves early; the title then floats over the
    player's head in the lobby for an hour (`src/shared/lastTitle.ts`, MemoryStore). Then everyone
@@ -130,8 +151,9 @@ src/
                        # wiring: loadout.ts (setup on spawn), elimination.ts (taken, spectating),
                        #   roundEnd.ts (scoreboard, return to lobby), resync.ts (re-send state on
                        #   "Ready"), gameRemote.ts, teams.ts
-                       # systems: world.ts (house), party.ts, round.ts, life.ts, flashlight.ts,
-                       #   combat.ts, speed.ts, practiceDummy.ts (Studio only)
+                       # systems: world.ts (house), party.ts, round.ts (day/night clock), lighting.ts,
+                       #   life.ts, health.ts, flashlight.ts, combat.ts, barricades.ts, infected.ts,
+                       #   speed.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
                        # endScreen, noticeHud, spectate, combatFeedback, melee.ts, flashlight.ts (beam
                        # visuals)
@@ -294,8 +316,9 @@ Studio and are in the backlog. Everything else is covered by the manual checklis
 ## Regression test checklist
 
 Run through this after changes. Main-game tests work solo with **Play**; use **Test → Clients and
-Servers** with 2–3 players for anything about other players. Tip: set `RunSeconds` low in
-`ServerStorage.GameConfig` during play to reach the end screen quickly.
+Servers** with 2–3 players for anything about other players. Tip: phase lengths
+(`DaySeconds`, `NightSeconds`...) can be changed in `ServerStorage.GameConfig` during play; they
+apply from the next phase.
 
 ### Lobby
 - [ ] Joining fresh on a **phone/tablet** (or Studio's Device Emulator), you can move straight away (streaming is off).
@@ -324,11 +347,21 @@ Servers** with 2–3 players for anything about other players. Tip: set `RunSeco
 ### Main game: run
 - [ ] (Published) Following a friend who's mid-run sends you to the lobby (or a "join from the lobby" message), not into their run.
 - [ ] (Published) Joining the main game place directly sends you to the lobby.
-- [ ] ~5s after joining, everyone appears in the same corner room with a Flashlight and a Baseball Bat; no role banner.
-- [ ] 5-4-3-2-1 countdown with ticks; nobody can move or jump during it.
-- [ ] Clock appears at the top, in sync across windows, red under 1:00.
+- [ ] As soon as the game loads, a dark "DAY 1 — Board up the house before dark." card covers the screen (no blank wait); nobody can move or jump while it shows.
+- [ ] ~6s later (Studio: 2s party wait + 4s card) it clears; everyone is in the basement with a Flashlight and a Baseball Bat; no role banner.
+
+### The house
+- [ ] The basement has a flickering bulb, shelves and boxes; a ramp leads up into the hall.
+- [ ] The ground floor has a living room (sofa, TV), dining room, kitchen (back door), garage (workbench, yellow generator, plank pile, big garage door) and a hall with the front door.
+- [ ] The ramp in the hall goes upstairs to two bedrooms, the parents' room and a bathroom; rails stop you falling into either stairwell.
+- [ ] Six ground-floor windows and the three doors are open gaps you can walk or climb through (low sills); upstairs windows are glass.
+- [ ] Outside: grass all round, a pavement and street out front, a driveway to the garage.
+- [ ] Day is visibly brighter than night through the windows and outside; indoors stays navigable at night.
+- [ ] Then "DAY 1 · 0:40" (Studio) at the top, in sync across windows, counting down; red in the last 10s.
+- [ ] Each phase change shows a big title + hint and a chime: DUSK (orange), NIGHT 1 (red), DAWN (pink), DAY 2 (white). The clock pill matches.
+- [ ] The light blends over a few seconds: bright by day, orange at dusk, darkest at night, pinkish at dawn. Indoors stays navigable at night.
+- [ ] Changing `NightSeconds` in ServerStorage → GameConfig during play changes the next night's length.
 - [ ] A player who resets respawns after ~3s in the start room, with both tools again.
-- [ ] At 0:00 everyone sees the end screen: "RUN OVER", "You made it to the end."
 - [ ] (Published) After the end screen, everyone is teleported back to the lobby; nobody is left on the end screen.
 - [ ] (Published) Nothing changes on the lobby's Wins board.
 - [ ] No errors in the server or client output during a whole run.
@@ -345,19 +378,47 @@ Servers** with 2–3 players for anything about other players. Tip: set `RunSeco
 - [ ] Other kids' cones are visible from your window.
 - [ ] Resetting gives a fresh flashlight.
 
+### Barricades
+- [ ] Bottom-left shows "Planks 0/5" (grey); it's hidden while spectating.
+- [ ] The garage pile prompt says "Take planks (30 left)"; using it gives 5 and the count drops to 25. Using it with full hands: "Your hands are full."
+- [ ] At every door and window (from inside, and outside): "Board up (0/3)" (E, hold ~1s) and, once a plank is up, "Take down" (F).
+- [ ] Board up without planks: "You need planks. There's a pile in the garage."
+- [ ] Each plank appears across the opening at a slight angle, on the inside; at 3/3 the Board up prompt goes away.
+- [ ] With 1+ planks up you can't walk or climb through the opening; taking them all down opens it again.
+- [ ] Take down gives the plank back (count goes up); with full hands it says so and leaves the plank.
+- [ ] At dawn the pile goes up by 10.
+- [ ] Two players: planks one kid nails show for the other; each has their own count.
+- [ ] Prompts do nothing behind the "DAY 1" card.
+
+### The infected
+- [ ] Day and dusk: no infected. A few seconds into NIGHT 1, Dad (blue shirt) and one more come from the street and the sides; ~25s later (Studio) two more.
+- [ ] They're grey with glowing red eyes, walk (not slide), and have no name or health bar over them.
+- [ ] Each walks to the nearest door or window. Boarded: it bashes it, and the planks come off one at a time; when the last goes, everyone gets "The … is broken!".
+- [ ] Open (or once broken): it climbs in (windows too) and goes after the nearest kid, through the house and up/down stairs.
+- [ ] A kid outside in view gets chased straight away.
+- [ ] Being hit flashes your screen red and drops your health (Roblox health bar top-right); it doesn't regenerate.
+- [ ] Three bat hits bring a shambler down on Night 1 (60 health); it flickers white and vanishes. Dad goes down the same way and is back the next night.
+- [ ] At DAWN the rest walk off and vanish; everyone's health is full again.
+- [ ] From Night 2 there are three waves, bigger each night, and more with more players.
+
+### Taken
+- [ ] At 0 health you're taken: "You were taken!", the camera follows another kid (or none, solo).
+- [ ] Night 1: you're back in the basement after ~15s with your bat and flashlight; the run doesn't end even if everyone's taken.
+- [ ] Later nights: you're back at dawn; if every kid is taken at once, the run ends with "SURVIVED N NIGHTS".
+- [ ] Carried planks are lost when taken.
+
 ### Baseball bat
 - [ ] The bat is held like a sword (pointing out of the fist), not sideways.
 - [ ] While it's held, the character turns to face where the camera looks; unequipping restores normal turning.
 - [ ] Clicking plays a slash animation (check on an **R15** avatar too), at most about once every 0.8s.
-- [ ] (Studio) A practice infected with red eyes stands ~10 studs in front of the start, facing you.
-- [ ] Hitting it: hit sound, it flashes red, and a white hit marker shows mid-screen. The third hit (60 health, 20 each) shows a bigger red marker and it disappears; it comes back after ~4s.
+- [ ] Hitting an infected: hit sound, it flashes red, and a white hit marker shows mid-screen. The killing hit shows a bigger red marker.
 - [ ] Swinging from too far away, from behind, or through a wall does nothing.
 - [ ] Swings before the countdown ends or on the end screen do nothing.
 - [ ] On a tablet: swinging at what's in front of the camera works without precise aiming.
 
 ### End-of-run scoreboard
 - [ ] The end screen shows a card per kid: avatar, name, title, a one-line hint, and stats.
-- [ ] A kid who downed the practice infected is the **Slugger** with "N infected downed"; the others are **Survivor** with "Made it".
+- [ ] "SURVIVED N NIGHTS" at the top; the kid who downed the most infected is the **Slugger** with "N infected downed".
 - [ ] Cards are ordered by how much each kid did (kills, then hits).
 - [ ] "Back to lobby (N)" counts down from ~15; pressing it says "Heading back..." and (published) teleports just that player straight away. Everyone left goes at 0.
 - [ ] On a **phone/tablet** the whole screen shrinks to fit: every card and the button are visible and tappable.

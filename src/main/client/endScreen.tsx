@@ -11,7 +11,6 @@ import { scoreboardStore, useStore } from "./gameState";
  */
 
 const END_TEXT: Record<EndReason, string> = {
-	Time: "You made it to the end.",
 	AllTaken: "Every kid was taken.",
 };
 
@@ -83,10 +82,12 @@ function Card({ card, order }: { card: ScoreCard; order: number }) {
 
 export function EndScreen({
 	reason,
+	nightsSurvived,
 	secondsLeft,
 	onLeave,
 }: {
 	reason?: EndReason;
+	nightsSurvived: number;
 	secondsLeft: number;
 	onLeave: () => void;
 }) {
@@ -120,9 +121,9 @@ export function EndScreen({
 					BackgroundTransparency={1}
 					Font={Enum.Font.GothamBlack}
 					TextSize={60}
-					TextColor3={reason === "AllTaken" ? TAKEN_COLOR : KID_COLOR}
+					TextColor3={TAKEN_COLOR}
 					TextStrokeTransparency={0.5}
-					Text="RUN OVER"
+					Text={`SURVIVED ${nightsSurvived} ${nightsSurvived === 1 ? "NIGHT" : "NIGHTS"}`}
 				/>
 				<textlabel
 					Size={new UDim2(1, 0, 0, 30)}
@@ -131,7 +132,7 @@ export function EndScreen({
 					Font={Enum.Font.GothamBold}
 					TextSize={20}
 					TextColor3={new Color3(0.9, 0.9, 0.92)}
-					Text={END_TEXT[reason ?? "Time"]}
+					Text={END_TEXT[reason ?? "AllTaken"]}
 				/>
 				<frame
 					Size={new UDim2(1, 0, 0, rows * (CARD_HEIGHT + GAP))}

@@ -1,3 +1,4 @@
+import { resendPlanks } from "./barricades";
 import { send } from "./gameRemote";
 import { isAlive } from "./life";
 import { isMember } from "./party";
@@ -13,6 +14,7 @@ export function resync(player: Player) {
 	if (!isMember(player)) {
 		return; // not in the run yet; they'll get their state when they join
 	}
+	resendPlanks(player);
 	const scoreboard = getScoreboard();
 	if (scoreboard) {
 		send(player, "Scoreboard", scoreboard);

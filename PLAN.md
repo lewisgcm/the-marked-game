@@ -83,39 +83,53 @@ Notes — what changed from the plan:
 Goal: **Day → Dusk → Night → Dawn, repeating**, in a single house, with real attacks.
 Playtest question: *is holding the house fun, with 1 player and with 4?*
 
-**Phase clock**
-- [ ] `shared/phases.ts` (pure): phase lengths per night, next phase, time left, night number.
-      Spec.
-- [ ] Server `run.ts`: drives the clock, publishes phase/night/time to a client store; `resync`.
-- [ ] HUD: "NIGHT 3 · Dusk · 0:32" plus a warning before dusk.
+**Phase clock** ✅
+- [x] `shared/phases.ts` (pure): next phase, night number, nights survived, titles. Spec.
+- [x] Server `round.ts` drives the clock and publishes phase/night/end time/nights survived as
+      ReplicatedStorage attributes (no per-player messages, so nothing to `resync`).
+- [x] HUD: "NIGHT 3 · 1:12" (red in the last 10s of day/dusk), a big banner + hint on each
+      phase change, "SURVIVED N NIGHTS" on the end screen.
+- [x] The 5 s countdown became a "DAY 1" title card (frozen, 4 s).
+- [x] Per-phase lighting blends (`lighting.ts`). Studio phase lengths 40/20/60/15 s.
 
 **The house**
-- [ ] Rebuild `src/main/server/world.ts` as a two-storey house blockout: living room, kitchen,
-      garage, 2 bedrooms, bathroom, basement (spawn), attic. Front, back and garage doors,
-      ~6 windows.
-- [ ] Tag entry points (`BarricadeSlot`), infected spawns outside (`InfectedSpawn`), screens
-      (`Screen`), lights (`HouseLight`), the generator and workbench.
+- [x] Rebuild `src/main/server/world.ts` as a two-storey house blockout: living room, dining
+      room, kitchen, garage, hall; upstairs 2 bedrooms, parents' room, bathroom; basement (spawn).
+      Front, back and garage doors, 6 ground-floor windows (open gaps, low sills), glazed upstairs
+      windows; garden, street, driveway. No attic (no Climber yet). Wall cutting is pure
+      (`shared/walls.ts`, spec).
+- [x] Tag entry points (`BarricadeSlot`, with `Kind`), infected spawns outside
+      (`InfectedSpawn`), the TV (`Screen`), lights (`HouseLight`), generator, workbench, plank
+      pile.
 - [ ] Generator on/off prompt; house lights follow it.
 
-**Barricades**
-- [ ] `shared/barricade.ts` (pure): plank health, damage, repair, breach. Spec.
-- [ ] Server `barricades.ts`: hold-to-nail prompts, plank count per kid, plank visuals per slot.
-- [ ] Plank pile in the garage (refills a little each dawn, for now).
+**Barricades** ✅
+- [x] `shared/barricade.ts` (pure): plank health, add/remove, damage (one plank per hit),
+      blocked/breached, how many planks to take. Spec.
+- [x] Server `barricades.ts`: "Board up" (E, hold) / "Take down" (F) prompts at every opening,
+      plank count per kid (`Planks` message + store + resync, HUD bottom-left), plank visuals,
+      the opening blocks everyone while any plank is up. `damageEntry` ready for the infected.
+- [x] Plank pile in the garage: 30 to start, +10 each dawn, carry 5. Night 1 planks get 2×
+      health. Nails wait for the M2 inventory.
 
-**The infected**
-- [ ] Server `infected.ts`: spawn, PathfindingService to the nearest barricade, attack planks;
-      once inside, chase the nearest kid; hit for damage. Red glowing eyes.
-- [ ] Health + damage on the server; death = **static dissolve** effect (client VFX from a tag).
-- [ ] **Dad**: a named shambler who is knocked down, never killed, and returns the next night.
-- [ ] `shared/waves.ts` (pure): wave composition from night number and party size. Spec.
+**The infected** ✅ (first pass)
+- [x] Server `infected.ts`: spawn at the four markers, walk to the nearest opening, bash its
+      planks, climb in once it's open, then chase the nearest kid with PathfindingService and hit
+      them; go for a kid they can see outside; retreat at dawn. R15 bodies from a plain
+      HumanoidDescription, grey, red glowing eyes, default walk animation.
+- [x] Health on the server (their Humanoid); brought down → **static dissolve** (server-side
+      flicker; a client VFX can replace it later).
+- [x] **Dad**: blue shirt, in the first wave every night; knocked down, never gone for good.
+- [x] `shared/waves.ts` (pure): Night 1 = Dad + 1, then 2; later nights 3 growing waves, scaled
+      by party size (0.6 + 0.2 × kids). Health +10% a night. Spec.
+- [x] Deleted `practiceDummy.ts`.
 
 **Kids**
-- [ ] Delete `practiceDummy.ts` once real infected spawn.
-- [ ] Health 100 (server-owned), damage flash (reuse `combatFeedback.tsx`), heal to full at dawn.
-- [ ] **Taken** at 0: spectate (reuse `spectate.tsx`), back in the basement at dawn. The run ends
-      when every kid is taken at once.
-- [ ] **Baseball bat** (melee from M0) and **slingshot**: client aims, server validates (range,
-      line of sight, rate). `shared/ranged.ts` validation is pure, with a spec. Stones as ammo.
+- [x] Health 100 (server-owned Humanoid, no regeneration), red flash when hit, healed at dawn.
+- [x] **Taken** at 0: spectate, back in the basement at dawn (15 s on Night 1). The run ends
+      when every kid is taken at once (never on Night 1).
+- [ ] **Slingshot**: client aims, server validates (range, line of sight, rate).
+      `shared/ranged.ts` validation is pure, with a spec. Stones as ammo.
 - [ ] Flashlight stun (~2 s) on infected.
 
 **Screens and the broadcast**
@@ -141,8 +155,11 @@ at dusk feel risky?*
 - [ ] Loot containers (cupboards, drawers, car boots) on tagged spawns. `shared/loot.ts` (pure):
       weighted tables that scale by night (ammo falls to 40% by Night 10, 25% by Night 20). Spec.
 - [ ] **Looted stays looted** for the run.
-- [ ] Inventory (server-owned): planks, nails, stones, ammo, coins, items; carry limit; drop all
-      on taken. Hotbar + small inventory UI.
+- [ ] **Slot-based inventory** (server-owned): 5 slots to start, each a tool or a stack of one
+      resource (planks, nails, stones, ammo, items); coins don't use a slot. Replaces the M1
+      "Planks N/5" counter. `shared/inventory.ts` (pure: add, stack, remove, full). Spec.
+- [ ] **Rucksacks**: school rucksack (8 slots), hiking rucksack (12), from the workbench (M3).
+- [ ] Hotbar + inventory UI; taken kids drop everything where they were taken.
 - [ ] **Coins**: pickups, +5 per kid at dawn, store + HUD counter.
 - [ ] Dormant infected in front of screens by day; noise and flashlight wake them.
 - [ ] "Sun's going down" warning, streetlights at 2:00.

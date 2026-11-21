@@ -1,16 +1,23 @@
 import { Players } from "@rbxts/services";
+import { dropPlanks } from "./barricades";
 import { removeWeapon } from "./combat";
 import { removeFlashlight } from "./flashlight";
 import { notify, notifyAllBut, send } from "./gameRemote";
-import { startLife } from "./life";
+import { gameConfig } from "./config";
+import { returnKid, startLife, takenKids } from "./life";
 import { isMember } from "./party";
-import { endRun } from "./round";
+import { endRun, getClock } from "./round";
 import { isPlaying, livingKids } from "./teams";
 
 /**
- * Kids being taken out of the run (life.ts decides who stays out), or leaving. Handles what a
- * taken kid loses, who they can spectate, and the run ending when no kid is left.
+ * Kids being taken (life.ts), coming back, or leaving. Handles what a taken kid loses, who they
+ * can spectate, bringing them back (at dawn, or after FirstNightTakenSeconds on Night 1), and the
+ * run ending when every kid is taken at once (never on Night 1).
  */
+
+function isFirstNight(): boolean {
+	return getClock().night === 1;
+}
 
 /** Tells every taken kid who they can spectate: the kids still in. */
 export function updateSpectators() {
@@ -23,10 +30,11 @@ export function updateSpectators() {
 	}
 }
 
-/** The run ends once no kid is left (`leaving` is about to go). */
+/** The run ends once no kid is left (`leaving` is about to go). Not on Night 1. */
 function checkAllTaken(leaving?: Player) {
 	if (
 		isPlaying() &&
+		!isFirstNight() &&
 		livingKids()
 			.filter((p) => p !== leaving)
 			.size() === 0
@@ -38,10 +46,27 @@ function checkAllTaken(leaving?: Player) {
 function onTaken(player: Player) {
 	removeFlashlight(player);
 	removeWeapon(player);
-	notify(player, "You were taken. Spectating.");
+	dropPlanks(player);
+	const firstNight = isFirstNight();
+	notify(player, firstNight ? "You were taken! Back in a moment..." : "You were taken. You'll be back at dawn.");
 	notifyAllBut(livingKids(), player, `${player.DisplayName} was taken!`);
 	updateSpectators();
 	checkAllTaken();
+	if (firstNight) {
+		task.delay(gameConfig.firstNightTakenSeconds.Value, () => bringBack(player));
+	}
+}
+
+function bringBack(player: Player) {
+	if (player.Parent && isPlaying()) {
+		returnKid(player);
+		updateSpectators();
+	}
+}
+
+/** Dawn: every taken kid comes back to the basement. */
+export function returnAllTaken() {
+	takenKids().forEach(bringBack);
 }
 
 /** Takes over spawning and being taken. Call once, before players join if possible. */

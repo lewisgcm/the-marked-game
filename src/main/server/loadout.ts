@@ -1,6 +1,7 @@
 import { Players } from "@rbxts/services";
 import { giveBat } from "./combat";
 import { giveFlashlight } from "./flashlight";
+import { setUpHealth } from "./health";
 import { isMember } from "./party";
 import { isFrozen, setFrozen } from "./round";
 import { MainWorld } from "./world";
@@ -18,6 +19,7 @@ export function setUpCharacter(player: Player, character: Model) {
 	}
 	task.spawn(() => giveFlashlight(player, character));
 	giveBat(player);
+	setUpHealth(character);
 	const spawnAt = world.kidSpawn;
 	// Wait a frame so the character is fully parented before moving it.
 	task.defer(() => {
@@ -38,7 +40,14 @@ export function setUpAll(players: Player[]) {
 /** Sets up every future spawn. Call once. */
 export function startLoadouts(mainWorld: MainWorld) {
 	world = mainWorld;
-	const watch = (player: Player) => player.CharacterAdded.Connect((character) => setUpCharacter(player, character));
+	const watch = (player: Player) =>
+		player.CharacterAdded.Connect((character) => {
+			// Everyone waits frozen behind the title card until the run starts, party or not yet.
+			if (isFrozen()) {
+				task.defer(() => setFrozen(character, isFrozen()));
+			}
+			setUpCharacter(player, character);
+		});
 	Players.GetPlayers().forEach(watch);
 	Players.PlayerAdded.Connect(watch);
 }

@@ -56,8 +56,11 @@ function settleParty() {
 	partyWaiters.clear();
 }
 
-/** Outside a reserved server, how long to wait after the first player for others to join. */
-const UNRESERVED_GRACE = 5;
+/**
+ * Outside a reserved server (e.g. a Studio playtest), how long to wait after the first player for
+ * others to join. Anyone slower still joins as a late arrival (addLateJoiners).
+ */
+const UNRESERVED_GRACE = 2;
 
 /**
  * Waits for the party sent by the lobby to arrive, up to `timeout` seconds.

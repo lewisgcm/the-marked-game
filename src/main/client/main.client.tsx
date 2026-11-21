@@ -6,6 +6,7 @@ import { GAME_REMOTE_NAME } from "shared/remotes";
 import { CombatFeedback } from "./combatFeedback";
 import { startFlashlight } from "./flashlight";
 import { startGameState } from "./gameState";
+import { InventoryHud } from "./inventoryHud";
 import { startMelee } from "./melee";
 import { NoticeHud } from "./noticeHud";
 import { RoundHud } from "./roundHud";
@@ -26,6 +27,7 @@ function App() {
 		<>
 			<RoundHud remote={remote} />
 			<NoticeHud />
+			<InventoryHud />
 			<Spectate />
 			<CombatFeedback />
 		</>
