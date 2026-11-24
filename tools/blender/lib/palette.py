@@ -59,6 +59,30 @@ SWATCHES = {
 	"lantern_glow": ("#ffd27a", True),
 	"window_glow": ("#ff9a3d", True),
 	"ghost_glow": ("#9fe8ff", True),
+	# infected (append only: a swatch's place in the image is its place in this list)
+	"infected_skin": ("#9aa394", False),
+	"infected_shadow": ("#4f5750", False),
+	"infected_eye": ("#ff1a10", True),
+	"glitch": ("#4fe3e0", True),
+	"glitch_pink": ("#e0459b", True),
+	# Dad
+	"dad_hair": ("#3b2f2a", False),
+	"dad_shirt": ("#46608a", False),
+	"dad_shirt_dark": ("#33486b", False),
+	"dad_vest": ("#d9d5c8", False),
+	"dad_chinos": ("#8d7a5a", False),
+	"dad_chinos_dark": ("#6f5f45", False),
+	"dad_sock": ("#a8a39a", False),
+	"dad_sock_toe": ("#7d4a3c", False),
+	"dad_slipper": ("#6e3b34", False),
+	# the neighbour (shambler)
+	"hoodie": ("#5c4a56", False),
+	"hoodie_dark": ("#41343e", False),
+	"hoodie_lining": ("#2a2229", False),
+	"joggers": ("#4a4f55", False),
+	"joggers_dark": ("#373b40", False),
+	"trainer": ("#b9b4a6", False),
+	"trainer_sole": ("#6b675f", False),
 }
 
 _NAMES = list(SWATCHES)
@@ -102,6 +126,14 @@ def save_png(path):
 	image.filepath_raw = path
 	image.file_format = "PNG"
 	image.save()
+
+
+def link_png(path):
+	"""Points the material's image at the saved PNG, so exporters can embed it."""
+	image = bpy.data.images["Palette"]
+	image.source = "FILE"
+	image.filepath = path
+	image.reload()
 
 
 def material():

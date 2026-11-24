@@ -7,6 +7,7 @@
 ## Design and plan
 
 - **`GAMEPLAY.md`** is the design and the source of truth for how the game should play.
+- **`MODELLING.md`** is how to model, rig and import characters.
 - **`PLAN.md`** is the build plan. Work through it in milestone order, tick tasks off as they
   land, and note anything that changed.
 - The code started as a **ghost-hunt prototype** (archived design:

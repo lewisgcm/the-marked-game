@@ -134,7 +134,7 @@ still join.
      health (double if nailed on Day/Night 1); the infected will wear down the outermost one.
    - **The infected** (`infected/`, waves in `shared/waves.ts`): at night they come in waves
      from all four sides (Night 1: Dad + 1, then 2 more; from Night 2, three growing waves scaled
-     by party size). Grey R15 bodies with glowing red eyes; **Dad** wears a blue shirt and comes
+     by party size). Rigged models with glowing red eyes (MODELLING.md): hooded shamblers, and **Dad**, who comes
      every night. Each walks to the nearest door or window, bashes the planks (15 a hit every
      1.5s), climbs in once it's open, then hunts the nearest kid with pathfinding and hits them
      (15, or 7.5 on Night 1). They go for a kid they can see outside, and walk off at dawn.
@@ -483,7 +483,7 @@ apply from the next phase.
 - [ ] Prompts do nothing behind the "DAY 1" card.
 
 ### The infected
-- [ ] Day and dusk: no infected. A few seconds into NIGHT 1, Dad (blue shirt) and one more come from the street and the sides; ~25s later (Studio) two more.
+- [ ] Day and dusk: no infected. A few seconds into NIGHT 1, Dad (his own model: blue shirt, one slipper, taller than the rest) and one hooded shambler come from the street and the sides; ~25s later (Studio) two more.
 - [ ] They're grey with glowing red eyes, walk (not slide), and have no name or health bar over them.
 - [ ] Each walks to the nearest door or window. Boarded: it bashes it, and the planks come off one at a time; when the last goes, everyone gets "The … is broken!".
 - [ ] Open (or once broken): it climbs in (windows too) and goes after the nearest kid, through the house and up/down stairs.

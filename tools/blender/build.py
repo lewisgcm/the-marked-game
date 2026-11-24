@@ -28,10 +28,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 ASSETS_DIR = os.path.join(HERE, "assets")
 OUT_DIR = os.path.join(REPO, "assets", "models")
+PALETTE_PNG = os.path.join(OUT_DIR, "_palette", "palette.png")
 
 sys.path.insert(0, HERE)
 
 from lib import mesh as mesh_lib  # noqa: E402
+from lib import palette as palette_lib  # noqa: E402
 from lib import preview as preview_lib  # noqa: E402
 
 # Roblox reads a Blender FBX as metres and converts to centimetres, and 1 cm imports as
@@ -94,23 +96,41 @@ def export_asset(name, out_dir, args):
 	mesh_lib.select_only(export_objs)
 	bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
+	# Characters (lib/rig.py) export their skeleton too, with the palette inside the file.
+	rigged = getattr(module, "RIGGED", False)
+	armatures = [ob for ob in scene.objects if ob.type == "ARMATURE"] if rigged else []
+	rig_options = {}
+	if rigged:
+		palette_lib.save_png(PALETTE_PNG)
+		palette_lib.link_png(PALETTE_PNG)
+		rig_options = {
+			"object_types": {"ARMATURE", "MESH"},
+			"add_leaf_bones": False,
+			"bake_anim": False,
+			"path_mode": "COPY",
+			"embed_textures": True,
+		}
+	mesh_lib.select_only(export_objs + armatures)
+
 	bpy.ops.export_scene.fbx(
 		filepath=fbx_path,
 		use_selection=True,
-		object_types={"MESH"},
 		global_scale=EXPORT_SCALE,
 		apply_unit_scale=True,
 		apply_scale_options="FBX_SCALE_ALL",
 		mesh_smooth_type="OFF",
 		use_mesh_modifiers=True,
 		bake_space_transform=False,
-		path_mode="AUTO",
+		**{"object_types": {"MESH"}, "path_mode": "AUTO", **rig_options},
 	)
 
-	mesh_lib.select_only(export_objs)
-	bpy.ops.export_scene.gltf(filepath=glb_path, export_format="GLB", use_selection=True, export_apply=True)
+	mesh_lib.select_only(export_objs + armatures)
+	bpy.ops.export_scene.gltf(filepath=glb_path, export_format="GLB", use_selection=True, export_apply=not rigged)
 
+	info = mesh_lib.stats(export_objs)  # before the preview poses anything
 	if not args.no_render:
+		if hasattr(module, "preview_pose"):
+			module.preview_pose()
 		preview_lib.setup(
 			scene,
 			resolution=args.resolution,
@@ -134,7 +154,6 @@ def export_asset(name, out_dir, args):
 			preview_lib.frame_camera(scene, export_objs)
 		preview_lib.render(scene, os.path.join(out_dir, "preview.png"))
 
-	info = mesh_lib.stats(export_objs)
 	info["name"] = name
 	# Blender is Z-up, Roblox is Y-up: (x, y, z) -> (x, z, y). Both are reported,
 	# because the Roblox one is what a MeshPart's Size has to match.

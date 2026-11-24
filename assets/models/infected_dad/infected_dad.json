@@ -1,0 +1,24 @@
+{
+	"triangles": 1264,
+	"vertices": 736,
+	"size": [
+		2.64,
+		1.28,
+		5.26
+	],
+	"name": "infected_dad",
+	"size_roblox": [
+		2.64,
+		5.26,
+		1.28
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/infected_dad/infected_dad.fbx",
+		"assets/models/infected_dad/infected_dad.glb",
+		"assets/models/infected_dad/preview.png"
+	]
+}

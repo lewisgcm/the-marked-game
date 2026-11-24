@@ -52,6 +52,19 @@ To upload it (once, and again only if the kit changes):
 Until every kit mesh has an ID, the lobby keeps building its old blockout (`kitReady()` in
 `src/lobby/server/kit.ts`).
 
+## Rigged characters (R15)
+
+Full notes: [MODELLING.md](../../MODELLING.md).
+
+A character module sets `RIGGED = True` and builds its 15 body parts, then `lib/rig.py` adds an
+R15 skeleton and binds each `<Part>_Geo` mesh 100% to its bone. Model facing -Y, arms straight
+down, left side at +X. The FBX carries the skeleton and the palette image. An optional
+`preview_pose()` poses the preview only; the export is always the rest pose.
+
+To import one: Studio → File → Import → `assets/models/infected_dad/infected_dad.fbx`, with **Rig
+Type: R15**, **Merge Meshes off** and **Anchored off**. File Geometry should read about
+`2.64 × 5.26 × 1.28`. The result is a Model with a Humanoid, unlike the single-mesh steps below.
+
 ## Importing into Studio (once per model)
 
 Roblox's API can't hand you a `MeshId` — uploading an FBX returns a *Model package*, and the
@@ -205,6 +218,8 @@ the centre, so a centred mesh lands exactly where the code puts it.
 | `skull` | 0.77 × 1.05 × 1.1 | ~4000 | ritual item: lobby pedestal (`src/lobby/server/decor.ts`), main-game pickup |
 | `book` | 1.88 × 0.52 × 1.11 | ~1600 | ritual item: covers, spine and clasp only — the pages are a Part filled in at runtime (`BOOK_PAGES_SIZE` in `decor.ts` mirrors `PAGES` in `book.py`) |
 | `light_cone` | 36.95 × 36.95 × 32 | 128 | flashlight beam: open, double-sided cone; nested ×3 at runtime as translucent Neon for a fade (`src/main/client/flashlight.ts`). Length/angle mirror `BEAM_VISUAL_LENGTH` / `FLASHLIGHT_HALF_ANGLE` |
+| `infected_dad` | 2.64 × 5.26 × 1.28 | 1264 | Dad, the first infected, on an R15 rig (`infected/body.ts` loads it) |
+| `infected_neighbour` | 2.62 × 5.28 × 1.38 | 1292 | the ordinary shambler, on an R15 rig (`infected/body.ts` loads it) |
 | `candles` | 1.48 × 1.22 × 1.28 | 1500 | ritual item: melted candle cluster; flames are added at runtime at each wick (`CANDLE_WICKS` in `decor.ts` mirrors `CANDLES` in `candles.py`) |
 
 The teleport pad's groove dimensions are duplicated in `src/lobby/server/world.ts`

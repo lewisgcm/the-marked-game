@@ -137,6 +137,10 @@ function loadGameConfig() {
 		infectedHealthPerNight: num("InfectedHealthPerNight", 0.1),
 		/** Walk speed (kids walk at 16). */
 		infectedWalkSpeed: num("InfectedWalkSpeed", 9),
+		/** Dad's size, against the model's 5.26 studs (adults tower over kids). Windows open 6 studs. */
+		dadScale: num("DadScale", 1.2),
+		/** The shamblers' size, against their model's 5.28 studs. */
+		shamblerScale: num("ShamblerScale", 1.1),
 		/** Damage per hit on a kid. */
 		infectedKidDamage: num("InfectedKidDamage", 15),
 		/** Night 1 is forgiving: the infected's damage to kids is multiplied by this. */

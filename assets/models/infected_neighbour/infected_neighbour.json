@@ -1,0 +1,24 @@
+{
+	"triangles": 1292,
+	"vertices": 744,
+	"size": [
+		2.62,
+		1.38,
+		5.28
+	],
+	"name": "infected_neighbour",
+	"size_roblox": [
+		2.62,
+		5.28,
+		1.38
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/infected_neighbour/infected_neighbour.fbx",
+		"assets/models/infected_neighbour/infected_neighbour.glb",
+		"assets/models/infected_neighbour/preview.png"
+	]
+}

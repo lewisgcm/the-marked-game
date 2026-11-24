@@ -5,7 +5,7 @@ import { infectedHealth, planNight, Wave, waveSize } from "shared/waves";
 import { gameConfig } from "../config";
 import { MainWorld } from "../world";
 import { dissolve, think, wake } from "./behaviours";
-import { buildTemplate, dressAsDad, eyesOf, startWalkAnimation } from "./body";
+import { buildDadTemplate, buildTemplate, eyesOf, startWalkAnimation } from "./body";
 import { activeCount, alive, getHooks, getWorld, holder, isDadAround, setMode, setUpState } from "./state";
 import { Infected, InfectedHooks } from "./types";
 
@@ -31,14 +31,19 @@ import { Infected, InfectedHooks } from "./types";
  * Split up: types.ts, state.ts (who's around), body.ts (looks), movement.ts, senses.ts, behaviours.ts
  * (one function per mode), and this file (spawning, and the calls the rest of the game makes).
  *
- * Bodies: an R15 rig made from a plain HumanoidDescription, greyed out, with glowing red eyes.
+ * Bodies: rigged models with glowing red eyes, one for Dad and one for shamblers (MODELLING.md); a
+ * plain grey R15 body if one can't be loaded.
  * Brought to 0 health (the bat; combat.ts), it dissolves into static. Dad is one of them: he
  * can be knocked down, never killed — he's back the next night.
  */
 
 const THINK_SECONDS = 0.2;
+/** How far above the floor the spawns and dormant spots are (a normal body's root). */
+const SPAWN_ROOT_HEIGHT = 3;
 
 let template: Model | undefined;
+/** Dad's own body (the shamblers' if it couldn't be made). */
+let dadTemplate: Model | undefined;
 let templateReady = false;
 /** Bumped every night and at dawn, so waves scheduled for an old night don't spawn. */
 let generation = 0;
@@ -48,7 +53,7 @@ function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame) {
 	if (!template || (!spot && activeCount() >= gameConfig.maxInfected.Value)) {
 		return;
 	}
-	const model = template.Clone();
+	const model = (isDad && dadTemplate ? dadTemplate : template).Clone();
 	const humanoid = model.FindFirstChildOfClass("Humanoid");
 	const root = model.FindFirstChild("HumanoidRootPart");
 	if (!humanoid || !root || !root.IsA("BasePart")) {
@@ -56,14 +61,13 @@ function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame) {
 		return;
 	}
 	model.Name = isDad ? "Dad" : "Infected";
-	if (isDad) {
-		dressAsDad(model);
-	}
 	const health = infectedHealth(night, gameConfig.infectedBaseHealth.Value, gameConfig.infectedHealthPerNight.Value);
 	humanoid.MaxHealth = health;
 	humanoid.Health = health;
 	humanoid.WalkSpeed = gameConfig.infectedWalkSpeed.Value;
-	model.PivotTo(at);
+	// Spawns are set for a normal body's root; a taller one starts higher, not in the floor.
+	const standing = humanoid.HipHeight + root.Size.Y / 2;
+	model.PivotTo(at.add(new Vector3(0, math.max(0, standing - SPAWN_ROOT_HEIGHT), 0)));
 	model.Parent = holder;
 	root.SetNetworkOwner(undefined); // the server moves them
 	CollectionService.AddTag(model, INFECTED_TAG);
@@ -194,6 +198,7 @@ export function startInfected(mainWorld: MainWorld, infectedHooks: InfectedHooks
 	setUpState(mainWorld, infectedHooks);
 	task.spawn(() => {
 		template = buildTemplate();
+		dadTemplate = buildDadTemplate();
 		templateReady = true;
 	});
 }
