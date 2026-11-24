@@ -1,3 +1,4 @@
+import { Players } from "@rbxts/services";
 import { onClientMessage } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
 import { anyBoarded, damageEntry, isEntryBlocked, startBarricades } from "./barricades";
@@ -18,6 +19,7 @@ import { getClock } from "./round";
 import { onLeaveRequest } from "./roundEnd";
 import { onShootRequest, startSlingshot } from "./slingshot";
 import { canKidAct, isPlaying, livingKids } from "./teams";
+import { onTradeBuyRequest, onTradeSellRequest, startTrading } from "./trading";
 import { UPGRADE_EFFECTS } from "./upgradeEffects";
 import { hasUpgrade, onBuyRequest, startWorkbench } from "./workbench";
 import { MainWorld } from "./world";
@@ -61,6 +63,13 @@ export function startSystems(world: MainWorld) {
 		open: (player) => send(player, "OpenWorkbench", undefined),
 		sendUpgrades: (player, owned) => send(player, "Upgrades", owned),
 		onBought: (id, buyer) => UPGRADE_EFFECTS[id](buyer),
+	});
+	startTrading({
+		canAct: canKidAct,
+		notify,
+		notifyAll,
+		open: (player, view) => send(player, "OpenTrade", view),
+		update: (view) => Players.GetPlayers().forEach((p) => send(p, "UpdateTrade", view)),
 	});
 	startSlingshot({
 		canAttack: canKidAct,
@@ -110,6 +119,8 @@ export function listenToClients() {
 		UseItem: onUseRequest,
 		DropItem: onDropRequest,
 		BuyUpgrade: onBuyRequest,
+		TradeBuy: onTradeBuyRequest,
+		TradeSell: onTradeSellRequest,
 		LeaveRound: onLeaveRequest,
 	});
 }

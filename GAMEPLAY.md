@@ -362,6 +362,11 @@ upper floor needs defending too.
 | Flares (2) | 25, rising | Fire Station |
 | Rescue radio part | 60, or grab it when the base turns | Each adult base |
 
+The first two bases trade with what exists so far. Treehouse: 20 stones 4, 10 nails 6 (rising), 5
+planks 5. Fire Station: fuel can 15, medkit 10. Both buy food, batteries and scrap (1–3 each, double
+for the day's want), and never anything a base sells or that comes back every dawn. Stock is per day,
+for the whole party; bases don't trade at night.
+
 A typical day earns ~15–30 coins for the party. Ammo prices go up about 15% per night.
 
 ### Workbench upgrades (home, at dawn or day)

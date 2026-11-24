@@ -4,6 +4,7 @@ import { GameClientMessages, GameServerMessages } from "shared/remotes";
 import { emptyInventory, Inventory } from "shared/inventory";
 import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
+import { TradeView } from "shared/pricing";
 import { UpgradeId } from "shared/upgrades";
 
 /**
@@ -60,6 +61,8 @@ export const coinsStore = new Store<number>(0);
 export const upgradesStore = new Store<UpgradeId[]>([]);
 /** Whether the workbench list is showing. */
 export const workbenchOpenStore = new Store<boolean>(false);
+/** The trader's list that's showing, if any. */
+export const tradeStore = new Store<TradeView | undefined>(undefined);
 /** Your Night 1 tip ("" for none). */
 export const hintStore = new Store<string>("");
 /** Last night's summary, with when it arrived. */
@@ -80,6 +83,12 @@ export function startGameState(remote: RemoteEvent) {
 		Coins: (coins) => coinsStore.set(coins),
 		Upgrades: (owned) => upgradesStore.set(owned),
 		OpenWorkbench: () => workbenchOpenStore.set(true),
+		OpenTrade: (view) => tradeStore.set(view),
+		UpdateTrade: (view) => {
+			if (tradeStore.get()?.base === view.base) {
+				tradeStore.set(view);
+			}
+		},
 		Hint: (text) => hintStore.set(text),
 		NightSummary: (summary) => nightSummaryStore.set({ summary, at: os.clock() }),
 		Scoreboard: (cards) => scoreboardStore.set(cards),

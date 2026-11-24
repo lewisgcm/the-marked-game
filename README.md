@@ -110,6 +110,10 @@ still join.
    - **Workbench** (`workbench.ts`, list in `shared/upgrades.ts`): spend coins on tougher planks, a
      door bar (a fourth, sturdier plank on the front and back doors) and rucksacks (8 and 12
      slots). Rucksacks are personal; the rest are for the whole party, whoever pays.
+   - **Bases** (`bases.ts`, `trading.ts`; who sells what in `shared/bases.ts`): the **Treehouse** (from
+     Day 2) at the left end of Maple Street and the **Fire Station** (Day 3) at the right. Each restocks
+     every morning, for the whole party, and buys food, batteries and scrap, paying double for the one
+     thing it wants that day. Nails cost 15% more every day. Closed at night.
    - **Maple Street** (`neighbourhood.ts`): four houses to search (`containers.ts`, tables in
      `shared/loot.ts`). A searched container stays empty for the run; nails get scarcer every night.
      Gardens have stones, back every dawn. A minute before dusk: a warning, and the street lamps.
@@ -183,14 +187,14 @@ src/
                        #   gameRemote.ts, teams.ts, party.ts, gatekeeper.ts, admission.ts
                        # systems: round.ts (day/night clock), lighting.ts, streetlights.ts, life.ts,
                        #   health.ts, inventory.ts, coins.ts, containers.ts, barricades.ts,
-                       #   generator.ts, workbench.ts, upgradeEffects.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
+                       #   generator.ts, workbench.ts, upgradeEffects.ts, trading.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
                        #   nightReport.ts, roundStats.ts
                        # infected/: director.ts (spawning, waves), behaviours.ts (one function per
                        #   mode), senses.ts, movement.ts, body.ts, state.ts, types.ts
-                       # world: world.ts (the house), neighbourhood.ts, building.ts
+                       # world: world.ts (the house), neighbourhood.ts, bases.ts, npc.ts, building.ts
                        # helpers: effects.ts, prompts.ts, infectedDamage.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, workbenchUi, spectate, combatFeedback, melee.ts,
+                       # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, shopPanel, workbenchUi, tradeUi, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
@@ -442,7 +446,17 @@ apply from the next phase.
 - [ ] You can only buy what you can afford; bought ones say "Owned"; the hiking rucksack says "Needs school rucksack" first.
 - [ ] Reinforced planks and the door bar are for everyone (all players told, and it shows Owned for them). Front and back doors then take 4 planks; the garage door and windows still take 3.
 - [ ] Rucksacks are yours only: 8 slots, then 12, and they stay after you're taken.
-- [ ] The list closes with X or when you walk away, and fits on a phone.
+- [ ] The list closes with X or when you walk away, and scrolls if it's taller than the screen (phone).
+
+### Trading
+- [ ] The Treehouse (big tree, left end of the street) has a kid behind a counter; the Fire Station (right end) has an adult behind one, inside. Both stand still, idling, with a name and no health bar.
+- [ ] "Trade" opens the base's list with your coins. In Studio both trade from Day 1; with `OpenAllBases` at 0 (editable live): "The Treehouse starts trading on Day 2.", and everyone's told when a base opens.
+- [ ] Buying takes the coins, gives the lot and lowers "left today" for everyone looking. At 0: "Sold out", until the next day.
+- [ ] Greyed out when you can't afford it; "No room" when the whole lot wouldn't fit. Nothing is charged.
+- [ ] Selling takes one item at a time and pays what the button says; greyed out at "You have 0". One row says "Wanted today!" in gold and pays double; it's a different item the next day.
+- [ ] Nails at the Treehouse cost more each day.
+- [ ] At night the traders say "Closed until morning.", and buying from a list left open does too.
+- [ ] The list closes with X or when you walk away.
 
 ### Maple Street
 - [ ] Two houses either side of home and two across the street, each with a front and back door, car and garden stones. You can't walk off the map.

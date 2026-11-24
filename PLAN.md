@@ -202,10 +202,13 @@ to buy?*
       at night, so Day 1's "Start the generator" tip isn't a trap. Starts with one night, holds three;
       cans (one per slot) are in tool chests and car boots until the Fire Station sells them.
 - [ ] More workbench upgrades: shutters, scrap press.
-- [ ] `shared/pricing.ts` (pure): base prices, +15% per night for ammo, want-list bonuses. Spec.
-- [ ] First two NPC bases: **Treehouse** (kids) and **Fire Station** (adult), each with a trader
-      prompt, stock and a daily want list.
-- [ ] Trade UI (react), purchases validated on the server (coins, stock, distance to the trader).
+- [x] `shared/pricing.ts` (pure): base prices, +15% per day for scarce goods, want bonus (2×). Spec.
+- [x] First two NPC bases: **Treehouse** (kids, Day 2) and **Fire Station** (adult, Day 3), at either
+      end of Maple Street (`bases.ts`, `npc.ts`), each with a trader, daily stock and one daily want
+      (`shared/bases.ts`, spec). Closed at night. Studio: both open from Day 1 (`OpenAllBases`).
+      Stone pouch, blueprints, lures and the fire axe come with the things they need (M5).
+- [x] Trade UI (`tradeUi.tsx`; the list is shared with the workbench in `shopPanel.tsx`). Clients send
+      only a base and an item; `trading.ts` checks day, reach, stock, coins and room.
 - [ ] **Walkie-talkie** UI: morning report, base status, messages log.
 
 ## M4 — The Signal takes the adult bases

@@ -1,6 +1,8 @@
 import { Inventory } from "shared/inventory";
 import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
+import { TradeView } from "shared/pricing";
+import { TradeRequest } from "shared/trade";
 import { UpgradeId } from "shared/upgrades";
 
 /**
@@ -53,6 +55,10 @@ export interface GameServerMessages {
 	Upgrades: UpgradeId[];
 	/** You used the workbench: show its list. */
 	OpenWorkbench: undefined;
+	/** You used a trader: show their list. */
+	OpenTrade: TradeView;
+	/** Everyone: a trader's list changed (shown only if you have it open). */
+	UpdateTrade: TradeView;
 	/** Your Night 1 tip; "" for none. */
 	Hint: string;
 	/** Everyone, at dawn: what the night cost. */
@@ -81,6 +87,10 @@ export interface GameClientMessages {
 	UseItem: number;
 	/** Buy this workbench upgrade. */
 	BuyUpgrade: UpgradeId;
+	/** Buy one lot of an item from a trader. The server knows the price. */
+	TradeBuy: TradeRequest;
+	/** Sell a trader one of an item. */
+	TradeSell: TradeRequest;
 	/** Drop what's in this inventory slot (0-based). */
 	DropItem: number;
 }

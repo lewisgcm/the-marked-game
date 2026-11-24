@@ -72,6 +72,14 @@ function loadGameConfig() {
 		/** Inventory slots with a hiking rucksack. */
 		hikingSlots: int("HikingSlots", 12),
 
+		// --- Trading (who sells what, and prices: shared/bases.ts) --------------------------------------
+		/** Scarce goods go up by this fraction of their Day 1 price every day. */
+		scarcePriceRise: num("ScarcePriceRise", 0.15),
+		/** A base pays this many times its usual price for what it wants most that day. */
+		wantMultiplier: num("WantMultiplier", 2),
+		/** 1: every base trades from Day 1 (Studio, to try them without waiting). */
+		openAllBases: int("OpenAllBases", 0, 1),
+
 		// --- Generator fuel, in nights of running (shared/fuel.ts) ------------------------------------
 		/** Fuel in the generator at the start of a run. */
 		fuelStart: num("FuelStart", 1),

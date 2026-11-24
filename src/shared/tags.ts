@@ -24,6 +24,9 @@ export const STONES_TAG = "Stones";
 /** Street lamps' lights: on from late afternoon until dawn. */
 export const STREET_LIGHT_TAG = "StreetLight";
 
+/** Counters kids trade at; the "Base" attribute says whose (shared/bases.ts). */
+export const TRADER_TAG = "Trader";
+
 /** Garage props the later systems hook into. */
 export const GENERATOR_TAG = "Generator";
 export const WORKBENCH_TAG = "Workbench";

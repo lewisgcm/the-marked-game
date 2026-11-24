@@ -14,6 +14,7 @@ import { beginNight, clearSummary, endNight } from "./nightReport";
 import { getClock } from "./round";
 import { setStreetLights } from "./streetlights";
 import { isPlaying, livingKids } from "./teams";
+import { startTradingDay } from "./trading";
 
 /** What happens as each phase of the day/night clock begins. */
 
@@ -31,6 +32,7 @@ function scheduleSundown(night: number) {
 function onDay(clock: Clock, street: Neighbourhood) {
 	clearSummary();
 	spawnDormant(street.dormantSpots, clock.night, clock.night === 1 ? street.dadSpot : undefined);
+	startTradingDay(clock.night);
 	scheduleSundown(clock.night);
 }
 

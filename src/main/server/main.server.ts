@@ -1,3 +1,4 @@
+import { buildBases } from "./bases";
 import { gameConfig } from "./config";
 import { startElimination } from "./elimination";
 import { isRoundServer, startGatekeeper } from "./gatekeeper";
@@ -23,6 +24,7 @@ startGatekeeper();
 setupLighting();
 const world = buildMainWorld();
 const street = buildNeighbourhood();
+buildBases();
 startElimination();
 startLoadouts(world);
 startSystems(world);

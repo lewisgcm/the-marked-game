@@ -63,6 +63,12 @@ playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
   plus one function in `behaviours.ts`.
 - **Adding a workbench upgrade:** an ID and an entry in `shared/upgrades.ts`, and its line in
   `upgradeEffects.ts` (the compiler insists). The list, checks and messages need no changes.
+- **Adding something to trade:** an entry in a base's `sells` or `buys` in `shared/bases.ts`. The spec
+  fails if it makes a money loop (a base buying what's sold, or what comes back every dawn). A new
+  base also needs its `BaseId`, its stall in `trading.ts` and its building in `bases.ts`.
+- **Shared modules with specs import only types** from other shared modules (Lune can't load
+  roblox-ts runtime imports): pass data in as arguments instead.
+- **Lists to buy from** use `client/shopPanel.tsx`.
 - **Numbers:** balance values that make sense alone go in `config.ts` (editable live in Studio).
   Tables and formulas (waves, loot, stack sizes) live in `src/shared/` so they can be unit-tested.
 
