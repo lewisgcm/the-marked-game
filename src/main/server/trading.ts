@@ -1,20 +1,21 @@
 import { CollectionService } from "@rbxts/services";
 import { Base, BASES, BaseId, findBase } from "shared/bases";
 import { ItemId } from "shared/inventory";
-import { pickWanted, SaleRow, TradeView, tradeView } from "shared/pricing";
+import { Stall, startStallDay, TradeView, tradeView } from "shared/pricing";
 import { TRADER_TAG } from "shared/tags";
-import { isTrading, parseTradeRequest, saleStatus } from "shared/trade";
+import { buyLot, isTrading, parseTradeRequest, SaleStatus, sellItems, Wallet } from "shared/trade";
 import { BaseReport } from "shared/walkie";
 import { addCoins, coinsOf, spendCoins } from "./coins";
 import { gameConfig } from "./config";
-import { giveItem, itemRoom, takeItem } from "./inventory";
+import { giveItem, itemCount, itemRoom, takeItem } from "./inventory";
 import { inReach, makePrompt, promptAnchor } from "./prompts";
 import { getClock } from "./round";
 
 /**
- * Trading with the bases (who sells what: shared/bases.ts; prices: shared/pricing.ts; rules:
- * shared/trade.ts). Every morning each base restocks and picks the one thing it wants most. A
- * trader's prompt opens its list on the kid's screen; the client then only says which item, and everything is checked here.
+ * Trading with the bases (who sells what: shared/bases.ts; prices and orders: shared/pricing.ts;
+ * buying and selling: shared/trade.ts). Every morning each base restocks and places an order for
+ * something it wants. A trader's prompt opens its list on the kid's screen; the client then only
+ * says which item, and everything is checked here.
  */
 
 export interface TradingHooks {
@@ -25,50 +26,72 @@ export interface TradingHooks {
 	open: (player: Player, view: TradeView) => void;
 	/** A base's stock or prices changed: update it for anyone who has it open. */
 	update: (view: TradeView) => void;
-}
-
-interface Stall {
-	wanted?: ItemId;
-	stock: Map<ItemId, number>;
-	prompt?: ProximityPrompt;
+	/** How much of an order is left changed. */
+	onOrderChanged: () => void;
 }
 
 let hooks: TradingHooks | undefined;
-const stalls: Record<BaseId, Stall> = {
-	Treehouse: { stock: new Map() },
-	FireStation: { stock: new Map() },
-};
+const stalls = new Map<BaseId, Stall>();
+const prompts = new Map<BaseId, ProximityPrompt>();
 
-function viewOf(base: Base): TradeView {
-	const stall = stalls[base.id];
-	return tradeView(
-		base,
-		getClock().night,
-		stall.wanted,
-		(item) => stall.stock.get(item) ?? 0,
-		gameConfig.scarcePriceRise.Value,
-		gameConfig.wantMultiplier.Value,
-	);
+function stallOf(base: Base): Stall {
+	let stall = stalls.get(base.id);
+	if (!stall) {
+		stall = { stock: new Map() };
+		stalls.set(base.id, stall);
+	}
+	return stall;
 }
 
 function openAll(): boolean {
 	return gameConfig.openAllBases.Value !== 0;
 }
 
+function isOpenNow(base: Base): boolean {
+	const { night, phase } = getClock();
+	return isTrading(base, night, phase === "Night", openAll());
+}
+
+/** Whether a base trades today, though maybe not right now. */
+function isInContact(base: Base): boolean {
+	return isTrading(base, getClock().night, false, openAll());
+}
+
+function viewOf(base: Base): TradeView {
+	return tradeView(
+		base,
+		getClock().night,
+		isOpenNow(base),
+		stallOf(base),
+		gameConfig.scarcePriceRise.Value,
+		gameConfig.wantMultiplier.Value,
+	);
+}
+
+function walletOf(player: Player): Wallet {
+	return {
+		coins: () => coinsOf(player),
+		spend: (amount) => spendCoins(player, amount),
+		earn: (amount) => addCoins(player, amount),
+		room: (item) => itemRoom(player, item),
+		count: (item) => itemCount(player, item),
+		give: (item, count) => giveItem(player, item, count),
+		take: (item, count) => takeItem(player, item, count),
+	};
+}
+
 /** Whether `player` can trade with `base` here and now; tells them if it's closed. */
 function canTrade(player: Player, base: Base): boolean {
-	const prompt = stalls[base.id].prompt;
+	const prompt = prompts.get(base.id);
 	if (!hooks || !prompt || !hooks.canAct(player) || !inReach(player, prompt)) {
 		return false;
 	}
-	const { night, phase } = getClock();
-	if (isTrading(base, night, phase === "Night", openAll())) {
+	if (isOpenNow(base)) {
 		return true;
 	}
-	const closedTonight = isTrading(base, night, false, openAll());
 	hooks.notify(
 		player,
-		closedTonight ? "Closed until morning." : `The ${base.name} starts trading on Day ${base.opens}.`,
+		isInContact(base) ? "Closed until morning." : `The ${base.name} starts trading on Day ${base.opens}.`,
 	);
 	return false;
 }
@@ -80,16 +103,12 @@ function checkRequest(player: Player, payload: unknown): { base: Base; item: Ite
 	return request && base && canTrade(player, base) ? { base, item: request.item } : undefined;
 }
 
-function whyNot(row: SaleRow, player: Player): string | undefined {
-	const status = saleStatus(row, coinsOf(player), itemRoom(player, row.item));
-	if (status === "soldOut") {
-		return "Sold out until tomorrow.";
-	}
-	if (status === "noRoom") {
-		return "Your pockets are full.";
-	}
-	return status === "tooExpensive" ? "You can't afford that." : undefined;
-}
+const REFUSAL: Record<SaleStatus, string | undefined> = {
+	ok: undefined,
+	soldOut: "Sold out until tomorrow.",
+	tooExpensive: "You can't afford that.",
+	noRoom: "Your pockets are full.",
+};
 
 /** "Buy": `payload` should be a TradeRequest (unknown — validated). */
 export function onTradeBuyRequest(player: Player, payload: unknown) {
@@ -98,59 +117,71 @@ export function onTradeBuyRequest(player: Player, payload: unknown) {
 	if (!request || !row) {
 		return;
 	}
-	const reason = whyNot(row, player);
-	if (reason !== undefined) {
-		hooks?.notify(player, reason);
-		return;
+	const refusal = REFUSAL[buyLot(row, stallOf(request.base), walletOf(player))];
+	if (refusal !== undefined) {
+		hooks?.notify(player, refusal);
+	} else {
+		hooks?.update(viewOf(request.base));
 	}
-	if (!spendCoins(player, row.price)) {
-		return;
-	}
-	stalls[request.base.id].stock.set(row.item, row.stock - 1);
-	giveItem(player, row.item, row.count);
-	hooks?.update(viewOf(request.base));
 }
 
-/** "Sell": one of an item. `payload` should be a TradeRequest (unknown — validated). */
+/** "Sell": `payload` should be a TradeRequest (unknown — validated). */
 export function onTradeSellRequest(player: Player, payload: unknown) {
 	const request = checkRequest(player, payload);
 	const row = request && viewOf(request.base).buys.find((r) => r.item === request.item);
-	if (row && takeItem(player, row.item, 1)) {
-		addCoins(player, row.price);
+	if (request && row && sellItems(row, stallOf(request.base), walletOf(player)) > 0 && row.wanted > 0) {
+		hooks?.update(viewOf(request.base));
+		hooks?.onOrderChanged();
 	}
 }
 
 /** How every base is doing right now, for the walkie. */
 export function baseReports(): BaseReport[] {
-	const { night, phase } = getClock();
 	return BASES.map((base) => {
-		const want = viewOf(base).buys.find((row) => row.wanted);
+		const order = viewOf(base).buys.find((row) => row.wanted > 0);
 		return {
 			name: base.name,
 			trader: base.trader,
 			where: base.where,
 			opens: base.opens,
 			hello: base.hello,
-			inContact: isTrading(base, night, false, openAll()),
-			openNow: isTrading(base, night, phase === "Night", openAll()),
-			wanted: want?.item,
-			wantedPrice: want?.price ?? 0,
+			inContact: isInContact(base),
+			openNow: isOpenNow(base),
+			wanted: order?.item,
+			wantedCount: order?.wanted ?? 0,
+			wantedPrice: order?.orderPrice ?? 0,
 		};
 	});
 }
 
-/** Morning: every base restocks and picks what it wants. */
+/** What the bases in contact have on order. */
+export function itemsOnOrder(): ItemId[] {
+	const items: ItemId[] = [];
+	for (const report of baseReports()) {
+		if (report.inContact && report.wanted !== undefined) {
+			items.push(report.wanted);
+		}
+	}
+	return items;
+}
+
+/** Morning: every base restocks and places an order, each for something different. */
 export function startTradingDay() {
+	const taken: ItemId[] = [];
 	for (const base of BASES) {
-		const stall = stalls[base.id];
-		base.sells.forEach((offer) => stall.stock.set(offer.item, offer.stock));
-		stall.wanted = pickWanted(
-			base.buys.map((want) => want.item),
-			stall.wanted,
+		const stall = stallOf(base);
+		startStallDay(stall, base, taken, gameConfig.orderFewest.Value, gameConfig.orderMost.Value, () =>
 			math.random(),
 		);
-		hooks?.update(viewOf(base));
+		if (stall.order) {
+			taken.push(stall.order.item);
+		}
 	}
+}
+
+/** Updates every base's list for anyone who has it open (bases open, close and restock). */
+export function refreshTrading() {
+	BASES.forEach((base) => hooks?.update(viewOf(base)));
 }
 
 /** Sets up the traders' prompts. Call once, after the bases are built. */
@@ -164,7 +195,7 @@ export function startTrading(tradingHooks: TradingHooks) {
 		}
 		const prompt = makePrompt(promptAnchor(counter, new Vector3(0, 1.5, 0)), "Trade", Enum.KeyCode.E, 0.2);
 		prompt.ObjectText = base.trader;
-		stalls[base.id].prompt = prompt;
+		prompts.set(base.id, prompt);
 		prompt.Triggered.Connect((player) => {
 			if (canTrade(player, base)) {
 				tradingHooks.open(player, viewOf(base));

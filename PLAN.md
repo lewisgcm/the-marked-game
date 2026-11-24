@@ -204,8 +204,9 @@ to buy?*
 - [ ] More workbench upgrades: shutters, scrap press.
 - [x] `shared/pricing.ts` (pure): base prices, +15% per day for scarce goods, want bonus (2×). Spec.
 - [x] First two NPC bases: **Treehouse** (kids, Day 2) and **Fire Station** (adult, Day 3), at either
-      end of Maple Street (`bases.ts`, `npc.ts`), each with a trader, daily stock and one daily want
-      (`shared/bases.ts`, spec). Closed at night. Studio: both open from Day 1 (`OpenAllBases`).
+      end of Maple Street (`bases.ts`, `npc.ts`), each with a trader, daily stock and one daily order
+      (2–3 of an item at 2×, different for every base; `shared/bases.ts`, spec). A few searched
+      containers restock with what's on order each morning, so there's always something to fill them with. Closed at night. Studio: both open from Day 1 (`OpenAllBases`).
       Stone pouch, blueprints, lures and the fire axe come with the things they need (M5).
 - [x] Trade UI (`tradeUi.tsx`; the list is shared with the workbench in `shopPanel.tsx`). Clients send
       only a base and an item; `trading.ts` checks day, reach, stock, coins and room.
@@ -287,6 +288,26 @@ Goal: the endless game.
 - [ ] Performance pass with a full neighbourhood and 6 players (streaming is off, see AGENTS.md).
 - [ ] Experience Questionnaire (expect a 13+ label), thumbnails, icon, description.
 - [ ] Publish both places; wire place IDs (`src/shared/placeIds.ts`).
+
+---
+
+## Backlog
+
+Not tied to a milestone yet.
+
+- [ ] **Rework the on-screen UI: too much pops up, all the time** (playtest, 24 Nov 2026). Best done
+      before M4 adds distress calls. What shows today:
+  - Always: clock, inventory and coins, walkie button, Night 1 tips (until Day 2).
+  - Every phase change: a big banner and chime (3s). Dawn adds the dawn card (10s) under it.
+  - Every morning: walkie popups one after another, 5s each with a sound. One to four a morning
+    in a normal run, more with every base added.
+  - Notices (3s each, and a new one replaces the last): every search, refusals ("Your pockets are
+    full."), and to **everyone**: power on/off, refuelling, low/out of fuel, upgrades bought, an
+    opening broken, a kid taken.
+  - Starting points: one queue that decides what shows and when, with priorities (danger first);
+    one walkie popup per morning ("3 new messages") with the rest in the log; things only one kid
+    did told only to that kid; search finds shown by the inventory instead of a notice.
+- [ ] Better prices at a base for filling its orders (in GAMEPLAY §7, not built).
 
 ---
 

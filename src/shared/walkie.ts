@@ -31,8 +31,9 @@ export interface BaseReport {
 	/** Whether it's made contact: it trades today, though maybe not right now. */
 	inContact: boolean;
 	openNow: boolean;
-	/** What it wants most today, and the coins it pays for one. */
+	/** What it still has on order today: what, how many, and the coins it pays for each. */
 	wanted?: ItemId;
+	wantedCount: number;
 	wantedPrice: number;
 }
 
@@ -81,7 +82,7 @@ export function morningReport(day: number, reports: BaseReport[]): WalkieLine[] 
 		if (base.wanted !== undefined) {
 			lines.push({
 				from: base.trader,
-				text: `We need ${base.wanted.lower()} today. ${coins(base.wantedPrice)} each.`,
+				text: `We need ${base.wantedCount} ${base.wanted.lower()} today. ${coins(base.wantedPrice)} each.`,
 			});
 		}
 	}
@@ -93,7 +94,10 @@ export function baseStatus(base: BaseReport): BaseStatus {
 	if (!base.inContact) {
 		return { name: base.name, status: "No contact yet", detail: `Trades from Day ${base.opens}`, open: false };
 	}
-	const want = base.wanted !== undefined ? `. Wants ${base.wanted.lower()} (${coins(base.wantedPrice)} each)` : "";
+	const want =
+		base.wanted !== undefined
+			? `. Wants ${base.wantedCount} ${base.wanted.lower()} (${coins(base.wantedPrice)} each)`
+			: "";
 	return {
 		name: base.name,
 		status: base.openNow ? "Trading" : "Closed until morning",

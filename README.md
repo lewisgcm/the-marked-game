@@ -112,14 +112,15 @@ still join.
      slots). Rucksacks are personal; the rest are for the whole party, whoever pays.
    - **Bases** (`bases.ts`, `trading.ts`; who sells what in `shared/bases.ts`): the **Treehouse** (from
      Day 2) at the left end of Maple Street and the **Fire Station** (Day 3) at the right. Each restocks
-     every morning, for the whole party, and buys food, batteries and scrap, paying double for the one
-     thing it wants that day. Nails cost 15% more every day. Closed at night.
+     every morning, for the whole party, and buys food, batteries and scrap. Each also orders 2–3 of one
+     of them every morning (no two bases the same), paying double until the order's filled. Nails cost 15% more every day. Closed at night.
    - **Walkie-talkie** (`walkie.ts`, what's said in `shared/walkie.ts`): a few seconds into each day Mum
      and every base in contact report in (what they want, and what they pay). New messages pop up
      under the clock one at a time; the button on the left (or T) opens the bases and the log. Mum
      gives the sundown warning. Any system can speak with `say(from, text)`.
    - **Maple Street** (`neighbourhood.ts`): four houses to search (`containers.ts`, tables in
-     `shared/loot.ts`). A searched container stays empty for the run; nails get scarcer every night.
+     `shared/loot.ts`). A searched container stays empty for the run, except that 3 get something the bases have on
+     order every morning; nails get scarcer every night.
      Gardens have stones, back every dawn. A minute before dusk: a warning, and the street lamps.
    - **Inventory** (`inventory.ts`, rules in `shared/inventory.ts`): 5 slots of stacks down the right
      edge; tap one to Drop it (or Use a medkit: +50 health). Kids start with 20 stones and 10 nails.
@@ -457,14 +458,18 @@ apply from the next phase.
 - [ ] "Trade" opens the base's list with your coins. In Studio both trade from Day 1; with `OpenAllBases` at 0 (editable live): "The Treehouse starts trading on Day 2.", and the base says hello over the walkie the morning it opens.
 - [ ] Buying takes the coins, gives the lot and lowers "left today" for everyone looking. At 0: "Sold out", until the next day.
 - [ ] Greyed out when you can't afford it; "No room" when the whole lot wouldn't fit. Nothing is charged.
-- [ ] Selling takes one item at a time and pays what the button says; greyed out at "You have 0". One row says "Wanted today!" in gold and pays double; it's a different item the next day.
+- [ ] One row is gold: "They need 3!" and pays double. One press sells as many as they need and you have ("3 for 18 coins"); the number drops for everyone looking, and in the walkie. Once filled the row goes back to its usual price.
+- [ ] Everything else sells one at a time, for what the button says; greyed out at "You have 0".
+- [ ] The two bases never order the same item, and a base's order is different the next day.
+- [ ] From Day 2, up to 3 searched containers are searchable again (their colour is back) and hold 1–2 of something on order. Never nails, fuel or medkits.
+- [ ] At nightfall an open list closes by itself.
 - [ ] Nails at the Treehouse cost more each day.
-- [ ] At night the traders say "Closed until morning.", and buying from a list left open does too.
+- [ ] At night the traders say "Closed until morning."
 - [ ] The list closes with X or when you walk away.
 
 ### Walkie-talkie
 - [ ] ~4s into Day 1, after the title card, Mum's message pops up under the clock with a sound, for 5s. In Studio both bases then say what they want, one after another.
-- [ ] What a base says it wants and pays matches the gold row in its list.
+- [ ] What a base says it needs ("We need 3 batteries today. 6 coins each.") matches the gold row in its list.
 - [ ] The "Walkie" button (left edge) counts unread messages, and T does the same as pressing it. Opening it clears the count; X or T closes it. It's clear of the chat box and, on a phone, the joystick still works around it.
 - [ ] Bases are at the top: green "Trading" by day, "Closed until morning" at night, "No contact yet" before their first day (`OpenAllBases` at 0). Messages are newest first, with the day, and scroll.
 - [ ] Popups don't show while it's open, and typing a "t" in chat doesn't open it.
@@ -472,7 +477,7 @@ apply from the next phase.
 
 ### Maple Street
 - [ ] Two houses either side of home and two across the street, each with a front and back door, its own car (minivan, estate, hatchback; the ice-cream van is at the kerb) and garden stones. Each car's boot can be searched, and you can't walk through a car. You can't walk off the map.
-- [ ] Searching (hold E) shows what you found; the container goes dark and stays empty, for everyone, all run. What doesn't fit is left at your feet.
+- [ ] Searching (hold E) shows what you found; the container goes dark and is empty for everyone (a few restock each morning; see Trading). What doesn't fit is left at your feet.
 - [ ] 25s before dusk (Studio): Mum says "The sun's going down. Get home." over the walkie and the street lamps come on; off at dawn.
 
 ### Dormant infected

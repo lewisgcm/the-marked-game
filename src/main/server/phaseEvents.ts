@@ -4,7 +4,7 @@ import { MUM, SUNDOWN } from "shared/walkie";
 import { refillPile } from "./barricades";
 import { addCoins } from "./coins";
 import { gameConfig } from "./config";
-import { refillGardens } from "./containers";
+import { refillGardens, restockContainers } from "./containers";
 import { returnAllTaken } from "./elimination";
 import { send } from "./gameRemote";
 import { healAll } from "./health";
@@ -15,7 +15,7 @@ import { beginNight, clearSummary, endNight } from "./nightReport";
 import { getClock } from "./round";
 import { setStreetLights } from "./streetlights";
 import { isPlaying, livingKids } from "./teams";
-import { startTradingDay } from "./trading";
+import { itemsOnOrder, refreshTrading, startTradingDay } from "./trading";
 import { refreshWalkie, say, sayMorningReport } from "./walkie";
 
 /** What happens as each phase of the day/night clock begins. */
@@ -40,6 +40,7 @@ function onDay(clock: Clock, street: Neighbourhood) {
 	clearSummary();
 	spawnDormant(street.dormantSpots, clock.night, clock.night === 1 ? street.dadSpot : undefined);
 	startTradingDay();
+	restockContainers(itemsOnOrder());
 	later(clock, gameConfig.morningReportDelay.Value, () => sayMorningReport(clock.night));
 	later(clock, gameConfig.daySeconds.Value - gameConfig.sundownSeconds.Value, onSundown);
 }
@@ -73,5 +74,7 @@ export function onPhase(clock: Clock, street: Neighbourhood) {
 	print(`[Main] ${clock.phase} ${clock.night}`);
 	setPhaseLighting(clock.phase);
 	ON_PHASE[clock.phase](clock, street);
-	refreshWalkie(); // bases open and close
+	// Bases open, close and restock.
+	refreshTrading();
+	refreshWalkie();
 }

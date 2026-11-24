@@ -97,6 +97,33 @@ export function rollLoot(kind: ContainerKind, night: number, random: () => numbe
 	return finds;
 }
 
+/** Up to `count` of `list`, picked at random without repeats. `random` gives 0..1. */
+export function pickSome<T extends defined>(list: T[], count: number, random: () => number): T[] {
+	const left = list.filter(() => true);
+	const picked: T[] = [];
+	while (picked.size() < count && left.size() > 0) {
+		const i = math.min(left.size() - 1, math.floor(random() * left.size()));
+		picked.push(left[i]);
+		left.remove(i);
+	}
+	return picked;
+}
+
+/**
+ * What `containers` restocked containers hold: one kind of thing each, taking turns through
+ * `items`, 1 to `most` of it. `random` gives 0..1.
+ */
+export function rollRestock(items: ItemId[], containers: number, most: number, random: () => number): Loot[] {
+	const finds: Loot[] = [];
+	for (let i = 0; i < (items.size() > 0 ? containers : 0); i++) {
+		finds.push({
+			item: items[i % items.size()],
+			count: math.max(1, math.min(most, 1 + math.floor(random() * most))),
+		});
+	}
+	return finds;
+}
+
 /** "Found 3 nails and 2 coins.", or that there was nothing. */
 export function describeLoot(finds: Loot[]): string {
 	if (finds.size() === 0) {

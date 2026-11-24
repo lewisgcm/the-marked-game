@@ -12,6 +12,7 @@ return function(t)
 			inContact = true,
 			openNow = true,
 			wanted = "Food",
+			wantedCount = 3,
 			wantedPrice = 4,
 		}
 		for k, v in overrides do
@@ -35,12 +36,12 @@ return function(t)
 			t.expect(lines[1].from).toBe("Mum")
 			t.expect(lines[2].from).toBe("Gang")
 			t.expect(lines[2].text).toBe("Hi!")
-			t.expect(lines[3].text).toBe("We need food today. 4 coins each.")
+			t.expect(lines[3].text).toBe("We need 3 food today. 4 coins each.")
 		end)
 		t.it("after that, only what it wants", function()
-			local lines = W.morningReport(9, { report({ wantedPrice = 1 }) })
+			local lines = W.morningReport(9, { report({ wantedCount = 2, wantedPrice = 1 }) })
 			t.expect(#lines).toBe(1)
-			t.expect(lines[1].text).toBe("We need food today. 1 coin each.")
+			t.expect(lines[1].text).toBe("We need 2 food today. 1 coin each.")
 		end)
 		t.it("every base in contact reports", function()
 			t.expect(#W.morningReport(9, { report({}), report({ name = "Station" }) })).toBe(2)
@@ -61,7 +62,7 @@ return function(t)
 			local s = W.baseStatus(report({}))
 			t.expect(s.name).toBe("Treehouse")
 			t.expect(s.status).toBe("Trading")
-			t.expect(s.detail).toBe("At the left end. Wants food (4 coins each)")
+			t.expect(s.detail).toBe("At the left end. Wants 3 food (4 coins each)")
 			t.expect(s.open).toBe(true)
 		end)
 		t.it("closed at night", function()

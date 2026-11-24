@@ -1,6 +1,6 @@
 import { Base, BaseId } from "shared/bases";
 import { ItemId } from "shared/inventory";
-import { SaleRow } from "shared/pricing";
+import { BuyRow, SaleRow, Stall } from "shared/pricing";
 
 /**
  * The rules for trading at a base. Pure (only type imports), and used by both sides: the server
@@ -18,6 +18,57 @@ export function saleStatus(row: SaleRow, coins: number, room: number): SaleStatu
 		return "tooExpensive";
 	}
 	return room >= row.count ? "ok" : "noRoom";
+}
+
+/** A kid's side of a trade. The server's is their real coins and inventory. */
+export interface Wallet {
+	coins: () => number;
+	/** Takes exactly this much, or nothing. */
+	spend: (amount: number) => boolean;
+	earn: (amount: number) => void;
+	/** How many more of an item they can carry. */
+	room: (item: ItemId) => number;
+	count: (item: ItemId) => number;
+	give: (item: ItemId, count: number) => void;
+	/** Takes exactly this many, or nothing. */
+	take: (item: ItemId, count: number) => boolean;
+}
+
+/** Buys one lot: the kid pays and gets it, and the stall has one fewer. Nothing happens unless "ok". */
+export function buyLot(row: SaleRow, stall: Stall, wallet: Wallet): SaleStatus {
+	const status = saleStatus(row, wallet.coins(), wallet.room(row.item));
+	if (status !== "ok") {
+		return status;
+	}
+	if (!wallet.spend(row.price)) {
+		return "tooExpensive";
+	}
+	stall.stock.set(row.item, row.stock - 1);
+	wallet.give(row.item, row.count);
+	return "ok";
+}
+
+/** How many one press sells: all that's on order, otherwise one. `have` is how many the kid has. */
+export function sellCount(row: BuyRow, have: number): number {
+	return math.min(have, math.max(1, row.wanted));
+}
+
+/** What the base pays for each right now. */
+export function unitPrice(row: BuyRow): number {
+	return row.wanted > 0 ? row.orderPrice : row.price;
+}
+
+/** Sells what one press sells: the kid is paid, and it counts towards the order. Returns how many. */
+export function sellItems(row: BuyRow, stall: Stall, wallet: Wallet): number {
+	const count = sellCount(row, wallet.count(row.item));
+	if (count <= 0 || !wallet.take(row.item, count)) {
+		return 0;
+	}
+	wallet.earn(count * unitPrice(row));
+	if (row.wanted > 0 && stall.order) {
+		stall.order.left -= count;
+	}
+	return count;
 }
 
 /** Whether a base is trading: from its first day, and never at night. */

@@ -89,7 +89,7 @@ export function startGameState(remote: RemoteEvent) {
 		OpenTrade: (view) => tradeStore.set(view),
 		UpdateTrade: (view) => {
 			if (tradeStore.get()?.base === view.base) {
-				tradeStore.set(view);
+				tradeStore.set(view.open ? view : undefined); // closes at nightfall
 			}
 		},
 		Walkie: (state) => walkieStore.set(state),

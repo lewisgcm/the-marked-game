@@ -238,6 +238,8 @@ crossbow) stay useful all game.
 **How ammo gets harder to find:**
 1. **Looted places stay looted** for the run. The houses near home run dry, so you have to go
    further, into more danger.
+   The exception: every morning a few searched containers get something the bases have on order
+   (food, batteries, scrap): about enough for most of the day's orders. Ammo, fuel and medkits never come back.
 2. **Ammo loot drops off every night:** nails, bullets and flares spawn at about 100% of the base
    rate on the night they first appear, falling to about 40% by Night 10 and 25% by Night 20,
    where it stays. Stones never run out.
@@ -364,9 +366,10 @@ upper floor needs defending too.
 | Rescue radio part | 60, or grab it when the base turns | Each adult base |
 
 The first two bases trade with what exists so far. Treehouse: 20 stones 4, 10 nails 6 (rising), 5
-planks 5. Fire Station: fuel can 15, medkit 10. Both buy food, batteries and scrap (1–3 each, double
-for the day's want), and never anything a base sells or that comes back every dawn. Stock is per day,
-for the whole party; bases don't trade at night.
+planks 5. Fire Station: fuel can 15, medkit 10. Both buy food, batteries and scrap (1–3 each), and
+never anything a base sells, nor planks or stones. Each morning a base **orders** 2–3 of one of them, at
+double price until it's filled; no two bases order the same thing. Stock and orders are for the whole
+party; bases don't trade at night. (Better prices for filling orders: not built yet.)
 
 A typical day earns ~15–30 coins for the party. Ammo prices go up about 15% per night.
 

@@ -75,8 +75,16 @@ function loadGameConfig() {
 		// --- Trading (who sells what, and prices: shared/bases.ts) --------------------------------------
 		/** Scarce goods go up by this fraction of their Day 1 price every day. */
 		scarcePriceRise: num("ScarcePriceRise", 0.15),
-		/** A base pays this many times its usual price for what it wants most that day. */
+		/** A base pays this many times its usual price for what it has on order. */
 		wantMultiplier: num("WantMultiplier", 2),
+		/** Each base's daily order is for this many... */
+		orderFewest: int("OrderFewest", 2),
+		/** ...to this many. */
+		orderMost: int("OrderMost", 3),
+		/** Searched containers that get something a base has on order, every morning. */
+		restockContainers: int("RestockContainers", 3),
+		/** The most one of them gets (at least 1). */
+		restockMost: int("RestockMost", 2),
 		/** 1: every base trades from Day 1 (Studio, to try them without waiting). */
 		openAllBases: int("OpenAllBases", 0, 1),
 

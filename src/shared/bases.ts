@@ -4,8 +4,8 @@ import { ItemId } from "shared/inventory";
  * The bases kids trade with (GAMEPLAY.md §7), and what each sells and buys. Adding an item to a
  * base is an entry here; a new base also needs its place in the world (main/server/bases.ts).
  *
- * Bases only buy things that run out (loot), never anything a base sells: no buying from one to
- * sell to another, and no selling what comes back every dawn. The spec checks this.
+ * Bases never buy what a base sells (no buying from one to sell to another), nor planks and stones,
+ * which are free at home every dawn. The spec checks this.
  */
 
 export type BaseId = "Treehouse" | "FireStation";
@@ -23,10 +23,10 @@ export interface Offer {
 	scarce?: boolean;
 }
 
-/** Something a base buys, one at a time. */
+/** Something a base buys. */
 export interface Want {
 	item: ItemId;
-	/** Coins for one, when it isn't today's want. */
+	/** Coins for one, when it isn't on order. */
 	price: number;
 }
 
