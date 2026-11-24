@@ -18,7 +18,9 @@ import os
 import bmesh
 import bpy
 
-GRID = 8  # swatches per row/column
+# Uploaded models keep the palette they were uploaded with, so this can grow. (Except the lobby kit, which
+# shares one uploaded image: if the kit is rebuilt, upload the new palette with it.)
+GRID = 16  # swatches per row/column
 CELL = 16  # pixels per swatch
 SIZE = GRID * CELL
 
@@ -95,6 +97,15 @@ SWATCHES = {
 	"ice_pink": ("#d98ba0", False),
 	"fire_red": ("#b3302a", False),
 	"light_blue": ("#3f86d9", True),
+	# wrecks
+	"char": ("#2a2624", False),
+	"char_light": ("#4a423d", False),
+	"rust_dark": ("#5c3321", False),
+	"plum": ("#6f4b66", False),
+	"plum_dark": ("#4c3347", False),
+	"bus_yellow": ("#d3a032", False),
+	"olive": ("#646e4b", False),
+	"olive_dark": ("#474f36", False),
 }
 
 _NAMES = list(SWATCHES)

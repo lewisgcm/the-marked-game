@@ -10,8 +10,9 @@ Notes for making a character for MARKED, from Blender to walking around in the g
 - Adults, blocky, about 5.3 studs tall, under ~1,500 triangles. Lofted, corner-cut shapes.
 - Infected: grey-green skin, red eyes, three glitch marks on the cheek. No blood (GAMEPLAY.md §10).
 - Give each one a silhouette and one odd detail (Dad's missing slipper, the neighbour's hood).
-- Colours come from the shared palette. **Append** new swatches in `lib/palette.py`; a swatch's
-  position in the list is its place in the image, so inserting or reordering breaks imported models.
+- Colours come from the shared palette (`lib/palette.py`, 16 × 16). **Append** new swatches. An uploaded
+  model keeps the palette it was uploaded with, so later changes don't affect it until it's rebuilt and
+  imported again. (The lobby kit shares one uploaded image: rebuild it and that needs uploading too.)
 
 ## Rig
 

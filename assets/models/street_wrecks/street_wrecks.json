@@ -1,0 +1,24 @@
+{
+	"triangles": 4084,
+	"vertices": 2476,
+	"size": [
+		52.175,
+		22.7,
+		8.899
+	],
+	"name": "street_wrecks",
+	"size_roblox": [
+		52.175,
+		8.899,
+		22.7
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/street_wrecks/street_wrecks.fbx",
+		"assets/models/street_wrecks/street_wrecks.glb",
+		"assets/models/street_wrecks/preview.png"
+	]
+}

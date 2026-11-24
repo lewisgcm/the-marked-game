@@ -4,6 +4,7 @@ import { folder, part, PartOptions } from "shared/parts";
 import { LOOT_CONTAINER_TAG, STONES_TAG, STREET_LIGHT_TAG } from "shared/tags";
 import { slab, wall } from "./building";
 import { CarName, loadCars, parkCar } from "./cars";
+import { buildWrecks } from "./wrecks";
 
 /**
  * Maple Street (GAMEPLAY.md §8), a blockout: two houses either side of home and two across the
@@ -136,6 +137,7 @@ export function buildNeighbourhood(): Neighbourhood {
 	const street = folder(Workspace, "MapleStreet");
 	const dormantSpots = HOUSES.map((house) => buildHouse(street, house));
 	loadCars();
+	buildWrecks();
 	buildStreetLamps(street);
 	buildBoundary(street);
 	// In the left neighbour's front garden, facing the living-room window (local +Z).

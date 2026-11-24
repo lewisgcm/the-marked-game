@@ -220,6 +220,7 @@ the centre, so a centred mesh lands exactly where the code puts it.
 | `light_cone` | 36.95 × 36.95 × 32 | 128 | flashlight beam: open, double-sided cone; nested ×3 at runtime as translucent Neon for a fade (`src/main/client/flashlight.ts`). Length/angle mirror `BEAM_VISUAL_LENGTH` / `FLASHLIGHT_HALF_ANGLE` |
 | `torch` | 0.63 × 0.75 × 1.74 | 588 | the kids' flashlight; the game's Lens part sits in its open front (`src/main/server/torch.ts`) |
 | `fire_engine` | 8.4 × 9.43 × 21.1 | 2760 | the Fire Station's engine (`lib/vehicle.py`); `src/main/server/bases.ts` loads it |
+| `street_wrecks` | five meshes, up to 11.4 × 8.9 × 22.7 | 4084 | wrecks: CrashedCar, BurntCar, SchoolBus, Ambulance, Tank (one import, Merge Meshes off); `src/main/server/wrecks.ts` places them |
 | `street_cars` | four meshes, up to 7.25 × 9.3 × 14.6 | 3712 | Maple Street: Minivan, Hatchback, Estate, IceCreamVan (`lib/vehicle.py`); `src/main/server/cars.ts` loads them as one model |
 | `infected_dad` | 2.64 × 5.26 × 1.28 | 1264 | Dad, the first infected, on an R15 rig (`infected/body.ts` loads it) |
 | `infected_neighbour` | 2.62 × 5.28 × 1.38 | 1292 | the ordinary shambler, on an R15 rig (`infected/body.ts` loads it) |

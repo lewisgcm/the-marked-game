@@ -13,17 +13,22 @@ export function loadModel(assetId: number, what: string): Model | undefined {
 }
 
 /**
- * Stands a copy of `name` from `models` on the ground at `at`, facing its LookVector. False if it
- * isn't there. Its bounding box's middle goes over `at`.
+ * Stands a copy of `name` from `models` on the ground at `at`, facing its LookVector, and returns
+ * it; undefined if it isn't there. Its bounding box's middle goes over `at`.
  */
-export function standMesh(models: Instance | undefined, name: string, parent: Instance, at: CFrame): boolean {
+export function standMesh(
+	models: Instance | undefined,
+	name: string,
+	parent: Instance,
+	at: CFrame,
+): MeshPart | undefined {
 	const source = models?.FindFirstChild(name);
 	if (!source || !source.IsA("MeshPart")) {
-		return false;
+		return undefined;
 	}
 	const mesh = source.Clone();
 	mesh.Anchored = true;
 	mesh.CFrame = at.mul(new CFrame(0, mesh.Size.Y / 2, 0));
 	mesh.Parent = parent;
-	return true;
+	return mesh;
 }
