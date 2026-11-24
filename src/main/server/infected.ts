@@ -1,5 +1,6 @@
 import { CollectionService, PathfindingService, Players, ServerStorage, Workspace } from "@rbxts/services";
 import { INFECTED_TAG } from "shared/combat";
+import { isStunned, newStun, StunState, stepStun } from "shared/stun";
 import { infectedHealth, planNight, Wave } from "shared/waves";
 import { damageEntry, isEntryBlocked } from "./barricades";
 import { gameConfig } from "./config";
@@ -16,6 +17,9 @@ import { Entry, isInsideHouse, MainWorld } from "./world";
  *  - **chase** the nearest kid with pathfinding, hitting them when in reach. If there's no way
  *    in to a kid (everything boarded), it goes back to bashing the nearest opening.
  *
+ * A flashlight held on one for a moment **stuns** it for a couple of seconds (shared/stun.ts):
+ * it stops dead, its eyes dim, then it shrugs off beams for a while.
+ *
  * Bodies: an R15 rig made from a plain HumanoidDescription, greyed out, with glowing red eyes.
  * Brought to 0 health (the bat; combat.ts), it dissolves into static. Dad is one of them: he
  * can be knocked down, never killed — he's back the next night.
@@ -29,6 +33,8 @@ export interface InfectedHooks {
 	notifyAll: (text: string) => void;
 	/** Whether this is Night 1 (the infected hit softer). */
 	isFirstNight: () => boolean;
+	/** Whether any kid's flashlight beam is on `model` right now. */
+	isLit: (model: Model) => boolean;
 }
 
 type Mode = "approach" | "enter" | "chase" | "retreat";
@@ -48,6 +54,8 @@ interface Infected {
 	modeSince: number;
 	lastPosition: Vector3;
 	stuckSince: number;
+	stun: StunState;
+	eyes: BasePart[];
 }
 
 const THINK_SECONDS = 0.2;
@@ -56,6 +64,7 @@ const RETREAT_SECONDS = 15;
 const SKIN = new Color3(0.52, 0.55, 0.5);
 const DAD_SHIRT = new Color3(0.25, 0.32, 0.45);
 const EYE_COLOR = new Color3(1, 0.08, 0.05);
+const STUNNED_EYE_COLOR = new Color3(0.3, 0.05, 0.05);
 /** The default R15 walk animation. */
 const WALK_ANIMATION = "rbxassetid://507777826";
 const HIT_SOUND = "rbxasset://sounds/swordlunge.wav";
@@ -398,6 +407,26 @@ function dissolve(inf: Infected) {
 	});
 }
 
+/** Steps the flashlight stun; a stunned infected stands still instead of thinking. */
+function thinkOrStun(inf: Infected) {
+	const now = os.clock();
+	const lit = inf.mode !== "retreat" && hooks !== undefined && hooks.isLit(inf.model);
+	const settings = {
+		litSeconds: gameConfig.stunLitSeconds.Value,
+		stunSeconds: gameConfig.stunSeconds.Value,
+		immuneSeconds: gameConfig.stunImmuneSeconds.Value,
+	};
+	if (stepStun(inf.stun, lit, THINK_SECONDS, now, settings)) {
+		inf.eyes.forEach((eye) => (eye.Color = STUNNED_EYE_COLOR));
+		task.delay(settings.stunSeconds, () => inf.eyes.forEach((eye) => (eye.Color = EYE_COLOR)));
+	}
+	if (isStunned(inf.stun, now)) {
+		stop(inf);
+		return;
+	}
+	think(inf);
+}
+
 function think(inf: Infected) {
 	if (inf.mode === "approach") {
 		approach(inf);
@@ -471,6 +500,8 @@ function spawnOne(at: CFrame, night: number, isDad: boolean) {
 		modeSince: os.clock(),
 		lastPosition: root.Position,
 		stuckSince: os.clock(),
+		stun: newStun(),
+		eyes: model.GetChildren().filter((c): c is BasePart => c.IsA("BasePart") && c.Name === "Eye"),
 	};
 	alive.set(model, inf);
 	if (isDad) {
@@ -479,7 +510,7 @@ function spawnOne(at: CFrame, night: number, isDad: boolean) {
 	humanoid.Died.Connect(() => dissolve(inf));
 	task.spawn(() => {
 		while (alive.has(model)) {
-			const [ok, err] = pcall(() => think(inf));
+			const [ok, err] = pcall(() => thinkOrStun(inf));
 			if (!ok) {
 				warn(`[Infected] ${err}`);
 			}

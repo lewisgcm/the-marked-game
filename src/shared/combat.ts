@@ -1,6 +1,7 @@
 /** Melee weapons and their targets: shared names and attributes. */
 
 export const BAT_TOOL_NAME = "Baseball Bat";
+export const SLINGSHOT_TOOL_NAME = "Slingshot";
 
 /** Melee tools the client treats as weapons (face the camera, swing on click). */
 export const MELEE_TOOL_NAMES = [BAT_TOOL_NAME];

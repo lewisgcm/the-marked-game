@@ -2,12 +2,13 @@ import { Players } from "@rbxts/services";
 import { giveBat } from "./combat";
 import { giveFlashlight } from "./flashlight";
 import { setUpHealth } from "./health";
+import { giveSlingshot } from "./slingshot";
 import { isMember } from "./party";
 import { isFrozen, setFrozen } from "./round";
 import { MainWorld } from "./world";
 
 /**
- * Sets each kid's character up on every spawn: a flashlight and a baseball bat, moved to the
+ * Sets each kid's character up on every spawn: a flashlight, a baseball bat and a slingshot, moved to the
  * kids' start (and frozen if the countdown is running).
  */
 
@@ -19,6 +20,7 @@ export function setUpCharacter(player: Player, character: Model) {
 	}
 	task.spawn(() => giveFlashlight(player, character));
 	giveBat(player);
+	giveSlingshot(player);
 	setUpHealth(character);
 	const spawnAt = world.kidSpawn;
 	// Wait a frame so the character is fully parented before moving it.

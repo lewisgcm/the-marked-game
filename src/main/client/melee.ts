@@ -1,8 +1,9 @@
-import { CollectionService, Players, RunService, Workspace } from "@rbxts/services";
+import { CollectionService, Players } from "@rbxts/services";
 import { INFECTED_TAG, MELEE_TOOL_NAMES } from "shared/combat";
 import { checkMeleeReach, MAX_SWING_CANDIDATES } from "shared/melee";
 import { serverSender } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
+import { startFacing, stopFacing } from "./faceCamera";
 
 /**
  * Melee on the attacker's client (the baseball bat, and later the other melee weapons):
@@ -22,9 +23,6 @@ const CANDIDATE_REACH = 10;
 const CANDIDATE_HALF_ARC = 75;
 /** Don't spam swings faster than this locally (the server enforces the real cooldowns). */
 const LOCAL_SWING_GAP = 0.35;
-/** How quickly the character turns to face the camera (0..1 per frame). */
-const TURN_SPEED = 0.35;
-const FACE_BINDING = "MeleeFaceCamera";
 
 const player = Players.LocalPlayer;
 
@@ -72,35 +70,6 @@ export function startMelee(remote: RemoteEvent) {
 	let lastSwing = -math.huge;
 	let equipped: Tool | undefined;
 	let activated: RBXScriptConnection | undefined;
-
-	const stopFacing = () => {
-		RunService.UnbindFromRenderStep(FACE_BINDING);
-		const humanoid = player.Character?.FindFirstChildOfClass("Humanoid");
-		if (humanoid) {
-			humanoid.AutoRotate = true;
-		}
-	};
-
-	const startFacing = (character: Model) => {
-		const humanoid = character.FindFirstChildOfClass("Humanoid");
-		if (humanoid) {
-			humanoid.AutoRotate = false; // we turn the character ourselves
-		}
-		RunService.BindToRenderStep(FACE_BINDING, Enum.RenderPriority.Character.Value, () => {
-			const root = rootOf(character);
-			const camera = Workspace.CurrentCamera;
-			if (!root || !camera) {
-				return;
-			}
-			const look = camera.CFrame.LookVector;
-			const flat = new Vector3(look.X, 0, look.Z);
-			if (flat.Magnitude < 1e-3) {
-				return;
-			}
-			const target = CFrame.lookAt(root.Position, root.Position.add(flat.Unit));
-			root.CFrame = root.CFrame.Lerp(target, TURN_SPEED);
-		});
-	};
 
 	const swing = (tool: Tool) => {
 		const now = os.clock();

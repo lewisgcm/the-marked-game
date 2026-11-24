@@ -7,6 +7,7 @@ import { gameConfig } from "./config";
 import { returnAllTaken, startElimination } from "./elimination";
 import { isRoundServer, startGatekeeper } from "./gatekeeper";
 import { notify, remote, send } from "./gameRemote";
+import { litBy } from "./flashlight";
 import { damageKid, healAll, startHealth } from "./health";
 import { retreatAll, startInfected, startNight } from "./infected";
 import { setPhaseLighting, setupLighting } from "./lighting";
@@ -14,6 +15,7 @@ import { setUpAll, setUpCharacter, startLoadouts } from "./loadout";
 import { addLateJoiners, setMembers, waitForParty } from "./party";
 import { resync } from "./resync";
 import { getClock, runRun } from "./round";
+import { onShootRequest, refillStones, startSlingshot } from "./slingshot";
 import { onLeaveRequest, onRunEnd, returnToLobby } from "./roundEnd";
 import { canKidAct, livingKids } from "./teams";
 import { buildMainWorld } from "./world";
@@ -43,18 +45,25 @@ startBarricades(world, {
 	sendPlanks: (player, count) => send(player, "Planks", count),
 	isFirstNight,
 });
+startSlingshot({
+	canAttack: canKidAct,
+	sendHitResult: (attacker, kind) => send(attacker, "HitResult", kind),
+	sendStones: (player, count) => send(player, "Stones", count),
+});
 startHealth({ sendHurt: (player) => send(player, "Hurt", undefined) });
 startInfected(world, {
 	getKids: () => livingKids().filter((p) => p.Character !== undefined),
 	damageKid,
 	notifyAll: (text) => Players.GetPlayers().forEach((p) => notify(p, text)),
 	isFirstNight,
+	isLit: (model) => litBy(model).size() > 0,
 });
 
 // Client -> server. Payloads are `unknown` here; each handler validates its own.
 onClientMessage<GameClientMessages>(remote, {
 	Ready: (player) => resync(player),
 	Swing: onSwingRequest,
+	Shoot: onShootRequest,
 	LeaveRound: onLeaveRequest,
 });
 
@@ -92,6 +101,7 @@ if (party.size() > 0) {
 					retreatAll();
 					refillPile();
 					healAll(livingKids());
+					refillStones(livingKids());
 					returnAllTaken();
 				}
 			},

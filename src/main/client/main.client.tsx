@@ -10,6 +10,7 @@ import { InventoryHud } from "./inventoryHud";
 import { startMelee } from "./melee";
 import { NoticeHud } from "./noticeHud";
 import { RoundHud } from "./roundHud";
+import { startSlingshot } from "./slingshot";
 import { Spectate } from "./spectate";
 
 startFlicker();
@@ -21,6 +22,7 @@ startFlashlight();
 // server to re-send our state, so UI that mounts later never misses a message.
 startGameState(remote);
 startMelee(remote);
+startSlingshot(remote);
 
 function App() {
 	return (

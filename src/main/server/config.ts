@@ -95,6 +95,28 @@ function loadGameConfig() {
 		/** Most infected alive at once (the rest of a wave waits). */
 		maxInfected: int("MaxInfected", 20),
 
+		// --- Slingshot -------------------------------------------------------------------------
+		/** Damage per stone. */
+		slingshotDamage: num("SlingshotDamage", 10),
+		/** How far a stone flies, in studs. */
+		slingshotRange: num("SlingshotRange", 80),
+		/** Seconds between shots. */
+		slingshotCooldown: num("SlingshotCooldown", 0.6),
+		/** Stones each kid starts with. */
+		stonesStart: int("StonesStart", 20),
+		/** Stones each kid gets back at dawn (up to StonesMax). */
+		stonesDawnRefill: int("StonesDawnRefill", 10),
+		/** Most stones a kid can carry. */
+		stonesMax: int("StonesMax", 20),
+
+		// --- Flashlight stun (shared/stun.ts) ------------------------------------------------------
+		/** Seconds a beam must stay on an infected to stun it. */
+		stunLitSeconds: num("StunLitSeconds", 0.6),
+		/** How long the stun lasts. */
+		stunSeconds: num("StunSeconds", 2),
+		/** After a stun, beams don't work on that infected for this long. */
+		stunImmuneSeconds: num("StunImmuneSeconds", 5),
+
 		// --- Melee ----------------------------------------------------------------------------
 		/** Baseball bat damage per hit (infected health is their Humanoid's Health). */
 		batDamage: num("BatDamage", 20),

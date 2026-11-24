@@ -85,8 +85,8 @@ still join.
    chime; the sky and indoor light blend to the phase over ~6s (`lighting.ts`). The phases don't
    change anything else yet — the systems that use them arrive through M1.
    - Kids start in the **basement** of the family house (a blockout built at runtime by
-     `src/main/server/world.ts`; layout diagram at the top of that file) with a **flashlight**
-     and a **baseball bat**. Ground floor: living room, dining room, kitchen, garage (workbench,
+     `src/main/server/world.ts`; layout diagram at the top of that file) with a **flashlight**,
+     a **baseball bat** and a **slingshot**. Ground floor: living room, dining room, kitchen, garage (workbench,
      generator, plank pile), hall with stairs up and down. Upstairs: two bedrooms, the parents'
      room, a bathroom. Front, back and garage doors and six ground-floor windows are open gaps,
      each with an invisible tagged `BarricadeSlot` for the barricades to come. Outside: garden,
@@ -100,6 +100,12 @@ still join.
      positions (reach and arc plus lag tolerance, a wall raycast, the tag, a cooldown) before
      taking 20 off their Humanoid's health. Feedback: a hit marker (red on a kill) and a red flash
      on the target.
+   - **Slingshot** (`slingshot.ts`, rules in `shared/ranged.ts`): click to fire a stone where you
+     aim (the mouse on PC, the screen centre on touch). The client only sends the direction; the
+     server checks it and casts the shot itself from the kid's head: 10 damage, 80 studs, one
+     shot every 0.6s. 20 stones to start, +10 at dawn (max 20).
+   - **Flashlight stun** (`shared/stun.ts`): hold a beam on an infected for 0.6s and it stops
+     dead for 2s, eyes dimmed; then beams don't work on it for 5s.
    - **Barricades** (`barricades.ts`, rules in `shared/barricade.ts`): a **Take planks** prompt on
      the garage pile fills a kid up to 5 (the pile starts at 30, +10 every dawn). Every door and
      window takes 3 planks: hold **Board up** (E) to nail one, **Take down** (F) to pull one off
@@ -152,11 +158,12 @@ src/
                        #   roundEnd.ts (scoreboard, return to lobby), resync.ts (re-send state on
                        #   "Ready"), gameRemote.ts, teams.ts
                        # systems: world.ts (house), party.ts, round.ts (day/night clock), lighting.ts,
-                       #   life.ts, health.ts, flashlight.ts, combat.ts, barricades.ts, infected.ts,
+                       #   life.ts, health.ts, flashlight.ts, combat.ts, slingshot.ts, barricades.ts,
+                       #   infected.ts,
                        #   speed.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, noticeHud, spectate, combatFeedback, melee.ts, flashlight.ts (beam
-                       # visuals)
+                       # endScreen, noticeHud, inventoryHud, spectate, combatFeedback, melee.ts,
+                       # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
 lobby.project.json     # lobby place only
@@ -348,7 +355,7 @@ apply from the next phase.
 - [ ] (Published) Following a friend who's mid-run sends you to the lobby (or a "join from the lobby" message), not into their run.
 - [ ] (Published) Joining the main game place directly sends you to the lobby.
 - [ ] As soon as the game loads, a dark "DAY 1 — Board up the house before dark." card covers the screen (no blank wait); nobody can move or jump while it shows.
-- [ ] ~6s later (Studio: 2s party wait + 4s card) it clears; everyone is in the basement with a Flashlight and a Baseball Bat; no role banner.
+- [ ] ~6s later (Studio: 2s party wait + 4s card) it clears; everyone is in the basement with a Flashlight, a Baseball Bat and a Slingshot; no role banner.
 
 ### The house
 - [ ] The basement has a flickering bulb, shelves and boxes; a ramp leads up into the hall.
@@ -377,6 +384,20 @@ apply from the next phase.
 - [ ] The cone is faint and see-through, even close to the torch: you can clearly see what's behind and inside it.
 - [ ] Other kids' cones are visible from your window.
 - [ ] Resetting gives a fresh flashlight.
+
+### Slingshot
+- [ ] Every kid has a Slingshot; bottom-left shows "Stones 20".
+- [ ] Holding it turns you to face the camera, like the bat.
+- [ ] PC: clicking fires a small stone toward the mouse; it flies visibly and stops at walls. Touch: it fires at the middle of the screen.
+- [ ] Hitting an infected: it flashes red, a hit marker shows, Stones drops by one. Six hits bring a Night 1 shambler down (60 health, 10 each).
+- [ ] Holding the mouse/spamming fires at most about one stone every 0.6s.
+- [ ] At 0 stones clicking does nothing; at dawn you get 10 back (never more than 20).
+- [ ] Other players see your stones fly.
+
+### Flashlight stun
+- [ ] Hold your beam on an infected for about half a second: it stops dead and its eyes go dark red for ~2s, then carries on.
+- [ ] Keeping the beam on it doesn't stun it again for ~5s.
+- [ ] A stunned infected can still be hit with the bat and slingshot.
 
 ### Barricades
 - [ ] Bottom-left shows "Planks 0/5" (grey); it's hidden while spectating.

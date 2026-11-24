@@ -51,6 +51,8 @@ export const noticeStore = new Store<{ text: string; at: number } | undefined>(u
 export const hitStore = new Store<{ kind: "Hit" | "Kill"; at: number } | undefined>(undefined);
 /** Planks you're carrying. */
 export const planksStore = new Store<number>(0);
+/** Stones for the slingshot. */
+export const stonesStore = new Store<number>(0);
 /** The end-of-run cards (undefined until the run is over). */
 export const scoreboardStore = new Store<ScoreCard[] | undefined>(undefined);
 /** When you were last struck (for the red flash), as os.clock(). */
@@ -64,6 +66,7 @@ export function startGameState(remote: RemoteEvent) {
 		HitResult: (kind) => hitStore.set({ kind, at: os.clock() }),
 		Hurt: () => hurtStore.set(os.clock()),
 		Planks: (count) => planksStore.set(count),
+		Stones: (count) => stonesStore.set(count),
 		Scoreboard: (cards) => scoreboardStore.set(cards),
 	});
 	serverSender<GameClientMessages>(remote)("Ready", undefined);

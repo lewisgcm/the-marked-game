@@ -44,6 +44,8 @@ export interface GameServerMessages {
 	Hurt: undefined;
 	/** How many planks you're carrying. */
 	Planks: number;
+	/** How many stones you have for the slingshot. */
+	Stones: number;
 	/** Everyone, at the end of the run: one card per kid. */
 	Scoreboard: ScoreCard[];
 }
@@ -59,4 +61,9 @@ export interface GameClientMessages {
 	 * and hits the first valid one.
 	 */
 	Swing: Model[];
+	/**
+	 * A slingshot shot: the aim direction. The server checks it (a finite direction, slingshot
+	 * held, stones, cooldown) and casts the shot itself from the kid's head.
+	 */
+	Shoot: Vector3;
 }

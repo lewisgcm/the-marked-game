@@ -128,9 +128,12 @@ Playtest question: *is holding the house fun, with 1 player and with 4?*
 - [x] Health 100 (server-owned Humanoid, no regeneration), red flash when hit, healed at dawn.
 - [x] **Taken** at 0: spectate, back in the basement at dawn (15 s on Night 1). The run ends
       when every kid is taken at once (never on Night 1).
-- [ ] **Slingshot**: client aims, server validates (range, line of sight, rate).
-      `shared/ranged.ts` validation is pure, with a spec. Stones as ammo.
-- [ ] Flashlight stun (~2 s) on infected.
+- [x] **Slingshot**: the client sends only its aim direction; the server validates it and casts
+      the shot itself from the kid's head (10 damage, 80 studs, 0.6 s). 20 stones, +10 at dawn
+      (max 20) until M2 loot. `shared/ranged.ts` (pure). Spec. Camera-facing shared with the bat
+      (`client/faceCamera.ts`).
+- [x] **Flashlight stun**: a beam held 0.6 s stuns an infected for 2 s (eyes dim), then 5 s
+      immune. `shared/stun.ts` (pure). Spec.
 
 **Screens and the broadcast**
 - [ ] 1–3 house screens switch on at dusk; prompt to unplug or smash.

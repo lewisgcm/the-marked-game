@@ -2,6 +2,7 @@ import { Players } from "@rbxts/services";
 import { dropPlanks } from "./barricades";
 import { removeWeapon } from "./combat";
 import { removeFlashlight } from "./flashlight";
+import { removeSlingshot } from "./slingshot";
 import { notify, notifyAllBut, send } from "./gameRemote";
 import { gameConfig } from "./config";
 import { returnKid, startLife, takenKids } from "./life";
@@ -47,6 +48,7 @@ function onTaken(player: Player) {
 	removeFlashlight(player);
 	removeWeapon(player);
 	dropPlanks(player);
+	removeSlingshot(player);
 	const firstNight = isFirstNight();
 	notify(player, firstNight ? "You were taken! Back in a moment..." : "You were taken. You'll be back at dawn.");
 	notifyAllBut(livingKids(), player, `${player.DisplayName} was taken!`);
