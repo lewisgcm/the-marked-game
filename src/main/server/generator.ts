@@ -18,6 +18,8 @@ export interface GeneratorHooks {
 	canAct: (player: Player) => boolean;
 	notify: (player: Player, text: string) => void;
 	notifyAll: (text: string) => void;
+	/** Danger, for everyone. */
+	alertAll: (text: string) => void;
 	/** Whether running it costs fuel right now (at night, during play). */
 	burnsFuel: () => boolean;
 	hasUpgrade: (id: UpgradeId) => boolean;
@@ -98,7 +100,7 @@ function burn(seconds: number) {
 	fuel = burnFuel(fuel, seconds, gameConfig.nightSeconds.Value, rate);
 	if (fuel <= 0) {
 		setPowered(false);
-		hooks.notifyAll("The generator's out of fuel. The power's off.");
+		hooks.alertAll("The generator's out of fuel. The power's off.");
 		return;
 	}
 	if (justRanLow(nightsLeft(before, rate), nightsLeft(fuel, rate), gameConfig.fuelLow.Value)) {

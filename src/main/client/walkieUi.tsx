@@ -1,103 +1,21 @@
 import React from "@rbxts/react";
-import { SoundService, UserInputService, Workspace } from "@rbxts/services";
-import { BaseStatus, freshMessages, unreadCount, WalkieMessage } from "shared/walkie";
-import { useStore, walkieStore } from "./gameState";
+import { UserInputService } from "@rbxts/services";
+import { BaseStatus, unreadCount, WalkieMessage } from "shared/walkie";
+import { useStore, walkieOpenStore, walkieStore } from "./gameState";
 import { useViewport } from "./useViewport";
 
 /**
- * The walkie-talkie: new messages pop up under the clock one at a time, and a button on the left
- * (or T) opens the bases and the log. Display only.
+ * The walkie-talkie: a button on the left (or T) opens the bases and the message log. New messages
+ * pop up in the message bar (messageQueue.ts). Display only.
  */
 
 const OPEN_KEY = Enum.KeyCode.T;
-/** Seconds each message pops up for. */
-const POPUP_SECONDS = 5;
-/** Messages older than this don't pop up (they're in the log), in seconds. */
-const POPUP_MAX_AGE = 30;
-// Built-in Studio sound; swap for a crackle later.
-const CRACKLE = "rbxasset://sounds/electronicpingshort.wav";
-
 const PANEL = new Color3(0.05, 0.05, 0.07);
 const ROW = new Color3(0.1, 0.1, 0.13);
 const PALE = new Color3(0.9, 0.9, 0.92);
 const GREY = new Color3(0.65, 0.65, 0.7);
 const GREEN = new Color3(0.55, 0.85, 0.55);
 const GOLD = new Color3(1, 0.85, 0.4);
-
-function crackle() {
-	const sound = new Instance("Sound");
-	sound.SoundId = CRACKLE;
-	sound.Volume = 0.4;
-	sound.PlaybackSpeed = 0.6;
-	SoundService.PlayLocalSound(sound);
-	task.delay(2, () => sound.Destroy());
-}
-
-/** The message popping up now, if any: new ones wait their turn. */
-function usePopup(messages: WalkieMessage[]): WalkieMessage | undefined {
-	const [showing, setShowing] = React.useState<WalkieMessage>();
-	const lastShown = React.useRef(0);
-
-	React.useEffect(() => {
-		if (!showing) {
-			return;
-		}
-		const thread = task.delay(POPUP_SECONDS, () => setShowing(undefined));
-		return () => task.cancel(thread);
-	}, [showing]);
-
-	React.useEffect(() => {
-		if (showing) {
-			return;
-		}
-		const waiting = freshMessages(messages, lastShown.current, Workspace.GetServerTimeNow(), POPUP_MAX_AGE);
-		if (waiting.size() > 0) {
-			lastShown.current = waiting[0].id;
-			setShowing(waiting[0]);
-			crackle();
-		}
-	}, [messages, showing]);
-
-	return showing;
-}
-
-function Popup({ message }: { message: WalkieMessage }) {
-	const viewport = useViewport();
-	return (
-		<frame
-			Size={new UDim2(0, math.min(460, viewport.X * 0.6), 0, 56)}
-			Position={new UDim2(0.5, 0, 0, 96)}
-			AnchorPoint={new Vector2(0.5, 0)}
-			BackgroundColor3={PANEL}
-			BackgroundTransparency={0.2}
-			BorderSizePixel={0}
-		>
-			<uicorner CornerRadius={new UDim(0, 8)} />
-			<textlabel
-				Size={new UDim2(1, -24, 0, 18)}
-				Position={new UDim2(0, 12, 0, 4)}
-				BackgroundTransparency={1}
-				Font={Enum.Font.GothamBlack}
-				TextSize={13}
-				TextColor3={GREEN}
-				TextXAlignment={Enum.TextXAlignment.Left}
-				Text={message.from}
-			/>
-			<textlabel
-				Size={new UDim2(1, -24, 0, 32)}
-				Position={new UDim2(0, 12, 0, 21)}
-				BackgroundTransparency={1}
-				Font={Enum.Font.GothamBold}
-				TextSize={14}
-				TextColor3={PALE}
-				TextXAlignment={Enum.TextXAlignment.Left}
-				TextYAlignment={Enum.TextYAlignment.Top}
-				TextWrapped={true}
-				Text={message.text}
-			/>
-		</frame>
-	);
-}
 
 /** One entry in the list: a heading, what's beside it, and a wrapped line below. */
 function Entry(props: { order: number; heading: string; aside: string; text: string; color: Color3 }) {
@@ -270,14 +188,13 @@ function OpenButton({ unread, onPress }: { unread: number; onPress: () => void }
 
 export function WalkieUi() {
 	const { messages, bases } = useStore(walkieStore);
-	const popup = usePopup(messages);
-	const [open, setOpen] = React.useState(false);
+	const open = useStore(walkieOpenStore);
 	const [lastRead, setLastRead] = React.useState(0);
 
 	React.useEffect(() => {
 		const connection = UserInputService.InputBegan.Connect((input, handled) => {
 			if (!handled && input.KeyCode === OPEN_KEY) {
-				setOpen((was) => !was);
+				walkieOpenStore.set(!walkieOpenStore.get());
 			}
 		});
 		return () => connection.Disconnect();
@@ -295,11 +212,10 @@ export function WalkieUi() {
 	}
 	return (
 		<screengui ResetOnSpawn={false} DisplayOrder={4}>
-			{popup && !open ? <Popup message={popup} /> : undefined}
 			{open ? (
-				<Panel bases={bases} messages={messages} onClose={() => setOpen(false)} />
+				<Panel bases={bases} messages={messages} onClose={() => walkieOpenStore.set(false)} />
 			) : (
-				<OpenButton unread={unreadCount(messages, lastRead)} onPress={() => setOpen(true)} />
+				<OpenButton unread={unreadCount(messages, lastRead)} onPress={() => walkieOpenStore.set(true)} />
 			)}
 		</screengui>
 	);

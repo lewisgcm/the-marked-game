@@ -115,8 +115,8 @@ still join.
      every morning, for the whole party, and buys food, batteries and scrap. Each also orders 2–3 of one
      of them every morning (no two bases the same), paying double until the order's filled. Nails cost 15% more every day. Closed at night.
    - **Walkie-talkie** (`walkie.ts`, what's said in `shared/walkie.ts`): a few seconds into each day Mum
-     and every base in contact report in (what they want, and what they pay). New messages pop up
-     under the clock one at a time; the button on the left (or T) opens the bases and the log. Mum
+     and every base in contact report in (what they want, and what they pay). The first new message
+     pops up in the message bar; the button on the left (or T) opens the bases and the log. Mum
      gives the sundown warning. Any system can speak with `say(from, text)`.
    - **Maple Street** (`neighbourhood.ts`): four houses to search (`containers.ts`, tables in
      `shared/loot.ts`). A searched container stays empty for the run, except that 3 get something the bases have on
@@ -133,7 +133,10 @@ still join.
      With it off, waves are 1.4× bigger (never on Night 1). Running it **at night** burns fuel (rules
      in `shared/fuel.ts`): it starts with one night's worth, a can adds one, and the tank holds three.
      Cans take a whole slot each and turn up in tool chests and car boots. The tune-up halves the burn.
-   - **Tips** on Day 1 / Night 1 under the clock (`shared/hints.ts`), and a **dawn card** with what
+   - **Messages** (`shared/messages.ts`): one at a time in the bar under the clock, danger first (it
+     interrupts), then the walkie, then news, with Night 1 tips when it's free; and a short line near
+     the bottom replying to what you just did.
+   - **Tips** on Day 1 / Night 1 in that bar (`shared/hints.ts`), and a **dawn card** with what
      the night cost (`shared/nightSummary.ts`, counted in `nightReport.ts`).
    - **Barricades** (`barricades.ts`, rules in `shared/barricade.ts`): a **Take planks** prompt on
      the garage pile gives up to 5 (the pile starts at 30, +10 every dawn). Every door and
@@ -199,7 +202,7 @@ src/
                        # world: world.ts (the house), neighbourhood.ts, bases.ts, npc.ts, building.ts
                        # helpers: effects.ts, prompts.ts, infectedDamage.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
+                       # endScreen, messageQueue.ts, messageBar, inventoryHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
@@ -432,7 +435,15 @@ apply from the next phase.
 - [ ] The tune-up is for everyone: the prompt's nights double at once, and it burns half as fast.
 - [ ] A dropped fuel can, and a taken kid's, can be picked up.
 
+### Messages
+- [ ] Never two messages at the top at once, nor two lines at the bottom.
+- [ ] Boarding up with no planks, over and over: one line near the bottom that goes 2s after the last try.
+- [ ] An opening breaking or a kid being taken shows in red at once, even over the walkie; a cut-off walkie message comes back after. Everyone sees it (the taken kid sees "You were taken").
+- [ ] Running out of fuel shows in red; other generator news waits its turn.
+- [ ] Nothing shows behind the title card or the end screen. On a phone the bar and bottom line are clear of the joystick and jump button.
+
 ### Tips (Day 1 / Night 1)
+- [ ] A tip shows for 8s after it changes, only while no message is showing, then goes.
 - [ ] With no planks: "Grab planks..."; carrying some: "Hold E..."; something boarded and no planks in hand: "Start the generator..."; powered: "Search the houses..." by day, "Get inside..." at dusk.
 - [ ] At night: "They're at the <opening>!" while one is bashed, otherwise how to fight. Nothing at dawn, while taken, or from Day 2.
 
@@ -468,7 +479,7 @@ apply from the next phase.
 - [ ] The list closes with X or when you walk away.
 
 ### Walkie-talkie
-- [ ] ~4s into Day 1, after the title card, Mum's message pops up under the clock with a sound, for 5s. In Studio both bases then say what they want, one after another.
+- [ ] ~4s into Day 1, after the title card, Mum's message pops up under the clock with a sound, for 6s, with "+2 more on the walkie (T)" in Studio (the bases' messages are in the log).
 - [ ] What a base says it needs ("We need 3 batteries today. 6 coins each.") matches the gold row in its list.
 - [ ] The "Walkie" button (left edge) counts unread messages, and T does the same as pressing it. Opening it clears the count; X or T closes it. It's clear of the chat box and, on a phone, the joystick still works around it.
 - [ ] Bases are at the top: green "Trading" by day, "Closed until morning" at night, "No contact yet" before their first day (`OpenAllBases` at 0). Messages are newest first, with the day, and scroll.

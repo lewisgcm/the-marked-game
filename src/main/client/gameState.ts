@@ -2,6 +2,7 @@ import React from "@rbxts/react";
 import { onServerMessage, serverSender } from "shared/net";
 import { GameClientMessages, GameServerMessages } from "shared/remotes";
 import { emptyInventory, Inventory } from "shared/inventory";
+import { Notice } from "shared/messages";
 import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
 import { TradeView } from "shared/pricing";
@@ -20,7 +21,7 @@ import { WalkieState } from "shared/walkie";
  * is recovered.
  */
 
-class Store<T> {
+export class Store<T> {
 	private listeners = new Set<() => void>();
 	constructor(private value: T) {}
 
@@ -50,8 +51,8 @@ export function useStore<T>(store: Store<T>): T {
 }
 
 export const spectateStore = new Store<number[]>([]);
-/** The latest notice; `at` changes even when the same text repeats. */
-export const noticeStore = new Store<{ text: string; at: number } | undefined>(undefined);
+/** The latest notice (a new object every time, even when the text repeats). */
+export const noticeStore = new Store<Notice | undefined>(undefined);
 /** Your latest swing that connected (for the hit marker). */
 export const hitStore = new Store<{ kind: "Hit" | "Kill"; at: number } | undefined>(undefined);
 /** What you're carrying. */
@@ -66,6 +67,8 @@ export const workbenchOpenStore = new Store<boolean>(false);
 export const tradeStore = new Store<TradeView | undefined>(undefined);
 /** The walkie-talkie: its log, and how each base is doing. */
 export const walkieStore = new Store<WalkieState>({ messages: [], bases: [] });
+/** Whether the walkie is open on screen. */
+export const walkieOpenStore = new Store<boolean>(false);
 /** Your Night 1 tip ("" for none). */
 export const hintStore = new Store<string>("");
 /** Last night's summary, with when it arrived. */
@@ -79,7 +82,7 @@ export const hurtStore = new Store<number | undefined>(undefined);
 export function startGameState(remote: RemoteEvent) {
 	onServerMessage<GameServerMessages>(remote, {
 		Spectate: (userIds) => spectateStore.set(userIds),
-		Notice: (text) => noticeStore.set({ text, at: os.clock() }),
+		Notice: (notice) => noticeStore.set(notice),
 		HitResult: (kind) => hitStore.set({ kind, at: os.clock() }),
 		Hurt: () => hurtStore.set(os.clock()),
 		Inventory: (inventory) => inventoryStore.set(inventory),

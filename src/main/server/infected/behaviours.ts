@@ -71,7 +71,7 @@ function approach(inf: Infected) {
 			getHooks().onPlankBroken();
 		}
 		if (result.breached && result.broken > 0) {
-			getHooks().notifyAll(`The ${entry.name.lower()} is broken!`);
+			getHooks().alertAll(`The ${entry.name.lower()} is broken!`);
 		}
 	}
 }

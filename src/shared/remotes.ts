@@ -1,4 +1,5 @@
 import { Inventory } from "shared/inventory";
+import { Notice } from "shared/messages";
 import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
 import { TradeView } from "shared/pricing";
@@ -40,8 +41,8 @@ export interface LobbyClientMessages {
 export const GAME_REMOTE_NAME = "GameRemote";
 
 export interface GameServerMessages {
-	/** A short message to show, e.g. "You were taken!". */
-	Notice: string;
+	/** A short message to show (shared/messages.ts says where). */
+	Notice: Notice;
 	/** Taken kids only: user IDs of the kids still in, to spectate. */
 	Spectate: number[];
 	/** Your swing connected ("Kill" if it took the target down). */

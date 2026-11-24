@@ -6,7 +6,7 @@ import { startCoins } from "./coins";
 import { onSwingRequest, startCombat } from "./combat";
 import { startContainers } from "./containers";
 import { litBy } from "./flashlight";
-import { notify, notifyAll, remote, send } from "./gameRemote";
+import { alertAll, notify, notifyAll, remote, send } from "./gameRemote";
 import { isPowered, startGenerator } from "./generator";
 import { damageKid, healKid, startHealth } from "./health";
 import { startHints } from "./hints";
@@ -87,7 +87,7 @@ export function startSystems(world: MainWorld) {
 		damageEntry,
 		getKids: () => livingKids().filter((p) => p.Character !== undefined),
 		damageKid,
-		notifyAll,
+		alertAll,
 		isFirstNight,
 		isLit: (model) => litBy(model).size() > 0,
 		isNight: () => getClock().phase === "Night",
@@ -99,6 +99,7 @@ export function startSystems(world: MainWorld) {
 		canAct: canKidAct,
 		notify,
 		notifyAll,
+		alertAll,
 		burnsFuel: () => isPlaying() && getClock().phase === "Night",
 		hasUpgrade,
 	});

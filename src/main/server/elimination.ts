@@ -3,7 +3,7 @@ import { dropAll } from "./inventory";
 import { removeWeapon } from "./combat";
 import { removeFlashlight } from "./flashlight";
 import { removeSlingshot } from "./slingshot";
-import { notify, notifyAllBut, send } from "./gameRemote";
+import { alertAll, alertPlayer, send } from "./gameRemote";
 import { gameConfig } from "./config";
 import { returnKid, startLife, takenKids } from "./life";
 import { noteTaken } from "./nightReport";
@@ -52,8 +52,8 @@ function onTaken(player: Player, position: Vector3 | undefined) {
 	removeSlingshot(player);
 	noteTaken(player.DisplayName);
 	const firstNight = isFirstNight();
-	notify(player, firstNight ? "You were taken! Back in a moment..." : "You were taken. You'll be back at dawn.");
-	notifyAllBut(livingKids(), player, `${player.DisplayName} was taken!`);
+	alertPlayer(player, firstNight ? "You were taken! Back in a moment..." : "You were taken. You'll be back at dawn.");
+	alertAll(`${player.DisplayName} was taken!`, player);
 	updateSpectators();
 	checkAllTaken();
 	if (firstNight) {

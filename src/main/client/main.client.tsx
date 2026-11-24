@@ -7,10 +7,10 @@ import { CombatFeedback } from "./combatFeedback";
 import { DawnCard } from "./dawnCard";
 import { startFlashlight } from "./flashlight";
 import { startGameState } from "./gameState";
-import { HintHud } from "./hintHud";
 import { InventoryHud } from "./inventoryHud";
 import { startMelee } from "./melee";
-import { NoticeHud } from "./noticeHud";
+import { MessageBar } from "./messageBar";
+import { startMessageQueue } from "./messageQueue";
 import { RoundHud } from "./roundHud";
 import { startSlingshot } from "./slingshot";
 import { Spectate } from "./spectate";
@@ -25,6 +25,7 @@ startFlashlight();
 
 // One early listener stores everything the server says (see gameState.ts), then asks the
 // server to re-send our state, so UI that mounts later never misses a message.
+startMessageQueue();
 startGameState(remote);
 startMelee(remote);
 startSlingshot(remote);
@@ -33,8 +34,7 @@ function App() {
 	return (
 		<>
 			<RoundHud remote={remote} />
-			<NoticeHud />
-			<HintHud />
+			<MessageBar />
 			<DawnCard />
 			<InventoryHud remote={remote} />
 			<WorkbenchUi remote={remote} />

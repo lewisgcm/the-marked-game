@@ -70,6 +70,9 @@ playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
   roblox-ts runtime imports): pass data in as arguments instead.
 - **Exchanges** (coins for items) are pure functions taking a `Wallet` (`shared/trade.ts`), so the whole
   swap is tested; the server passes in the kid's real coins and inventory.
+- **Text on screen** goes through the one message bar (`shared/messages.ts`): `notify` replies to what
+  a kid just did (bottom line), `notifyAll` is news, `alertAll`/`alertPlayer` is danger, `say` is the
+  walkie. Don't add other popups, and don't say what the world or the HUD already shows.
 - **Lists to buy from** use `client/shopPanel.tsx`.
 - **Numbers:** balance values that make sense alone go in `config.ts` (editable live in Studio).
   Tables and formulas (waves, loot, stack sizes) live in `src/shared/` so they can be unit-tested.

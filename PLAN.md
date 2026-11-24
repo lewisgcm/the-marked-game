@@ -295,7 +295,10 @@ Goal: the endless game.
 
 Not tied to a milestone yet.
 
-- [ ] **Rework the on-screen UI: too much pops up, all the time** (playtest, 24 Nov 2026). Best done
+- [ ] **Rework the on-screen UI**, step by step: 1 one message bar (`shared/messages.ts`, spec;
+      `messageQueue.ts`, `messageBar.tsx`) built; 2 say less; 3 phase banners and dawn card; 4 the
+      always-on parts. The note it came from:
+      **too much pops up, all the time** (playtest, 24 Nov 2026). Best done
       before M4 adds distress calls. What shows today:
   - Always: clock, inventory and coins, walkie button, Night 1 tips (until Day 2).
   - Every phase change: a big banner and chime (3s). Dawn adds the dawn card (10s) under it.

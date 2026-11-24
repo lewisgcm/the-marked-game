@@ -26,21 +26,26 @@ export const remote = ensureRemote(GAME_REMOTE_NAME);
 /** Sends one player a typed message about their own state. */
 export const send = clientSender<GameServerMessages>(remote);
 
-/** Shows `player` a short notice. */
+/** Tells `player` something about what they just did. */
 export function notify(player: Player, text: string) {
-	send(player, "Notice", text);
+	send(player, "Notice", { text, kind: "Feedback" });
 }
 
-/** Shows a notice to everyone. */
+/** News for everyone. */
 export function notifyAll(text: string) {
-	Players.GetPlayers().forEach((player) => notify(player, text));
+	Players.GetPlayers().forEach((player) => send(player, "Notice", { text, kind: "Info" }));
 }
 
-/** Shows a notice to each of `players` except `except`. */
-export function notifyAllBut(players: Player[], except: Player, text: string) {
-	for (const player of players) {
+/** Danger: `player` should see this at once. */
+export function alertPlayer(player: Player, text: string) {
+	send(player, "Notice", { text, kind: "Danger" });
+}
+
+/** Danger, for everyone (but `except`). */
+export function alertAll(text: string, except?: Player) {
+	for (const player of Players.GetPlayers()) {
 		if (player !== except) {
-			notify(player, text);
+			alertPlayer(player, text);
 		}
 	}
 }

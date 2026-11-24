@@ -13,7 +13,8 @@ export interface InfectedHooks {
 	damageEntry: (entry: Entry, amount: number) => DamageResult;
 	damageKid: (player: Player, amount: number) => void;
 	/** A message for every kid, e.g. "The front door is broken!". */
-	notifyAll: (text: string) => void;
+	/** Danger, for everyone. */
+	alertAll: (text: string) => void;
 	/** Whether this is Night 1 (the infected hit softer). */
 	isFirstNight: () => boolean;
 	/** Whether any kid's flashlight beam is on `model` right now. */
