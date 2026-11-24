@@ -123,6 +123,8 @@ function loadGameConfig() {
 		infectedSightRange: num("InfectedSightRange", 40),
 		/** With the generator off, waves are this many times bigger (never on Night 1). */
 		powerOffWaveMultiplier: num("PowerOffWaveMultiplier", 1.4),
+		/** At dawn, one still walking off after this long dissolves where it is, in seconds. */
+		infectedRetreatSeconds: num("InfectedRetreatSeconds", 15),
 		/** Most infected alive at once (the rest of a wave waits). */
 		maxInfected: int("MaxInfected", 20),
 
@@ -131,6 +133,8 @@ function loadGameConfig() {
 		slingshotDamage: num("SlingshotDamage", 10),
 		/** How far a stone flies, in studs. */
 		slingshotRange: num("SlingshotRange", 80),
+		/** How close a stone must pass to hit, in studs. */
+		slingshotHitRadius: num("SlingshotHitRadius", 0.6),
 		/** Seconds between shots. */
 		slingshotCooldown: num("SlingshotCooldown", 0.6),
 		/** Stones each kid starts with. */

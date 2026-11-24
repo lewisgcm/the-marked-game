@@ -1,7 +1,7 @@
 /**
  * The flashlight stun (GAMEPLAY.md §5): hold a beam on an infected for a moment and it's
  * stunned for a couple of seconds, then it shrugs off beams for a while (so a group of kids
- * can't keep one stunned forever). Pure so it's unit-tested; main/server/infected.ts steps it
+ * can't keep one stunned forever). Pure so it's unit-tested; main/server/infected/ steps it
  * every think.
  */
 

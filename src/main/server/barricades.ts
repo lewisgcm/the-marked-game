@@ -13,6 +13,7 @@ import {
 import { PLANK_PILE_TAG } from "shared/tags";
 import { gameConfig } from "./config";
 import { giveItem, itemCount, itemRoom, takeItem } from "./inventory";
+import { playSound } from "./effects";
 import { inReach, makePrompt, promptAnchor } from "./prompts";
 import { recordStat } from "./roundStats";
 import { Entry, MainWorld } from "./world";
@@ -47,6 +48,7 @@ interface EntryState {
 const PLANK_COLOR = new Color3(0.55, 0.4, 0.26);
 // A built-in thud as a placeholder (no uploaded audio yet).
 const NAIL_SOUND = "rbxasset://sounds/action_footsteps_plastic.mp3";
+const NAIL_OPTIONS = { volume: 0.8, range: 80 };
 /** How far inside the opening the prompts sit (the house side), in studs. */
 const PROMPT_INSET = 1.2;
 
@@ -54,16 +56,6 @@ let hooks: BarricadeHooks | undefined;
 const states = new Map<Entry, EntryState>();
 let pileStock = 0;
 let pilePrompt: ProximityPrompt | undefined;
-
-function playSound(parent: Instance, id: string) {
-	const sound = new Instance("Sound");
-	sound.SoundId = id;
-	sound.Volume = 0.8;
-	sound.RollOffMaxDistance = 80;
-	sound.Parent = parent;
-	sound.Play();
-	task.delay(2, () => sound.Destroy());
-}
 
 /** Redraws an opening's planks and updates its prompts and blocker. */
 function refresh(state: EntryState) {
@@ -109,7 +101,7 @@ function onBoard(player: Player, state: EntryState) {
 	takeItem(player, "Planks", 1);
 	takeItem(player, "Nails", 1);
 	recordStat(player, "planksNailed");
-	playSound(state.entry.slot, NAIL_SOUND);
+	playSound(state.entry.slot, NAIL_SOUND, NAIL_OPTIONS);
 	refresh(state);
 }
 
@@ -211,7 +203,7 @@ export function damageEntry(entry: Entry, amount: number): DamageResult {
 	}
 	const result = damageBarricade(state.barricade, amount);
 	if (result.broken > 0) {
-		playSound(entry.slot, NAIL_SOUND);
+		playSound(entry.slot, NAIL_SOUND, NAIL_OPTIONS);
 		refresh(state);
 	}
 	return result;

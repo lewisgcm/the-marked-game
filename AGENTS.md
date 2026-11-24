@@ -48,6 +48,21 @@ lists them all. The essential ones:
 The lobby world is built at runtime, so inspect it with `datamodel_type: "Server"` **during a
 playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
 
+## Code structure (main-game server)
+
+- **One system per file**, started by a `start…(hooks)` function. `systems.ts` starts them all and
+  connects them; `phaseEvents.ts` says what happens as each phase begins; `main.server.ts` is only
+  the start-up order. Keep game logic out of `main.server.ts`.
+- **Direct imports** for foundations any system may use: config, party, life, round, inventory,
+  coins, prompts, effects, round stats, night report, world. **Hooks** for anything one system
+  needs to know about or do to another (e.g. the infected damaging barricades). No import cycles.
+- Reuse the helpers: `shared/characters.ts` (root part, living Humanoid), `effects.ts` (sounds, hit
+  flash), `prompts.ts`, `infectedDamage.ts` (every weapon's hit goes through it).
+- A system that outgrows one file becomes a folder, like `infected/`: a new behaviour is a `Mode`
+  plus one function in `behaviours.ts`.
+- **Numbers:** balance values that make sense alone go in `config.ts` (editable live in Studio).
+  Tables and formulas (waves, loot, stack sizes) live in `src/shared/` so they can be unit-tested.
+
 ## Server authority (anti-exploit)
 
 Anything that decides the game stays **server-side**: party lists, who's in the run, damage, and

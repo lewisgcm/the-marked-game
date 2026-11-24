@@ -1,8 +1,10 @@
 import { CollectionService, Workspace } from "@rbxts/services";
+import { aliveHumanoidOf, rootOf } from "shared/characters";
 import { BAT_TOOL_NAME, INFECTED_TAG } from "shared/combat";
 import { checkMeleeReach, parseSwingCandidates } from "shared/melee";
 import { gameConfig } from "./config";
-import { recordStat } from "./roundStats";
+import { playSound } from "./effects";
+import { damageInfected } from "./infectedDamage";
 
 /**
  * Melee weapons (the baseball bat for now) against the infected.
@@ -12,7 +14,7 @@ import { recordStat } from "./roundStats";
  * with a lag tolerance, plus a wall raycast, the Infected tag and a cooldown. This is Roblox's
  * recommended split (their Laser Tag tutorial). Damage is always decided here.
  *
- * Infected health is their Humanoid's Health, which only the server changes.
+ * What a hit does is shared with every other weapon (infectedDamage.ts).
  */
 
 export interface CombatHooks {
@@ -26,27 +28,12 @@ export interface CombatHooks {
 
 const SWING_SOUND = "rbxasset://sounds/swordslash.wav";
 const HIT_SOUND = "rbxasset://sounds/swordlunge.wav";
-const HIT_FLASH = new Color3(1, 0.15, 0.15);
-const HIT_FLASH_SECONDS = 0.3;
+/** How far swings and hits carry, in studs. */
+const SOUND_RANGE = 60;
 
 let hooks: CombatHooks | undefined;
 const lastSwingAt = new Map<Player, number>();
 const weapons = new Map<Player, Tool>();
-
-function rootOf(model: Model | undefined): BasePart | undefined {
-	const hrp = model?.FindFirstChild("HumanoidRootPart");
-	return hrp && hrp.IsA("BasePart") ? hrp : undefined;
-}
-
-function playSound(parent: Instance, id: string) {
-	const sound = new Instance("Sound");
-	sound.SoundId = id;
-	sound.Volume = 1;
-	sound.RollOffMaxDistance = 60;
-	sound.Parent = parent;
-	sound.Play();
-	task.delay(2, () => sound.Destroy());
-}
 
 function offCooldown(player: Player, cooldown: number): boolean {
 	const now = os.clock();
@@ -65,11 +52,6 @@ function isInfectedModel(value: unknown): value is Model {
 		value.IsDescendantOf(Workspace) &&
 		CollectionService.HasTag(value, INFECTED_TAG)
 	);
-}
-
-function humanoidOf(model: Model): Humanoid | undefined {
-	const humanoid = model.FindFirstChildOfClass("Humanoid");
-	return humanoid && humanoid.Health > 0 ? humanoid : undefined;
 }
 
 /**
@@ -103,18 +85,6 @@ function canReach(attacker: Player, target: Model, reach: number): boolean {
 	return Workspace.Raycast(from.Position, to.Position.sub(from.Position), params) === undefined;
 }
 
-/** A red flash on a struck model, for everyone. */
-function flash(model: Model) {
-	const highlight = new Instance("Highlight");
-	highlight.Name = "HitFlash";
-	highlight.FillColor = HIT_FLASH;
-	highlight.FillTransparency = 0.3;
-	highlight.OutlineColor = HIT_FLASH;
-	highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
-	highlight.Parent = model;
-	task.delay(HIT_FLASH_SECONDS, () => highlight.Destroy());
-}
-
 function batSwing(player: Player, candidates: Model[]) {
 	if (!hooks) {
 		return;
@@ -123,27 +93,22 @@ function batSwing(player: Player, candidates: Model[]) {
 	if (!root || !offCooldown(player, gameConfig.batCooldown.Value)) {
 		return;
 	}
-	playSound(root, SWING_SOUND);
+	playSound(root, SWING_SOUND, { range: SOUND_RANGE });
 	hooks.makeNoise(root.Position, gameConfig.batNoise.Value);
 
 	const target = candidates.find(
-		(m) => humanoidOf(m) !== undefined && canReach(player, m, gameConfig.batRange.Value),
+		(m) => aliveHumanoidOf(m) !== undefined && canReach(player, m, gameConfig.batRange.Value),
 	);
-	const humanoid = target ? humanoidOf(target) : undefined;
-	if (!target || !humanoid) {
+	if (!target) {
 		return;
 	}
 	const targetRoot = rootOf(target);
 	if (targetRoot) {
-		playSound(targetRoot, HIT_SOUND);
+		playSound(targetRoot, HIT_SOUND, { range: SOUND_RANGE });
 	}
-	humanoid.Health = math.max(0, humanoid.Health - gameConfig.batDamage.Value);
-	flash(target);
-	recordStat(player, "hits");
-	const downed = humanoid.Health <= 0;
-	hooks.sendHitResult(player, downed ? "Kill" : "Hit");
-	if (downed) {
-		recordStat(player, "kills");
+	const result = damageInfected(player, target, gameConfig.batDamage.Value);
+	if (result) {
+		hooks.sendHitResult(player, result);
 	}
 }
 

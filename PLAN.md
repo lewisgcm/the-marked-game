@@ -181,6 +181,15 @@ at dusk feel risky?*
 - [ ] **Weapon locker** at home: nothing to share until there are found weapons (M5).
 - [ ] **Playtest**: is the day tense, and does the walk home at dusk feel risky?
 
+## Cleanup before M3 ✅
+
+No gameplay changes. `infected.ts` (723 lines) became `infected/`; wiring moved to `systems.ts` and
+phase logic to `phaseEvents.ts`; shared helpers (`characters.ts`, `effects.ts`, `infectedDamage.ts`);
+infected reach barricades through hooks; deleted `speed.ts` and ghost leftovers. Rules written down
+in AGENTS.md → Code structure.
+
+- [x] **Studio check**: a full day and night plays as before.
+
 ## M3 — Workbench, trading and the walkie-talkie
 
 Goal: a reason to spend coins. Playtest question: *do players plan trips around what they want

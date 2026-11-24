@@ -1,6 +1,6 @@
 /**
  * Who attacks the house each night (GAMEPLAY.md §4 and §6). Pure (no Roblox services) so it's
- * unit-tested; main/server/infected.ts spawns what it says.
+ * unit-tested; main/server/infected/ spawns what it says.
  *
  * Night 1 is forgiving: two small waves, Dad plus a few shamblers. From Night 2, three waves
  * that grow every night, the last the biggest. Wave sizes scale with the party, so solo is

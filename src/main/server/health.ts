@@ -1,3 +1,4 @@
+import { aliveHumanoidOf } from "shared/characters";
 import { gameConfig } from "./config";
 import { isAlive, takeKid } from "./life";
 
@@ -14,11 +15,6 @@ export interface HealthHooks {
 
 let hooks: HealthHooks | undefined;
 
-function humanoidOf(player: Player): Humanoid | undefined {
-	const humanoid = player.Character?.FindFirstChildOfClass("Humanoid");
-	return humanoid && humanoid.Health > 0 ? humanoid : undefined;
-}
-
 /** Sets up a kid's character's health on spawn. */
 export function setUpHealth(character: Model) {
 	const humanoid = character.FindFirstChildOfClass("Humanoid");
@@ -30,7 +26,7 @@ export function setUpHealth(character: Model) {
 
 /** Hurts a kid. At 0 health they're taken. */
 export function damageKid(player: Player, amount: number) {
-	const humanoid = humanoidOf(player);
+	const humanoid = aliveHumanoidOf(player.Character);
 	if (!humanoid || !isAlive(player) || amount <= 0) {
 		return;
 	}
@@ -44,7 +40,7 @@ export function damageKid(player: Player, amount: number) {
 
 /** Heals a kid by `amount`. False (and nothing happens) if they don't need it. */
 export function healKid(player: Player, amount: number): boolean {
-	const humanoid = humanoidOf(player);
+	const humanoid = aliveHumanoidOf(player.Character);
 	if (!humanoid || humanoid.Health >= humanoid.MaxHealth) {
 		return false;
 	}
@@ -55,7 +51,7 @@ export function healKid(player: Player, amount: number): boolean {
 /** Dawn: every kid still in is healed to full. */
 export function healAll(kids: Player[]) {
 	for (const player of kids) {
-		const humanoid = humanoidOf(player);
+		const humanoid = aliveHumanoidOf(player.Character);
 		if (humanoid) {
 			humanoid.Health = humanoid.MaxHealth;
 		}

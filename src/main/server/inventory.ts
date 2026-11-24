@@ -11,6 +11,7 @@ import {
 	Stack,
 	takeStack,
 } from "shared/inventory";
+import { rootOf } from "shared/characters";
 import { gameConfig } from "./config";
 import { inReach, makePrompt, promptAnchor } from "./prompts";
 
@@ -145,14 +146,9 @@ export function dropAll(player: Player, position: Vector3 | undefined) {
 	resendInventory(player);
 }
 
-function rootOf(player: Player): BasePart | undefined {
-	const hrp = player.Character?.FindFirstChild("HumanoidRootPart");
-	return hrp && hrp.IsA("BasePart") ? hrp : undefined;
-}
-
 /** "Drop" on a slot: `payload` should be its index (unknown — validated). */
 export function onDropRequest(player: Player, payload: unknown) {
-	const root = rootOf(player);
+	const root = rootOf(player.Character);
 	if (!hooks || !hooks.canAct(player) || !root) {
 		return;
 	}

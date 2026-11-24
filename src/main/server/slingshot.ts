@@ -3,7 +3,8 @@ import { INFECTED_TAG, SLINGSHOT_TOOL_NAME } from "shared/combat";
 import { cooldownReady, normaliseAim } from "shared/ranged";
 import { gameConfig } from "./config";
 import { takeItem } from "./inventory";
-import { recordStat } from "./roundStats";
+import { playSound } from "./effects";
+import { damageInfected } from "./infectedDamage";
 
 /**
  * The slingshot: a kid's first ranged weapon, firing stones (rules in shared/ranged.ts).
@@ -19,9 +20,7 @@ export interface SlingshotHooks {
 }
 
 const STONE_SPEED = 120; // studs per second, for the visible stone
-const SHOT_RADIUS = 0.6; // a stone is a small sphere: a little forgiving
 const SHOOT_SOUND = "rbxasset://sounds/swordslash.wav";
-const HIT_FLASH = new Color3(1, 0.15, 0.15);
 
 let hooks: SlingshotHooks | undefined;
 const lastShotAt = new Map<Player, number>();
@@ -49,16 +48,6 @@ function flyStone(from: Vector3, to: Vector3) {
 	const seconds = math.max(0.05, to.sub(from).Magnitude / STONE_SPEED);
 	TweenService.Create(stone, new TweenInfo(seconds, Enum.EasingStyle.Linear), { Position: to }).Play();
 	task.delay(seconds + 0.1, () => stone.Destroy());
-}
-
-function flash(model: Model) {
-	const highlight = new Instance("Highlight");
-	highlight.FillColor = HIT_FLASH;
-	highlight.FillTransparency = 0.3;
-	highlight.OutlineColor = HIT_FLASH;
-	highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
-	highlight.Parent = model;
-	task.delay(0.3, () => highlight.Destroy());
 }
 
 /** The tagged infected model `part` belongs to, if any. */
@@ -99,31 +88,17 @@ export function onShootRequest(player: Player, payload: unknown) {
 	const params = new RaycastParams();
 	params.FilterType = Enum.RaycastFilterType.Exclude;
 	params.FilterDescendantsInstances = [character];
-	const result = Workspace.Spherecast(origin, SHOT_RADIUS, direction.mul(range), params);
+	const result = Workspace.Spherecast(origin, gameConfig.slingshotHitRadius.Value, direction.mul(range), params);
 	const landed = result ? origin.add(direction.mul(result.Distance)) : origin.add(direction.mul(range));
 
-	const sound = new Instance("Sound");
-	sound.SoundId = SHOOT_SOUND;
-	sound.PlaybackSpeed = 1.6;
-	sound.Volume = 0.6;
-	sound.Parent = head;
-	sound.Play();
-	task.delay(1, () => sound.Destroy());
+	playSound(head, SHOOT_SOUND, { volume: 0.6, speed: 1.6 });
 	flyStone(origin, landed);
 
 	const target = result ? infectedOf(result.Instance) : undefined;
-	const humanoid = target?.FindFirstChildOfClass("Humanoid");
-	if (!target || !humanoid || humanoid.Health <= 0) {
-		return;
+	const outcome = target && damageInfected(player, target, gameConfig.slingshotDamage.Value);
+	if (outcome) {
+		hooks.sendHitResult(player, outcome);
 	}
-	humanoid.Health = math.max(0, humanoid.Health - gameConfig.slingshotDamage.Value);
-	flash(target);
-	recordStat(player, "hits");
-	const downed = humanoid.Health <= 0;
-	if (downed) {
-		recordStat(player, "kills");
-	}
-	hooks.sendHitResult(player, downed ? "Kill" : "Hit");
 }
 
 /** A kid's slingshot (a blockout until it gets a model). */

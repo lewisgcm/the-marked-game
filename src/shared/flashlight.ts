@@ -6,9 +6,6 @@ export const FLASHLIGHT_RANGE = 60;
 /** Half-angle of the beam cone, in degrees. The ghost must be inside it to be revealed. */
 export const FLASHLIGHT_HALF_ANGLE = 30;
 
-/** How often the server re-checks reveals (per second). */
-export const FLASHLIGHT_TICK_RATE = 10;
-
 /** The beam tilts slightly down from the character's facing, so it lights the floor ahead. */
 export const BEAM_DOWNWARD_TILT = 8;
 

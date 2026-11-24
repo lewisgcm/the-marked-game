@@ -5,7 +5,7 @@ import { Lamp, MainWorld } from "./world";
 
 /**
  * The generator in the garage: a switch for every light in the house. It starts off. With the
- * power off the infected are bolder and more come (infected.ts, shared/waves.ts). Fuel, the cost
+ * power off the infected are bolder and more come (infected/, shared/waves.ts). Fuel, the cost
  * of leaving it on, arrives with trading (M3).
  */
 

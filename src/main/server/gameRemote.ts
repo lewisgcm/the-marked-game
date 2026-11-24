@@ -1,4 +1,4 @@
-import { ReplicatedStorage } from "@rbxts/services";
+import { Players, ReplicatedStorage } from "@rbxts/services";
 import { clientSender } from "shared/net";
 import { GAME_REMOTE_NAME, GameServerMessages } from "shared/remotes";
 
@@ -29,6 +29,11 @@ export const send = clientSender<GameServerMessages>(remote);
 /** Shows `player` a short notice. */
 export function notify(player: Player, text: string) {
 	send(player, "Notice", text);
+}
+
+/** Shows a notice to everyone. */
+export function notifyAll(text: string) {
+	Players.GetPlayers().forEach((player) => notify(player, text));
 }
 
 /** Shows a notice to each of `players` except `except`. */

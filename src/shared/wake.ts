@@ -1,9 +1,9 @@
 /**
  * What wakes a dormant infected (one frozen in front of a screen by day). Pure so it's
- * unit-tested; main/server/infected.ts asks it for the nearest kid.
+ * unit-tested; main/server/infected/ asks it for the nearest kid.
  *
  * It stares at its screen, so you can slip past behind it; crossing in front, bumping into it,
- * or a torch beam wakes it. (Noise and being hit wake it too: infected.ts.)
+ * or a torch beam wakes it. (Noise and being hit wake it too: infected/.)
  */
 
 export interface WakeSituation {

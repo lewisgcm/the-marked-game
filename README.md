@@ -127,7 +127,7 @@ still join.
      plank and a nail), **Take down** (F) to pull one off
      and get both back. While any plank is up the opening is blocked for everyone. Planks have 100
      health (double if nailed on Day/Night 1); the infected will wear down the outermost one.
-   - **The infected** (`infected.ts`, waves in `shared/waves.ts`): at night they come in waves
+   - **The infected** (`infected/`, waves in `shared/waves.ts`): at night they come in waves
      from all four sides (Night 1: Dad + 1, then 2 more; from Night 2, three growing waves scaled
      by party size). Grey R15 bodies with glowing red eyes; **Dad** wears a blue shirt and comes
      every night. Each walks to the nearest door or window, bashes the planks (15 a hit every
@@ -160,25 +160,30 @@ is published as attributes for the HUD. See [AGENTS.md](AGENTS.md#server-authori
 ```
 src/
   shared/              # compiled to ReplicatedStorage.Shared (both places)
+    characters.ts      # root part / living Humanoid lookups
     remotes.ts, net.ts # typed remote message maps + send/receive helpers
     serverConfig.ts    # ServerStorage config written from code
     parts.ts, flicker.ts, tags.ts      # world-building helpers, client light flicker
     ritualItems.ts, assets.ts          # book/candles/skull models (lobby pedestals, until M6), mesh lookup
-    round.ts, combat.ts, melee.ts, flashlight.ts, scoreboard.ts  # shared rules/state
+    round.ts, combat.ts, melee.ts, flashlight.ts, scoreboard.ts  # shared rules/state (one spec each in tests/unit)
     partyHandoff.ts, safeTeleport.ts, placeIds.ts   # lobby -> main game handoff
   lobby/
     server/            # world.ts, decor.ts (churchyard), queue.ts (parties), zoneDisplay.tsx, config.ts
     client/            # main.client.tsx, partyUi.tsx, candleFlicker.client.ts
   main/
-    server/            # main.server.ts (entry: the start-up order), config.ts (all tuning)
-                       # wiring: loadout.ts (setup on spawn), elimination.ts (taken, spectating),
-                       #   roundEnd.ts (scoreboard, return to lobby), resync.ts (re-send state on
-                       #   "Ready"), gameRemote.ts, teams.ts
-                       # systems: world.ts (house), party.ts, round.ts (day/night clock), lighting.ts,
-                       #   life.ts, health.ts, flashlight.ts, combat.ts, slingshot.ts, barricades.ts,
-                       #   infected.ts, neighbourhood.ts, building.ts, containers.ts, inventory.ts,
-                       #   coins.ts, streetlights.ts, generator.ts, hints.ts, nightReport.ts, prompts.ts,
-                       #   speed.ts
+    server/            # main.server.ts (entry: the start-up order), config.ts (tuning)
+                       # wiring: systems.ts (starts and connects everything), phaseEvents.ts (what
+                       #   each phase does), loadout.ts (setup on spawn), elimination.ts (taken,
+                       #   spectating), roundEnd.ts, resync.ts (re-send state on "Ready"),
+                       #   gameRemote.ts, teams.ts, party.ts, gatekeeper.ts, admission.ts
+                       # systems: round.ts (day/night clock), lighting.ts, streetlights.ts, life.ts,
+                       #   health.ts, inventory.ts, coins.ts, containers.ts, barricades.ts,
+                       #   generator.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
+                       #   nightReport.ts, roundStats.ts
+                       # infected/: director.ts (spawning, waves), behaviours.ts (one function per
+                       #   mode), senses.ts, movement.ts, body.ts, state.ts, types.ts
+                       # world: world.ts (the house), neighbourhood.ts, building.ts
+                       # helpers: effects.ts, prompts.ts, infectedDamage.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
                        # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
@@ -309,7 +314,7 @@ npm run build:dev     # → build/dev.rbxlx  (both places together)
 **All gameplay numbers live in code**, in two files:
 
 - `src/lobby/server/config.ts` — zone count, floor size, countdown, party size.
-- `src/main/server/config.ts` — **everything in the main game**: run timings (arrival timeout,
+- `src/main/server/config.ts` — **the main game's tuning numbers**: run timings (arrival timeout,
   countdown, run length, end screen, respawn delay), how dark unlit rooms are (DarkRoomLight,
   applied live), and melee (bat damage/range/cooldown, swing arc and lag tolerances). Each value
   has a comment saying what it does.

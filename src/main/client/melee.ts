@@ -1,4 +1,5 @@
 import { CollectionService, Players } from "@rbxts/services";
+import { rootOf } from "shared/characters";
 import { INFECTED_TAG, MELEE_TOOL_NAMES } from "shared/combat";
 import { checkMeleeReach, MAX_SWING_CANDIDATES } from "shared/melee";
 import { serverSender } from "shared/net";
@@ -25,11 +26,6 @@ const CANDIDATE_HALF_ARC = 75;
 const LOCAL_SWING_GAP = 0.35;
 
 const player = Players.LocalPlayer;
-
-function rootOf(model: Model | undefined): BasePart | undefined {
-	const hrp = model?.FindFirstChild("HumanoidRootPart");
-	return hrp && hrp.IsA("BasePart") ? hrp : undefined;
-}
 
 /** Infected in reach and in front of us, nearest first. */
 function candidatesInReach(root: BasePart): Model[] {

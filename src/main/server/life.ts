@@ -1,4 +1,5 @@
 import { Players, StarterPlayer } from "@rbxts/services";
+import { rootOf } from "shared/characters";
 import { TAKEN_ATTRIBUTE } from "shared/combat";
 import { gameConfig } from "./config";
 import { recordTaken } from "./roundStats";
@@ -61,8 +62,7 @@ export function takeKid(player: Player) {
 	player.SetAttribute(TAKEN_ATTRIBUTE, true);
 
 	const character = player.Character;
-	const hrp = character?.FindFirstChild("HumanoidRootPart");
-	hooks?.onTaken(player, hrp && hrp.IsA("BasePart") ? hrp.Position : undefined);
+	hooks?.onTaken(player, rootOf(character)?.Position);
 
 	const humanoid = character?.FindFirstChildOfClass("Humanoid");
 	if (humanoid) {

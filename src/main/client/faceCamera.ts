@@ -1,4 +1,5 @@
 import { Players, RunService, Workspace } from "@rbxts/services";
+import { rootOf } from "shared/characters";
 
 /**
  * Turns the local character to face where the camera looks (like shift-lock), while a weapon is
@@ -11,11 +12,6 @@ const TURN_SPEED = 0.35;
 const BINDING = "FaceCamera";
 
 const player = Players.LocalPlayer;
-
-function rootOf(model: Model | undefined): BasePart | undefined {
-	const hrp = model?.FindFirstChild("HumanoidRootPart");
-	return hrp && hrp.IsA("BasePart") ? hrp : undefined;
-}
 
 export function stopFacing() {
 	RunService.UnbindFromRenderStep(BINDING);

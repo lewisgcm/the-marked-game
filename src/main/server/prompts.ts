@@ -1,4 +1,6 @@
-/** ProximityPrompt helpers shared by barricades.ts and generator.ts. */
+import { rootOf } from "shared/characters";
+
+/** ProximityPrompt helpers for anything kids interact with. */
 
 /** Extra reach allowed past a prompt's own distance when checking a trigger, in studs. */
 const REACH_TOLERANCE = 4;
@@ -25,9 +27,9 @@ export function makePrompt(anchor: Attachment, action: string, key: Enum.KeyCode
 
 /** Server-side check that `player` is close enough to have used `prompt`. */
 export function inReach(player: Player, prompt: ProximityPrompt): boolean {
-	const root = player.Character?.FindFirstChild("HumanoidRootPart");
+	const root = rootOf(player.Character);
 	const anchor = prompt.Parent;
-	if (!root || !root.IsA("BasePart") || !anchor || !anchor.IsA("Attachment")) {
+	if (!root || !anchor || !anchor.IsA("Attachment")) {
 		return false;
 	}
 	return root.Position.sub(anchor.WorldPosition).Magnitude <= prompt.MaxActivationDistance + REACH_TOLERANCE;

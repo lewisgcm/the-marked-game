@@ -1,4 +1,5 @@
 import { CollectionService } from "@rbxts/services";
+import { rootOf } from "shared/characters";
 import { ContainerKind, describeLoot, rollLoot } from "shared/loot";
 import { LOOT_CONTAINER_TAG, STONES_TAG } from "shared/tags";
 import { addCoins } from "./coins";
@@ -43,8 +44,7 @@ function setUpContainer(box: BasePart, hooks: ContainerHooks) {
 		box.Color = SEARCHED;
 		hooks.makeNoise(box.Position, gameConfig.searchNoise.Value);
 		const finds = rollLoot(kind, hooks.getNight(), () => math.random());
-		const root = player.Character?.FindFirstChild("HumanoidRootPart");
-		const spot = root && root.IsA("BasePart") ? root.Position : box.Position;
+		const spot = rootOf(player.Character)?.Position ?? box.Position;
 		for (const find of finds) {
 			if (find.item === "Coins") {
 				addCoins(player, find.count);
