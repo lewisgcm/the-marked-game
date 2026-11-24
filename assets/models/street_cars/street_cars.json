@@ -1,0 +1,24 @@
+{
+	"triangles": 3712,
+	"vertices": 2244,
+	"size": [
+		32.232,
+		14.6,
+		9.308
+	],
+	"name": "street_cars",
+	"size_roblox": [
+		32.232,
+		9.308,
+		14.6
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/street_cars/street_cars.fbx",
+		"assets/models/street_cars/street_cars.glb",
+		"assets/models/street_cars/preview.png"
+	]
+}

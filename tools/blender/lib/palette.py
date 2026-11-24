@@ -83,9 +83,20 @@ SWATCHES = {
 	"joggers_dark": ("#373b40", False),
 	"trainer": ("#b9b4a6", False),
 	"trainer_sole": ("#6b675f", False),
+	# vehicles
+	"car_glass": ("#1f2833", False),
+	"car_tail": ("#a3262a", False),
+	"car_teal": ("#3d7a80", False),
+	"car_teal_dark": ("#295559", False),
+	"car_mustard": ("#bf9238", False),
+	"car_mustard_dark": ("#86642a", False),
+	"car_silver": ("#8e979e", False),
+	"car_silver_dark": ("#5f676e", False),
+	"ice_pink": ("#d98ba0", False),
 }
 
 _NAMES = list(SWATCHES)
+assert len(_NAMES) <= GRID * GRID, "the palette is full"
 _material = None
 
 

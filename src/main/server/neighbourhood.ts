@@ -3,6 +3,7 @@ import { ContainerKind } from "shared/loot";
 import { folder, part, PartOptions } from "shared/parts";
 import { LOOT_CONTAINER_TAG, STONES_TAG, STREET_LIGHT_TAG } from "shared/tags";
 import { slab, wall } from "./building";
+import { CarName, loadCars, parkCar } from "./cars";
 
 /**
  * Maple Street (GAMEPLAY.md §8), a blockout: two houses either side of home and two across the
@@ -32,12 +33,28 @@ export interface Neighbourhood {
 	dadSpot: CFrame;
 }
 
-/** Each house's origin; its front (local -Z) faces the street. */
-const HOUSES: CFrame[] = [
-	new CFrame(-95, 0, -6),
-	new CFrame(95, 0, -6),
-	new CFrame(-60, 0, -98).mul(CFrame.Angles(0, math.pi, 0)),
-	new CFrame(60, 0, -98).mul(CFrame.Angles(0, math.pi, 0)),
+interface House {
+	/** Its origin; the front (local -Z) faces the street. */
+	frame: CFrame;
+	car: CarName;
+	/** Where the car is, on the ground in the house's space. The boot is at local +Z of this. */
+	carAt: CFrame;
+}
+
+/** The houses across the street have short lawns: a short car, and one at the kerb. */
+const HOUSES: House[] = [
+	{ frame: new CFrame(-95, 0, -6), car: "Minivan", carAt: new CFrame(13, 0, -23.3) },
+	{ frame: new CFrame(95, 0, -6), car: "Estate", carAt: new CFrame(13, 0, -23.8) },
+	{
+		frame: new CFrame(-60, 0, -98).mul(CFrame.Angles(0, math.pi, 0)),
+		car: "Hatchback",
+		carAt: new CFrame(13, 0, -21),
+	},
+	{
+		frame: new CFrame(60, 0, -98).mul(CFrame.Angles(0, math.pi, 0)),
+		car: "IceCreamVan",
+		carAt: new CFrame(13, 0.1, -30.5).mul(CFrame.Angles(0, math.pi / 2, 0)),
+	},
 ];
 
 function container(parent: Instance, name: string, kind: ContainerKind, size: Vector3, at: CFrame, style: PartOptions) {
@@ -47,7 +64,7 @@ function container(parent: Instance, name: string, kind: ContainerKind, size: Ve
 }
 
 /** Builds one house and returns where its dormant infected stands. */
-function buildHouse(parent: Instance, frame: CFrame): CFrame {
+function buildHouse(parent: Instance, { frame, car, carAt }: House): CFrame {
 	const house = folder(parent, "Neighbour");
 	const at = (x: number, y: number, z: number) => frame.mul(new CFrame(x, FLOOR_Y + y, z));
 	const door = (center: number) => ({ center, width: 5, bottom: 0, top: 8 });
@@ -77,11 +94,8 @@ function buildHouse(parent: Instance, frame: CFrame): CFrame {
 	container(house, "Cupboards", "Kitchen", new Vector3(2.5, 3.5, 8), at(16, 1.75, 4), WOOD);
 	container(house, "Tool chest", "Garage", new Vector3(4, 2.5, 2.5), at(3.5, 1.25, 11), METAL);
 
-	// Outside: a car on the front lawn and stones in the garden.
-	const car = folder(house, "Car");
-	part(car, "Body", new Vector3(6, 3, 10), at(13, 1.9, -22), METAL);
-	part(car, "Cabin", new Vector3(5.5, 2, 5), at(13, 4.4, -21), METAL);
-	container(car, "Car boot", "Car", new Vector3(5.6, 1.6, 1.2), at(13, 2.2, -16.8), METAL);
+	// Outside: a car and stones in the garden.
+	parkCar(house, car, frame.mul(carAt));
 	const stones = part(house, "Stones", new Vector3(3, 0.6, 3), at(0, 0, -21), STONE);
 	CollectionService.AddTag(stones, STONES_TAG);
 
@@ -120,10 +134,11 @@ function buildBoundary(parent: Instance) {
 
 export function buildNeighbourhood(): Neighbourhood {
 	const street = folder(Workspace, "MapleStreet");
-	const dormantSpots = HOUSES.map((frame) => buildHouse(street, frame));
+	const dormantSpots = HOUSES.map((house) => buildHouse(street, house));
+	loadCars();
 	buildStreetLamps(street);
 	buildBoundary(street);
 	// In the left neighbour's front garden, facing the living-room window (local +Z).
-	const dadSpot = HOUSES[0].mul(new CFrame(-10, FLOOR_Y + 3, -17)).mul(CFrame.Angles(0, math.pi, 0));
+	const dadSpot = HOUSES[0].frame.mul(new CFrame(-10, FLOOR_Y + 3, -17)).mul(CFrame.Angles(0, math.pi, 0));
 	return { dormantSpots, dadSpot };
 }

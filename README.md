@@ -471,7 +471,7 @@ apply from the next phase.
 - [ ] Two players see the same messages. Someone who loads in late has the log but no old popups.
 
 ### Maple Street
-- [ ] Two houses either side of home and two across the street, each with a front and back door, car and garden stones. You can't walk off the map.
+- [ ] Two houses either side of home and two across the street, each with a front and back door, its own car (minivan, estate, hatchback; the ice-cream van is at the kerb) and garden stones. Each car's boot can be searched, and you can't walk through a car. You can't walk off the map.
 - [ ] Searching (hold E) shows what you found; the container goes dark and stays empty, for everyone, all run. What doesn't fit is left at your feet.
 - [ ] 25s before dusk (Studio): Mum says "The sun's going down. Get home." over the walkie and the street lamps come on; off at dawn.
 

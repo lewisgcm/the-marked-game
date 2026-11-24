@@ -96,20 +96,17 @@ def export_asset(name, out_dir, args):
 	mesh_lib.select_only(export_objs)
 	bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
-	# Characters (lib/rig.py) export their skeleton too, with the palette inside the file.
+	# Characters (lib/rig.py) export their skeleton too. They, and anything with EMBED_PALETTE, carry
+	# the palette inside the file.
 	rigged = getattr(module, "RIGGED", False)
 	armatures = [ob for ob in scene.objects if ob.type == "ARMATURE"] if rigged else []
-	rig_options = {}
+	fbx_options = {"object_types": {"MESH"}, "path_mode": "AUTO"}
 	if rigged:
+		fbx_options.update(object_types={"ARMATURE", "MESH"}, add_leaf_bones=False, bake_anim=False)
+	if rigged or getattr(module, "EMBED_PALETTE", False):
 		palette_lib.save_png(PALETTE_PNG)
 		palette_lib.link_png(PALETTE_PNG)
-		rig_options = {
-			"object_types": {"ARMATURE", "MESH"},
-			"add_leaf_bones": False,
-			"bake_anim": False,
-			"path_mode": "COPY",
-			"embed_textures": True,
-		}
+		fbx_options.update(path_mode="COPY", embed_textures=True)
 	mesh_lib.select_only(export_objs + armatures)
 
 	bpy.ops.export_scene.fbx(
@@ -121,7 +118,7 @@ def export_asset(name, out_dir, args):
 		mesh_smooth_type="OFF",
 		use_mesh_modifiers=True,
 		bake_space_transform=False,
-		**{"object_types": {"MESH"}, "path_mode": "AUTO", **rig_options},
+		**fbx_options,
 	)
 
 	mesh_lib.select_only(export_objs + armatures)
