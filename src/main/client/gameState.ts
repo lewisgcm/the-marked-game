@@ -1,6 +1,7 @@
 import React from "@rbxts/react";
 import { onServerMessage, serverSender } from "shared/net";
 import { GameClientMessages, GameServerMessages } from "shared/remotes";
+import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
 
 /**
@@ -53,6 +54,10 @@ export const hitStore = new Store<{ kind: "Hit" | "Kill"; at: number } | undefin
 export const planksStore = new Store<number>(0);
 /** Stones for the slingshot. */
 export const stonesStore = new Store<number>(0);
+/** Your Night 1 tip ("" for none). */
+export const hintStore = new Store<string>("");
+/** Last night's summary, with when it arrived. */
+export const nightSummaryStore = new Store<{ summary: NightSummary; at: number } | undefined>(undefined);
 /** The end-of-run cards (undefined until the run is over). */
 export const scoreboardStore = new Store<ScoreCard[] | undefined>(undefined);
 /** When you were last struck (for the red flash), as os.clock(). */
@@ -67,6 +72,8 @@ export function startGameState(remote: RemoteEvent) {
 		Hurt: () => hurtStore.set(os.clock()),
 		Planks: (count) => planksStore.set(count),
 		Stones: (count) => stonesStore.set(count),
+		Hint: (text) => hintStore.set(text),
+		NightSummary: (summary) => nightSummaryStore.set({ summary, at: os.clock() }),
 		Scoreboard: (cards) => scoreboardStore.set(cards),
 	});
 	serverSender<GameClientMessages>(remote)("Ready", undefined);

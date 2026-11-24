@@ -1,23 +1,26 @@
 import { Players } from "@rbxts/services";
 import { onClientMessage } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
-import { refillPile, startBarricades } from "./barricades";
+import { anyBoarded, planksOf, refillPile, startBarricades } from "./barricades";
 import { onSwingRequest, startCombat } from "./combat";
 import { gameConfig } from "./config";
 import { returnAllTaken, startElimination } from "./elimination";
 import { isRoundServer, startGatekeeper } from "./gatekeeper";
 import { notify, remote, send } from "./gameRemote";
+import { isPowered, startGenerator } from "./generator";
+import { startHints } from "./hints";
 import { litBy } from "./flashlight";
 import { damageKid, healAll, startHealth } from "./health";
-import { retreatAll, startInfected, startNight } from "./infected";
+import { attackedEntry, retreatAll, startInfected, startNight } from "./infected";
 import { setPhaseLighting, setupLighting } from "./lighting";
 import { setUpAll, setUpCharacter, startLoadouts } from "./loadout";
+import { beginNight, clearSummary, endNight, noteInfectedDowned, notePlankLost } from "./nightReport";
 import { addLateJoiners, setMembers, waitForParty } from "./party";
 import { resync } from "./resync";
 import { getClock, runRun } from "./round";
 import { onShootRequest, refillStones, startSlingshot } from "./slingshot";
 import { onLeaveRequest, onRunEnd, returnToLobby } from "./roundEnd";
-import { canKidAct, livingKids } from "./teams";
+import { canKidAct, isPlaying, livingKids } from "./teams";
 import { buildMainWorld } from "./world";
 
 /**
@@ -28,6 +31,7 @@ import { buildMainWorld } from "./world";
  */
 
 const isFirstNight = () => getClock().night === 1;
+const notifyAll = (text: string) => Players.GetPlayers().forEach((p) => notify(p, text));
 
 startGatekeeper();
 setupLighting();
@@ -37,7 +41,6 @@ startLoadouts(world);
 startCombat({
 	canAttack: canKidAct,
 	sendHitResult: (attacker, kind) => send(attacker, "HitResult", kind),
-	onInfectedDowned: () => {},
 });
 startBarricades(world, {
 	canAct: canKidAct,
@@ -54,9 +57,28 @@ startHealth({ sendHurt: (player) => send(player, "Hurt", undefined) });
 startInfected(world, {
 	getKids: () => livingKids().filter((p) => p.Character !== undefined),
 	damageKid,
-	notifyAll: (text) => Players.GetPlayers().forEach((p) => notify(p, text)),
+	notifyAll,
 	isFirstNight,
 	isLit: (model) => litBy(model).size() > 0,
+	isPowered,
+	onPlankBroken: notePlankLost,
+	onDowned: noteInfectedDowned,
+});
+startGenerator(world, {
+	canAct: canKidAct,
+	onChanged: (powered) => notifyAll(powered ? "The power's on." : "The power's off."),
+});
+startHints({
+	getKids: () => (isPlaying() ? livingKids() : []),
+	situation: (player) => ({
+		firstNight: isFirstNight(),
+		phase: getClock().phase,
+		planks: planksOf(player),
+		anyBoarded: anyBoarded(),
+		powered: isPowered(),
+		attacked: attackedEntry()?.name,
+	}),
+	sendHint: (player, text) => send(player, "Hint", text),
 });
 
 // Client -> server. Payloads are `unknown` here; each handler validates its own.
@@ -96,6 +118,7 @@ if (party.size() > 0) {
 				print(`[Main] ${clock.phase} ${clock.night}`);
 				setPhaseLighting(clock.phase);
 				if (clock.phase === "Night") {
+					beginNight();
 					startNight(clock.night, gameConfig.nightSeconds.Value, livingKids().size());
 				} else if (clock.phase === "Dawn") {
 					retreatAll();
@@ -103,6 +126,10 @@ if (party.size() > 0) {
 					healAll(livingKids());
 					refillStones(livingKids());
 					returnAllTaken();
+					const summary = endNight(clock.night);
+					Players.GetPlayers().forEach((p) => send(p, "NightSummary", summary));
+				} else if (clock.phase === "Day") {
+					clearSummary();
 				}
 			},
 			onEnd: onRunEnd,

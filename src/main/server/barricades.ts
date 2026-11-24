@@ -12,6 +12,8 @@ import {
 } from "shared/barricade";
 import { PLANK_PILE_TAG } from "shared/tags";
 import { gameConfig } from "./config";
+import { inReach, makePrompt, promptAnchor } from "./prompts";
+import { recordStat } from "./roundStats";
 import { Entry, MainWorld } from "./world";
 
 /**
@@ -45,8 +47,6 @@ interface EntryState {
 const PLANK_COLOR = new Color3(0.55, 0.4, 0.26);
 // A built-in thud as a placeholder (no uploaded audio yet).
 const NAIL_SOUND = "rbxasset://sounds/action_footsteps_plastic.mp3";
-/** Extra reach allowed past a prompt's own distance when checking a trigger, in studs. */
-const REACH_TOLERANCE = 4;
 /** How far inside the opening the prompts sit (the house side), in studs. */
 const PROMPT_INSET = 1.2;
 
@@ -58,7 +58,8 @@ let pilePrompt: ProximityPrompt | undefined;
 
 Players.PlayerRemoving.Connect((player) => carrying.delete(player));
 
-function planksOf(player: Player): number {
+/** Planks `player` is carrying. */
+export function planksOf(player: Player): number {
 	return carrying.get(player) ?? 0;
 }
 
@@ -85,15 +86,6 @@ function playSound(parent: Instance, id: string) {
 	sound.Parent = parent;
 	sound.Play();
 	task.delay(2, () => sound.Destroy());
-}
-
-function inReach(player: Player, prompt: ProximityPrompt): boolean {
-	const root = player.Character?.FindFirstChild("HumanoidRootPart");
-	const anchor = prompt.Parent;
-	if (!root || !root.IsA("BasePart") || !anchor || !anchor.IsA("Attachment")) {
-		return false;
-	}
-	return root.Position.sub(anchor.WorldPosition).Magnitude <= prompt.MaxActivationDistance + REACH_TOLERANCE;
 }
 
 /** Redraws an opening's planks and updates its prompts and blocker. */
@@ -134,6 +126,7 @@ function onBoard(player: Player, state: EntryState) {
 		return;
 	}
 	setPlanks(player, planksOf(player) - 1);
+	recordStat(player, "planksNailed");
 	playSound(state.entry.slot, NAIL_SOUND);
 	refresh(state);
 }
@@ -148,27 +141,14 @@ function onTakeDown(player: Player, state: EntryState) {
 	}
 	if (removePlank(state.barricade)) {
 		setPlanks(player, planksOf(player) + 1);
+		recordStat(player, "planksNailed", -1); // nailing and un-nailing doesn't earn Carpenter
 		refresh(state);
 	}
 }
 
-function makePrompt(anchor: Attachment, action: string, key: Enum.KeyCode, hold: number): ProximityPrompt {
-	const prompt = new Instance("ProximityPrompt");
-	prompt.ActionText = action;
-	prompt.KeyboardKeyCode = key;
-	prompt.HoldDuration = hold;
-	prompt.MaxActivationDistance = 8;
-	prompt.RequiresLineOfSight = false; // the slot and planks are in the way
-	prompt.Parent = anchor;
-	return prompt;
-}
-
 function setUpEntry(entry: Entry) {
-	const anchor = new Instance("Attachment");
-	anchor.Name = "PromptAnchor";
 	// The slot's +Z is the house side (its LookVector points out).
-	anchor.Position = new Vector3(0, 0, PROMPT_INSET);
-	anchor.Parent = entry.slot;
+	const anchor = promptAnchor(entry.slot, new Vector3(0, 0, PROMPT_INSET));
 
 	const board = makePrompt(anchor, "Board up", Enum.KeyCode.E, gameConfig.boardHoldSeconds.Value);
 	board.ObjectText = entry.name;
@@ -198,10 +178,7 @@ function setUpPile() {
 		warn("[Barricades] No plank pile in the world.");
 		return;
 	}
-	const anchor = new Instance("Attachment");
-	anchor.Name = "PromptAnchor";
-	anchor.Position = new Vector3(0, 2, 0);
-	anchor.Parent = pile;
+	const anchor = promptAnchor(pile, new Vector3(0, 2, 0));
 	const prompt = makePrompt(anchor, "Take planks", Enum.KeyCode.E, 0.4);
 	prompt.ObjectText = "Plank pile";
 	pilePrompt = prompt;
@@ -231,6 +208,16 @@ export function refillPile() {
 export function isEntryBlocked(entry: Entry): boolean {
 	const state = states.get(entry);
 	return state !== undefined && isBlocked(state.barricade);
+}
+
+/** Whether any door or window has a plank up. */
+export function anyBoarded(): boolean {
+	for (const [, state] of states) {
+		if (isBlocked(state.barricade)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 /** Damage from the infected: wears down `entry`'s outermost plank. */

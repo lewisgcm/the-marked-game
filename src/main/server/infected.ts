@@ -1,7 +1,7 @@
 import { CollectionService, PathfindingService, Players, ServerStorage, Workspace } from "@rbxts/services";
 import { INFECTED_TAG } from "shared/combat";
 import { isStunned, newStun, StunState, stepStun } from "shared/stun";
-import { infectedHealth, planNight, Wave } from "shared/waves";
+import { infectedHealth, planNight, Wave, waveSize } from "shared/waves";
 import { damageEntry, isEntryBlocked } from "./barricades";
 import { gameConfig } from "./config";
 import { Entry, isInsideHouse, MainWorld } from "./world";
@@ -35,6 +35,12 @@ export interface InfectedHooks {
 	isFirstNight: () => boolean;
 	/** Whether any kid's flashlight beam is on `model` right now. */
 	isLit: (model: Model) => boolean;
+	/** Whether the generator is running (off: more infected come). */
+	isPowered: () => boolean;
+	/** A plank was broken off an opening. */
+	onPlankBroken: () => void;
+	/** An infected was brought down. */
+	onDowned: () => void;
 }
 
 type Mode = "approach" | "enter" | "chase" | "retreat";
@@ -76,6 +82,10 @@ const alive = new Map<Model, Infected>();
 const holder = new Instance("Folder");
 holder.Name = "Infected";
 holder.Parent = Workspace;
+/** The opening bashed most recently, and when (os.clock()). */
+let lastBash: { entry: Entry; at: number } | undefined;
+/** An opening counts as under attack for this long after a hit, in seconds. */
+const ATTACKED_SECONDS = 4;
 /** Bumped every night and at dawn, so waves scheduled for an old night don't spawn. */
 let generation = 0;
 let dadAround = false;
@@ -317,7 +327,11 @@ function approach(inf: Infected) {
 	const now = os.clock();
 	if (now - inf.lastHitAt >= gameConfig.infectedPlankHitSeconds.Value) {
 		inf.lastHitAt = now;
+		lastBash = { entry, at: now };
 		const result = damageEntry(entry, gameConfig.infectedPlankDamage.Value);
+		if (result.broken > 0) {
+			hooks?.onPlankBroken();
+		}
 		if (result.breached && result.broken > 0) {
 			hooks?.notifyAll(`The ${entry.name.lower()} is broken!`);
 		}
@@ -507,7 +521,10 @@ function spawnOne(at: CFrame, night: number, isDad: boolean) {
 	if (isDad) {
 		dadAround = true;
 	}
-	humanoid.Died.Connect(() => dissolve(inf));
+	humanoid.Died.Connect(() => {
+		hooks?.onDowned();
+		dissolve(inf);
+	});
 	task.spawn(() => {
 		while (alive.has(model)) {
 			const [ok, err] = pcall(() => thinkOrStun(inf));
@@ -528,11 +545,18 @@ function spawnWave(wave: Wave, night: number) {
 	if (wave.dad && !dadAround) {
 		spawnOne(spawns[0], night, true); // Dad comes from the street
 	}
-	for (let i = 0; i < wave.shamblers; i++) {
+	const powered = hooks?.isPowered() ?? true;
+	const count = waveSize(wave.shamblers, night, powered, gameConfig.powerOffWaveMultiplier.Value);
+	for (let i = 0; i < count; i++) {
 		const spawn = spawns[rng.NextInteger(0, spawns.size() - 1)];
 		const offset = new CFrame(rng.NextNumber(-8, 8), 0, rng.NextNumber(-4, 4));
 		spawnOne(spawn.mul(offset), night, false);
 	}
+}
+
+/** The opening under attack right now, if any. */
+export function attackedEntry(): Entry | undefined {
+	return lastBash && os.clock() - lastBash.at < ATTACKED_SECONDS ? lastBash.entry : undefined;
 }
 
 /** Nightfall: schedules tonight's waves over the `nightSeconds` the night lasts. */

@@ -20,8 +20,6 @@ export interface CombatHooks {
 	canAttack: (player: Player) => boolean;
 	/** Tells an attacker their swing connected. */
 	sendHitResult: (attacker: Player, kind: "Hit" | "Kill") => void;
-	/** An infected was brought down by `attacker`. */
-	onInfectedDowned: (infected: Model, attacker: Player) => void;
 }
 
 const SWING_SOUND = "rbxasset://sounds/swordslash.wav";
@@ -143,7 +141,6 @@ function batSwing(player: Player, candidates: Model[]) {
 	hooks.sendHitResult(player, downed ? "Kill" : "Hit");
 	if (downed) {
 		recordStat(player, "kills");
-		hooks.onInfectedDowned(target, player);
 	}
 }
 

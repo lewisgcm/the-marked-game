@@ -9,12 +9,15 @@ import { recordTaken } from "./roundStats";
  *
  * - A kid who is **taken** spectates until they're brought back (`returnKid`: at dawn, or sooner
  *   on Night 1 — elimination.ts decides).
- * - Any other death (e.g. resetting) respawns after RespawnDelay, as normal.
+ * - Dying any other way (resetting, falling) counts as taken at night; by day it respawns after
+ *   RespawnDelay, as normal.
  */
 
 export interface LifeHooks {
 	/** A kid was taken, at `position`. Runs before their character is removed. */
 	onTaken: (player: Player, position: Vector3 | undefined) => void;
+	/** Whether dying right now counts as being taken (so resetting at night is no escape). */
+	deathIsTaken: (player: Player) => boolean;
 }
 
 const dead = new Set<Player>();
@@ -36,7 +39,9 @@ function watch(player: Player) {
 	player.CharacterAdded.Connect((character) => {
 		const humanoid = character.WaitForChild("Humanoid", 5) as Humanoid | undefined;
 		humanoid?.Died.Connect(() => {
-			if (!dead.has(player)) {
+			if (!dead.has(player) && hooks?.deathIsTaken(player)) {
+				takeKid(player);
+			} else if (!dead.has(player)) {
 				task.delay(gameConfig.respawnDelay.Value, () => spawnCharacter(player));
 			}
 		});

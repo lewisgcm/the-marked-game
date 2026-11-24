@@ -1,6 +1,8 @@
 import { resendPlanks } from "./barricades";
 import { send } from "./gameRemote";
+import { resendHint } from "./hints";
 import { isAlive } from "./life";
+import { currentSummary } from "./nightReport";
 import { isMember } from "./party";
 import { resendStones } from "./slingshot";
 import { getScoreboard } from "./roundEnd";
@@ -17,6 +19,11 @@ export function resync(player: Player) {
 	}
 	resendPlanks(player);
 	resendStones(player);
+	resendHint(player);
+	const summary = currentSummary();
+	if (summary) {
+		send(player, "NightSummary", summary);
+	}
 	const scoreboard = getScoreboard();
 	if (scoreboard) {
 		send(player, "Scoreboard", scoreboard);

@@ -4,8 +4,10 @@ import { Players, ReplicatedStorage } from "@rbxts/services";
 import { startFlicker } from "shared/flicker";
 import { GAME_REMOTE_NAME } from "shared/remotes";
 import { CombatFeedback } from "./combatFeedback";
+import { DawnCard } from "./dawnCard";
 import { startFlashlight } from "./flashlight";
 import { startGameState } from "./gameState";
+import { HintHud } from "./hintHud";
 import { InventoryHud } from "./inventoryHud";
 import { startMelee } from "./melee";
 import { NoticeHud } from "./noticeHud";
@@ -29,6 +31,8 @@ function App() {
 		<>
 			<RoundHud remote={remote} />
 			<NoticeHud />
+			<HintHud />
+			<DawnCard />
 			<InventoryHud />
 			<Spectate />
 			<CombatFeedback />

@@ -40,6 +40,14 @@ export function planNight(night: number, kids: number): Wave[] {
 	}));
 }
 
+/**
+ * A wave's size once the generator is taken into account: with the power off the infected are
+ * bolder and more come (`offMultiplier`). Night 1 is forgiving, so it never applies there.
+ */
+export function waveSize(shamblers: number, night: number, powered: boolean, offMultiplier: number): number {
+	return powered || night <= 1 ? shamblers : math.max(shamblers, math.round(shamblers * offMultiplier));
+}
+
 /** An infected's health on `night`: `base`, plus `perNight` (a fraction) for every night after the first. */
 export function infectedHealth(night: number, base: number, perNight: number): number {
 	return base * (1 + perNight * math.max(0, night - 1));

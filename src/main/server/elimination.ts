@@ -6,9 +6,10 @@ import { removeSlingshot } from "./slingshot";
 import { notify, notifyAllBut, send } from "./gameRemote";
 import { gameConfig } from "./config";
 import { returnKid, startLife, takenKids } from "./life";
+import { noteTaken } from "./nightReport";
 import { isMember } from "./party";
 import { endRun, getClock } from "./round";
-import { isPlaying, livingKids } from "./teams";
+import { canKidAct, isPlaying, livingKids } from "./teams";
 
 /**
  * Kids being taken (life.ts), coming back, or leaving. Handles what a taken kid loses, who they
@@ -49,6 +50,7 @@ function onTaken(player: Player) {
 	removeWeapon(player);
 	dropPlanks(player);
 	removeSlingshot(player);
+	noteTaken(player.DisplayName);
 	const firstNight = isFirstNight();
 	notify(player, firstNight ? "You were taken! Back in a moment..." : "You were taken. You'll be back at dawn.");
 	notifyAllBut(livingKids(), player, `${player.DisplayName} was taken!`);
@@ -73,7 +75,10 @@ export function returnAllTaken() {
 
 /** Takes over spawning and being taken. Call once, before players join if possible. */
 export function startElimination() {
-	startLife({ onTaken });
+	startLife({
+		onTaken,
+		deathIsTaken: (player) => canKidAct(player) && getClock().phase === "Night",
+	});
 	Players.PlayerRemoving.Connect((player) => {
 		if (isMember(player)) {
 			checkAllTaken(player);

@@ -92,6 +92,8 @@ function loadGameConfig() {
 		infectedAttackRange: num("InfectedAttackRange", 5),
 		/** An infected outside goes for a kid it can see within this distance, in studs. */
 		infectedSightRange: num("InfectedSightRange", 40),
+		/** With the generator off, waves are this many times bigger (never on Night 1). */
+		powerOffWaveMultiplier: num("PowerOffWaveMultiplier", 1.4),
 		/** Most infected alive at once (the rest of a wave waits). */
 		maxInfected: int("MaxInfected", 20),
 

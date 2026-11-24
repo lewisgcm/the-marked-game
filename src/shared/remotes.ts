@@ -1,3 +1,4 @@
+import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
 
 /**
@@ -46,6 +47,10 @@ export interface GameServerMessages {
 	Planks: number;
 	/** How many stones you have for the slingshot. */
 	Stones: number;
+	/** Your Night 1 tip; "" for none. */
+	Hint: string;
+	/** Everyone, at dawn: what the night cost. */
+	NightSummary: NightSummary;
 	/** Everyone, at the end of the run: one card per kid. */
 	Scoreboard: ScoreCard[];
 }

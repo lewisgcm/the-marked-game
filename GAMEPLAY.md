@@ -15,8 +15,8 @@ nights as you can. Every night is harder than the last, and there's no last nigh
 1. **Only adults can be infected.** Screens and radios give them marks; 3 marks and they turn.
 2. **Kids can fight back** — with improvised weapons and ammo that gets harder to find every night.
 3. **Day:** go out, scavenge, trade. **Night:** get home and hold the barricades.
-4. **Power is a trade-off:** the generator gives light and safety, but powered screens carry the
-   Signal.
+4. **Power is a trade-off:** the generator gives light and keeps the infected wary, but it burns
+   fuel.
 5. **Survive as long as you can.** The run is endless and keeps getting harder. Your score is
    nights survived. From Night 10 you can call for rescue to end the run on your own terms.
 
@@ -126,8 +126,6 @@ door is unboarded.
   get just *"Board up the house before dark. I'll call you."*
 - **Dad** stands frozen in the neighbour's front garden, staring at their TV through the window —
   the first dormant infected players see.
-- At dusk the living-room **TV turns itself back on**, so players learn to unplug or smash screens
-  before the broadcast.
 
 ### Night 1 — very forgiving
 
@@ -159,7 +157,7 @@ the intro. Runs have no time limit.
 
 | Time | What happens |
 |---|---|
-| 0:00 | Kids should be home. Last chance to **barricade**, choose the **generator** on/off and unplug or smash any screens that have turned themselves on in the house (1–3 new ones each dusk: a phone buzzes in the kitchen, the tablet under the sofa lights up). |
+| 0:00 | Kids should be home. Last chance to **barricade**, and choose the **generator** on/off. |
 | 0:30 | **The broadcast.** Every screen in the neighbourhood flares. Each **adult base** may gain a mark (see Bases). Dormant infected wake up. |
 | 0:35 | Walkie: base status ("…something's wrong with the fire station…"). Possibly a **turning** distress call (see below). |
 
@@ -174,8 +172,9 @@ the intro. Runs have no time limit.
 | 2:30 | Dawn — the infected retreat. |
 
 If the generator is **on**: house lights work, the garage door can be shut, fewer infected come
-(they avoid lit windows) — but any powered screen you missed is live. If it's **off**: no Signal
-risk inside, but darkness, flashlights only, and the infected are bolder.
+(they avoid lit windows), but it burns fuel. If it's **off**: darkness, flashlights only, and the
+infected are bolder — more come. Screens inside the house do nothing: no adult is in there to be
+marked. (Parked idea: a screen left on at the broadcast draws the waves to that room.)
 
 ### 🌅 Dawn — 0:45 — recover & upgrade
 
@@ -423,7 +422,7 @@ main cost — further away means better loot and a later trip home.
 | Night | New this night | Waves | Story / bases |
 |---|---|---|---|
 | — | First run only: car cutscene ending on Dad's red eyes. Repeat runs: straight in | — | Mum escapes to the Church |
-| 1 | Barricades, Maple Street, unplugging screens (hints for first-timers) | **Forgiving:** 2 small waves, Dad + 2–3 shamblers, half damage | Mum's walkie call |
+| 1 | Barricades, Maple Street, the generator (hints for first-timers) | **Forgiving:** 2 small waves, Dad + 2–3 shamblers, half damage | Mum's walkie call |
 | 2 | Corner shop, Treehouse; **coins and trading** | Shamblers | Treehouse kids make contact |
 | 3 | **Runners**; Fire Station opens | Runners at windows | First "under attack" call possible |
 | 4 | School; **lost kids**; **pistol** (Maple Street lockbox) | Mixed | Fire Station may get its 3rd mark (from 4) |

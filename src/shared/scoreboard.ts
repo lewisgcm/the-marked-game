@@ -7,7 +7,7 @@
  * GAMEPLAY.md "Ending a run").
  */
 
-export type StatName = "kills" | "hits";
+export type StatName = "kills" | "hits" | "planksNailed";
 
 export type Stats = Partial<Record<StatName, number>>;
 
@@ -56,6 +56,11 @@ const TITLES: TitleRule[] = [
 		score: (p) => (stat(p, "kills") > 0 ? stat(p, "kills") : undefined),
 	},
 	{
+		title: "Carpenter",
+		hint: "Nailed up the most planks",
+		score: (p) => (stat(p, "planksNailed") > 0 ? stat(p, "planksNailed") : undefined),
+	},
+	{
 		title: "First Taken",
 		hint: "The infected got them first",
 		// Earliest wins, so negate the time.
@@ -65,7 +70,7 @@ const TITLES: TitleRule[] = [
 
 /** How much a kid did, for ordering the cards (best first). */
 function kidScore(p: PlayerRun): number {
-	return stat(p, "kills") * 3 + stat(p, "hits");
+	return stat(p, "kills") * 3 + stat(p, "hits") + math.max(0, stat(p, "planksNailed"));
 }
 
 function kidLines(p: PlayerRun): string[] {
@@ -76,7 +81,10 @@ function kidLines(p: PlayerRun): string[] {
 	if (stat(p, "hits") > 0) {
 		lines.push(plural(stat(p, "hits"), "hit", "hits"));
 	}
-	lines.push(p.takenAt !== undefined ? `Taken at ${formatTime(p.takenAt)}` : "Made it");
+	if (stat(p, "planksNailed") > 0) {
+		lines.push(plural(stat(p, "planksNailed"), "plank nailed", "planks nailed"));
+	}
+	lines.push(p.takenAt !== undefined ? `First taken at ${formatTime(p.takenAt)}` : "Made it");
 	return lines;
 }
 
@@ -104,11 +112,7 @@ export function buildScoreboard(players: PlayerRun[]): ScoreCard[] {
 	const sorted = [...players];
 	sorted.sort((a, b) => kidScore(a) > kidScore(b));
 	return sorted.map((p) => {
-		const given =
-			titles.get(p.userId) ??
-			(p.takenAt !== undefined
-				? { title: "Taken", hint: "The infected got them" }
-				: { title: "Survivor", hint: "Made it to the end" });
+		const given = titles.get(p.userId) ?? { title: "Survivor", hint: "Held on to the end" };
 		return {
 			userId: p.userId,
 			name: p.name,

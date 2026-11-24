@@ -22,6 +22,8 @@ How we get from the ghost-hunt prototype to the game in [GAMEPLAY.md](GAMEPLAY.m
 - Health (100) and "taken" at 0. **No** fear/sanity meter, **no** hunger.
 - One currency: **coins**. Adult bases fall to the Signal on their own schedule; kids' bases never
   turn. Distress calls.
+- No screens inside the house; the Signal matters out in the neighbourhood (M4). The generator is
+  light and safety vs fuel (fuel from M3).
 - Car cutscene (first run only, skippable) ends on Dad's red eyes; repeat runs go straight into
   Day 1. Night 1 is forgiving.
 - Lobby: school gym hall, a parent NPC at each pad. Leaderboards: best run + total nights.
@@ -30,7 +32,6 @@ How we get from the ghost-hunt prototype to the game in [GAMEPLAY.md](GAMEPLAY.m
 
 | Question | Needed by | Recommendation |
 |---|---|---|
-| **What does a live screen in the house do at the broadcast?** No adults are inside, so the design doesn't say yet. | M1 | It's a **beacon**: tonight's waves are bigger and go for that room first. Keeps "unplug the screens" and the generator choice meaningful. |
 | Scale waves with party size? | M1 | Yes: wave size × (0.6 + 0.2 × kids), so solo is playable and 6 is chaos. |
 | Does each kid own their weapons, or is there a shared locker? | M2 | Each kid owns what they carry; a **weapon locker** at home for sharing. |
 | Save a run between sessions? Rejoin a run after disconnecting? | M8 | Rejoin yes (lobby button, M8). Saving whole runs: decide after playtests show how long runs actually last. |
@@ -101,7 +102,8 @@ Playtest question: *is holding the house fun, with 1 player and with 4?*
 - [x] Tag entry points (`BarricadeSlot`, with `Kind`), infected spawns outside
       (`InfectedSpawn`), the TV (`Screen`), lights (`HouseLight`), generator, workbench, plank
       pile.
-- [ ] Generator on/off prompt; house lights follow it.
+- [x] Generator on/off prompt (starts off); house lights follow it; off = waves 1.4× bigger (never
+      on Night 1). Fuel in M3.
 
 **Barricades** ✅
 - [x] `shared/barricade.ts` (pure): plank health, add/remove, damage (one plank per hit),
@@ -135,19 +137,24 @@ Playtest question: *is holding the house fun, with 1 player and with 4?*
 - [x] **Flashlight stun**: a beam held 0.6 s stuns an infected for 2 s (eyes dim), then 5 s
       immune. `shared/stun.ts` (pure). Spec.
 
-**Screens and the broadcast**
-- [ ] 1–3 house screens switch on at dusk; prompt to unplug or smash.
-- [ ] Broadcast at dusk + 0:30 (sound, flicker). Live screens act as beacons (pending the M1
-      decision above).
+**Screens and the broadcast** — dropped from the house; the broadcast arrives with the adult bases
+in M4.
 
-**Night 1 rules**
-- [ ] Forgiving: 2 small waves, half damage, double plank health, 15 s taken timer, the run
+**Night 1 rules** ✅
+- [x] Forgiving: 2 small waves, half damage, double plank health, 15 s taken timer, the run
       can't end.
+- [x] Tips under the clock on Day 1 / Night 1: planks, boarding, generator, where they're
+      attacking, how to fight. `shared/hints.ts` (pure). Spec. (Shown to everyone until M7's
+      "finished a Night 1" flag.)
 
 **Wrap-up**
-- [ ] Dawn summary card (planks lost, taken, nights survived).
-- [ ] End-of-run screen with nights survived and the first titles (Carpenter, Slugger, Survivor).
-- [ ] README: new main-game section + regression checklist.
+- [x] Dawn summary card (infected downed, planks lost, who was taken). `shared/nightSummary.ts`
+      (pure). Spec.
+- [x] End-of-run screen with nights survived and the first titles (Slugger, Carpenter, First
+      Taken, Survivor).
+- [x] Dying any other way at night (resetting, falling) counts as taken, so Reset is no escape.
+- [x] README: new main-game section + regression checklist.
+- [ ] **Playtest**: is holding the house fun with 1 player, and with 4?
 
 ## M2 — Day: Maple Street, loot and coins
 

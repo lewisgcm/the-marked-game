@@ -11,12 +11,13 @@ scavenge and trade by day, and survive as many nights as you can.
 - **[GAMEPLAY.md](GAMEPLAY.md)**: the game design.
 - **[PLAN.md](PLAN.md)**: the build plan, milestone by milestone.
 
-> **Current state: M0 done.** The ghost-hunt prototype this project started from (design archived
-> in [docs/archive/GAMEPLAY-ghost-prototype.md](docs/archive/GAMEPLAY-ghost-prototype.md), code at
-> git tag `ghost-prototype`) has been stripped to a base for MARKED: a party of kids in a
-> placeholder house with a flashlight and a baseball bat, a timed run, and an end screen. The
-> lobby still looks like the prototype's churchyard until M6. This README describes **what the
-> code does today**, and is updated as each milestone in [PLAN.md](PLAN.md) lands.
+> **Current state: M1 built, awaiting its playtest.** Kids hold the family house through an endless
+> day/night clock: barricades, a generator, waves of infected, bat, slingshot and flashlight stun.
+> The neighbourhood, loot and trading come next (M2+), and the lobby still looks like the
+> ghost-hunt prototype's churchyard until M6 (that prototype: git tag `ghost-prototype`, design in
+> [docs/archive/GAMEPLAY-ghost-prototype.md](docs/archive/GAMEPLAY-ghost-prototype.md)). This README
+> describes **what the code does today**, and is updated as each milestone in [PLAN.md](PLAN.md)
+> lands.
 
 ## The lobby
 
@@ -106,6 +107,10 @@ still join.
      shot every 0.6s. 20 stones to start, +10 at dawn (max 20).
    - **Flashlight stun** (`shared/stun.ts`): hold a beam on an infected for 0.6s and it stops
      dead for 2s, eyes dimmed; then beams don't work on it for 5s.
+   - **Generator** (`generator.ts`): a switch in the garage for every house light; it starts off.
+     With it off, waves are 1.4× bigger (never on Night 1).
+   - **Tips** on Day 1 / Night 1 under the clock (`shared/hints.ts`), and a **dawn card** with what
+     the night cost (`shared/nightSummary.ts`, counted in `nightReport.ts`).
    - **Barricades** (`barricades.ts`, rules in `shared/barricade.ts`): a **Take planks** prompt on
      the garage pile fills a kid up to 5 (the pile starts at 30, +10 every dawn). Every door and
      window takes 3 planks: hold **Board up** (E) to nail one, **Take down** (F) to pull one off
@@ -121,8 +126,10 @@ still join.
      Health 60 (+10% a night); at 0 they dissolve in a flicker of static.
    - **Kids' health** (`health.ts`): 100, no regeneration, full again at dawn. At 0 a kid is
      **taken** (`life.ts`): they spectate the others and come back in the basement at dawn (after
-     15s on Night 1). The run ends when every kid is taken at once, never on Night 1.
-4. **End.** The run ends when every kid is taken at once (never on Night 1). The **end screen** (15s) shows "SURVIVED N NIGHTS" and a card per kid: avatar, a fun **title** (Slugger, First Taken, Survivor, Taken)
+     15s on Night 1). Dying any other way at night
+     (resetting, falling) counts as taken. The run ends when every kid is taken at once, never on
+     Night 1.
+4. **End.** The run ends when every kid is taken at once (never on Night 1). The **end screen** (15s) shows "SURVIVED N NIGHTS" and a card per kid: avatar, a fun **title** (Slugger, Carpenter, First Taken, Survivor)
    and a few stats, counted on the server (`src/main/server/roundStats.ts`, rules in
    `src/shared/scoreboard.ts`). **Back to lobby** leaves early; the title then floats over the
    player's head in the lobby for an hour (`src/shared/lastTitle.ts`, MemoryStore). Then everyone
@@ -159,10 +166,10 @@ src/
                        #   "Ready"), gameRemote.ts, teams.ts
                        # systems: world.ts (house), party.ts, round.ts (day/night clock), lighting.ts,
                        #   life.ts, health.ts, flashlight.ts, combat.ts, slingshot.ts, barricades.ts,
-                       #   infected.ts,
+                       #   infected.ts, generator.ts, hints.ts, nightReport.ts, prompts.ts,
                        #   speed.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, noticeHud, inventoryHud, spectate, combatFeedback, melee.ts,
+                       # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
@@ -368,7 +375,7 @@ apply from the next phase.
 - [ ] Each phase change shows a big title + hint and a chime: DUSK (orange), NIGHT 1 (red), DAWN (pink), DAY 2 (white). The clock pill matches.
 - [ ] The light blends over a few seconds: bright by day, orange at dusk, darkest at night, pinkish at dawn. Indoors stays navigable at night.
 - [ ] Changing `NightSeconds` in ServerStorage → GameConfig during play changes the next night's length.
-- [ ] A player who resets respawns after ~3s in the start room, with both tools again.
+- [ ] A player who resets respawns after ~3s in the basement with all three tools (by day).
 - [ ] (Published) After the end screen, everyone is teleported back to the lobby; nobody is left on the end screen.
 - [ ] (Published) Nothing changes on the lobby's Wins board.
 - [ ] No errors in the server or client output during a whole run.
@@ -384,6 +391,18 @@ apply from the next phase.
 - [ ] The cone is faint and see-through, even close to the torch: you can clearly see what's behind and inside it.
 - [ ] Other kids' cones are visible from your window.
 - [ ] Resetting gives a fresh flashlight.
+
+### Generator
+- [ ] The run starts with every house lamp dark; the garage generator's prompt says "Start" (E).
+- [ ] Starting it lights every lamp and says "The power's on."; the prompt becomes "Switch off" and reverses it.
+- [ ] From Night 2, a wave that spawns with the power off is bigger.
+
+### Tips (Day 1 / Night 1)
+- [ ] With no planks: "Grab planks..."; carrying some: "Hold E..."; something boarded and no planks in hand: "Start the generator..."; powered: nothing by day, "Get inside..." at dusk.
+- [ ] At night: "They're at the <opening>!" while one is bashed, otherwise how to fight. Nothing at dawn, while taken, or from Day 2.
+
+### Dawn card
+- [ ] At dawn, for ~10s: "NIGHT N SURVIVED" with infected downed, planks lost and who was taken; it doesn't cover the DAWN banner.
 
 ### Slingshot
 - [ ] Every kid has a Slingshot; bottom-left shows "Stones 20".
@@ -427,6 +446,7 @@ apply from the next phase.
 - [ ] Night 1: you're back in the basement after ~15s with your bat and flashlight; the run doesn't end even if everyone's taken.
 - [ ] Later nights: you're back at dawn; if every kid is taken at once, the run ends with "SURVIVED N NIGHTS".
 - [ ] Carried planks are lost when taken.
+- [ ] Resetting at night counts as taken; resetting by day respawns you after ~3s.
 
 ### Baseball bat
 - [ ] The bat is held like a sword (pointing out of the fist), not sideways.
