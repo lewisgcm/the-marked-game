@@ -60,6 +60,8 @@ playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
   flash), `prompts.ts`, `infectedDamage.ts` (every weapon's hit goes through it).
 - A system that outgrows one file becomes a folder, like `infected/`: a new behaviour is a `Mode`
   plus one function in `behaviours.ts`.
+- **Adding a workbench upgrade:** an ID and an entry in `shared/upgrades.ts`, and its line in
+  `upgradeEffects.ts` (the compiler insists). The list, checks and messages need no changes.
 - **Numbers:** balance values that make sense alone go in `config.ts` (editable live in Studio).
   Tables and formulas (waves, loot, stack sizes) live in `src/shared/` so they can be unit-tested.
 

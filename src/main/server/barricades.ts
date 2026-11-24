@@ -14,7 +14,7 @@ import {
 import { PLANK_PILE_TAG } from "shared/tags";
 import { UpgradeId } from "shared/upgrades";
 import { gameConfig } from "./config";
-import { giveItem, itemCount, itemRoom, takeItem } from "./inventory";
+import { giveItem, giveOrDrop, itemCount, itemRoom, takeItem } from "./inventory";
 import { playSound } from "./effects";
 import { inReach, makePrompt, promptAnchor } from "./prompts";
 import { recordStat } from "./roundStats";
@@ -133,7 +133,7 @@ function onTakeDown(player: Player, state: EntryState) {
 	}
 	if (removePlank(state.barricade)) {
 		giveItem(player, "Planks", 1);
-		giveItem(player, "Nails", 1);
+		giveOrDrop(player, "Nails", 1, state.entry.cframe.mul(new CFrame(0, 0, 2)).Position);
 		recordStat(player, "planksNailed", -1); // nailing and un-nailing doesn't earn Carpenter
 		refresh(state);
 	}

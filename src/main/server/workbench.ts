@@ -2,8 +2,6 @@ import { CollectionService, Players } from "@rbxts/services";
 import { WORKBENCH_TAG } from "shared/tags";
 import { findUpgrade, parseUpgrade, UpgradeId, upgradeStatus } from "shared/upgrades";
 import { coinsOf, spendCoins } from "./coins";
-import { gameConfig } from "./config";
-import { setSlots } from "./inventory";
 import { inReach, makePrompt, promptAnchor } from "./prompts";
 
 /**
@@ -21,8 +19,8 @@ export interface WorkbenchHooks {
 	open: (player: Player) => void;
 	/** Tells a kid which upgrades they have (the party's and their own). */
 	sendUpgrades: (player: Player, owned: UpgradeId[]) => void;
-	/** The party got an upgrade. */
-	onPartyUpgrade: (id: UpgradeId) => void;
+	/** An upgrade was bought: make it happen (upgradeEffects.ts). */
+	onBought: (id: UpgradeId, buyer: Player) => void;
 }
 
 let hooks: WorkbenchHooks | undefined;
@@ -49,7 +47,6 @@ function grantPersonal(player: Player, id: UpgradeId) {
 	const own = personal.get(player) ?? new Set<UpgradeId>();
 	own.add(id);
 	personal.set(player, own);
-	setSlots(player, id === "HikingRucksack" ? gameConfig.hikingSlots.Value : gameConfig.schoolSlots.Value);
 	resendUpgrades(player);
 }
 
@@ -66,12 +63,12 @@ export function onBuyRequest(player: Player, payload: unknown) {
 	if (upgrade.personal) {
 		grantPersonal(player, id);
 		hooks.notify(player, `You got the ${upgrade.name.lower()}.`);
-		return;
+	} else {
+		party.add(id);
+		Players.GetPlayers().forEach(resendUpgrades);
+		hooks.notifyAll(`${player.DisplayName} bought ${upgrade.name.lower()}.`);
 	}
-	party.add(id);
-	Players.GetPlayers().forEach(resendUpgrades);
-	hooks.notifyAll(`${player.DisplayName} bought ${upgrade.name.lower()}.`);
-	hooks.onPartyUpgrade(id);
+	hooks.onBought(id, player);
 }
 
 /** Sets up the prompt. Call once, after the world is built. */

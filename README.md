@@ -181,7 +181,7 @@ src/
                        #   gameRemote.ts, teams.ts, party.ts, gatekeeper.ts, admission.ts
                        # systems: round.ts (day/night clock), lighting.ts, streetlights.ts, life.ts,
                        #   health.ts, inventory.ts, coins.ts, containers.ts, barricades.ts,
-                       #   generator.ts, workbench.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
+                       #   generator.ts, workbench.ts, upgradeEffects.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
                        #   nightReport.ts, roundStats.ts
                        # infected/: director.ts (spawning, waves), behaviours.ts (one function per
                        #   mode), senses.ts, movement.ts, body.ts, state.ts, types.ts
