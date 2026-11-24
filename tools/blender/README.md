@@ -218,6 +218,7 @@ the centre, so a centred mesh lands exactly where the code puts it.
 | `skull` | 0.77 × 1.05 × 1.1 | ~4000 | ritual item: lobby pedestal (`src/lobby/server/decor.ts`), main-game pickup |
 | `book` | 1.88 × 0.52 × 1.11 | ~1600 | ritual item: covers, spine and clasp only — the pages are a Part filled in at runtime (`BOOK_PAGES_SIZE` in `decor.ts` mirrors `PAGES` in `book.py`) |
 | `light_cone` | 36.95 × 36.95 × 32 | 128 | flashlight beam: open, double-sided cone; nested ×3 at runtime as translucent Neon for a fade (`src/main/client/flashlight.ts`). Length/angle mirror `BEAM_VISUAL_LENGTH` / `FLASHLIGHT_HALF_ANGLE` |
+| `fire_engine` | 8.4 × 9.43 × 21.1 | 2760 | the Fire Station's engine (`lib/vehicle.py`); `src/main/server/bases.ts` loads it |
 | `street_cars` | four meshes, up to 7.25 × 9.3 × 14.6 | 3712 | Maple Street: Minivan, Hatchback, Estate, IceCreamVan (`lib/vehicle.py`); `src/main/server/cars.ts` loads them as one model |
 | `infected_dad` | 2.64 × 5.26 × 1.28 | 1264 | Dad, the first infected, on an R15 rig (`infected/body.ts` loads it) |
 | `infected_neighbour` | 2.62 × 5.28 × 1.38 | 1292 | the ordinary shambler, on an R15 rig (`infected/body.ts` loads it) |

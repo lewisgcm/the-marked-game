@@ -3,6 +3,7 @@ import { BaseId, findBase } from "shared/bases";
 import { folder, limb, part, PartOptions } from "shared/parts";
 import { TRADER_TAG } from "shared/tags";
 import { slab, wall } from "./building";
+import { loadModel, standMesh } from "./models";
 import { buildNpc, NpcLook } from "./npc";
 
 /**
@@ -11,13 +12,15 @@ import { buildNpc, NpcLook } from "./npc";
  * Local -Z faces the street.
  */
 
+/** The Fire Station's engine (tools/blender/assets/fire_engine.py), owned by the game's owner. */
+const ENGINE_MODEL = 93513592432736;
+
 const WOOD: PartOptions = { material: Enum.Material.Wood, color: new Color3(0.45, 0.33, 0.22) };
 const BARK: PartOptions = { material: Enum.Material.Wood, color: new Color3(0.33, 0.24, 0.17) };
 const LEAVES: PartOptions = { material: Enum.Material.Grass, color: new Color3(0.24, 0.4, 0.2), collide: false };
 const BRICK: PartOptions = { material: Enum.Material.Brick, color: new Color3(0.6, 0.25, 0.2) };
 const CONCRETE: PartOptions = { material: Enum.Material.Concrete, color: new Color3(0.55, 0.55, 0.55) };
 const RED: PartOptions = { material: Enum.Material.Metal, color: new Color3(0.75, 0.12, 0.1) };
-const GLASS: PartOptions = { material: Enum.Material.SmoothPlastic, color: new Color3(0.25, 0.32, 0.38) };
 
 const KID: NpcLook = {
 	name: findBase("Treehouse").trader,
@@ -86,6 +89,17 @@ function buildTreehouse(parent: Instance, at: CFrame) {
 	traderStall(base, "Treehouse", KID, spot(0, 0, -12), 0);
 }
 
+/** The engine on the floor at `at`, facing the street; a plain block if its model can't be had. */
+function parkEngine(parent: Instance, at: CFrame) {
+	task.spawn(() => {
+		const model = loadModel(ENGINE_MODEL, "the fire engine, so it's a plain block");
+		if (!standMesh(model, "FireEngine", parent, at)) {
+			part(parent, "Engine", new Vector3(8, 7, 20), at.mul(new CFrame(0, 4.2, 0)), RED);
+		}
+		model?.Destroy();
+	});
+}
+
 function buildFireStation(parent: Instance, at: CFrame) {
 	const base = folder(parent, "FireStation");
 	const spot = (x: number, y: number, z: number) => at.mul(new CFrame(x, y, z));
@@ -103,12 +117,7 @@ function buildFireStation(parent: Instance, at: CFrame) {
 	];
 	wall(base, "X", -16, -22, 22, floorY, 15, bays, BRICK, at);
 
-	part(base, "Engine", new Vector3(8, 7, 18), spot(-11, floorY + 4.2, 2), RED);
-	part(base, "Windscreen", new Vector3(7, 2.6, 0.4), spot(-11, floorY + 5.8, -7.1), GLASS);
-	part(base, "Ladder", new Vector3(2, 0.6, 16), spot(-11, floorY + 8, 3), {
-		...CONCRETE,
-		material: Enum.Material.Metal,
-	});
+	parkEngine(base, spot(-10, floorY, 1));
 	sign(base, "FIRE STATION", new Vector3(26, 3, 0.5), spot(0, 14, -17), RED);
 	for (const x of [-11, 12]) {
 		const light = part(base, "Light", new Vector3(4, 0.4, 1), spot(x, 14.7, 0), {

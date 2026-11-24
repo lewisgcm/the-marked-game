@@ -1,0 +1,24 @@
+{
+	"triangles": 2760,
+	"vertices": 1742,
+	"size": [
+		8.4,
+		21.11,
+		9.435
+	],
+	"name": "fire_engine",
+	"size_roblox": [
+		8.4,
+		9.435,
+		21.11
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/fire_engine/fire_engine.fbx",
+		"assets/models/fire_engine/fire_engine.glb",
+		"assets/models/fire_engine/preview.png"
+	]
+}

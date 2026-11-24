@@ -454,7 +454,7 @@ apply from the next phase.
 - [ ] The list closes with X or when you walk away, and scrolls if it's taller than the screen (phone).
 
 ### Trading
-- [ ] The Treehouse (big tree, left end of the street) has a kid behind a counter; the Fire Station (right end) has an adult behind one, inside. Both stand still, idling, with a name and no health bar.
+- [ ] The Treehouse (big tree, left end of the street) has a kid behind a counter; the Fire Station (right end) has an adult behind one, inside, and a fire engine in its bay you can't walk through. Both stand still, idling, with a name and no health bar.
 - [ ] "Trade" opens the base's list with your coins. In Studio both trade from Day 1; with `OpenAllBases` at 0 (editable live): "The Treehouse starts trading on Day 2.", and the base says hello over the walkie the morning it opens.
 - [ ] Buying takes the coins, gives the lot and lowers "left today" for everyone looking. At 0: "Sold out", until the next day.
 - [ ] Greyed out when you can't afford it; "No room" when the whole lot wouldn't fit. Nothing is charged.

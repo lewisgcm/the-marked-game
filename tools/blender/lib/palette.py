@@ -93,6 +93,8 @@ SWATCHES = {
 	"car_silver": ("#8e979e", False),
 	"car_silver_dark": ("#5f676e", False),
 	"ice_pink": ("#d98ba0", False),
+	"fire_red": ("#b3302a", False),
+	"light_blue": ("#3f86d9", True),
 }
 
 _NAMES = list(SWATCHES)

@@ -1,6 +1,7 @@
-import { CollectionService, InsertService } from "@rbxts/services";
+import { CollectionService } from "@rbxts/services";
 import { folder, part, PartOptions } from "shared/parts";
 import { LOOT_CONTAINER_TAG } from "shared/tags";
+import { loadModel, standMesh } from "./models";
 
 /**
  * Parked cars (models: tools/blender/assets/street_cars.py). Each has a boot to search, there from
@@ -48,18 +49,6 @@ export function parkCar(parent: Instance, name: CarName, at: CFrame) {
 	waiting.push({ name, parent: car, at });
 }
 
-function placeModel(car: ParkedCar, models: Instance | undefined): boolean {
-	const source = models?.FindFirstChild(car.name);
-	if (!source || !source.IsA("MeshPart")) {
-		return false;
-	}
-	const mesh = source.Clone();
-	mesh.Anchored = true;
-	mesh.CFrame = car.at.mul(new CFrame(0, mesh.Size.Y / 2, 0));
-	mesh.Parent = car.parent;
-	return true;
-}
-
 function placeBlock(car: ParkedCar) {
 	const size = CAR_SIZES[car.name];
 	part(car.parent, "Body", new Vector3(size.X, 3, size.Z - 0.6), car.at.mul(new CFrame(0, 2, 0)), METAL);
@@ -71,13 +60,9 @@ export function loadCars() {
 	const cars = [...waiting];
 	waiting.clear();
 	task.spawn(() => {
-		const [ok, loaded] = pcall(() => InsertService.LoadAsset(CARS_MODEL));
-		const models = ok ? loaded.FindFirstChildOfClass("Model") : undefined;
-		if (!models) {
-			warn(`[Cars] Couldn't load the cars, so they're plain blocks: ${loaded}`);
-		}
+		const models = loadModel(CARS_MODEL, "the cars, so they're plain blocks");
 		for (const car of cars) {
-			if (!placeModel(car, models)) {
+			if (!standMesh(models, car.name, car.parent, car.at)) {
 				placeBlock(car);
 			}
 		}
