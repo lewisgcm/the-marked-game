@@ -1,0 +1,24 @@
+{
+	"triangles": 588,
+	"vertices": 336,
+	"size": [
+		0.628,
+		1.74,
+		0.754
+	],
+	"name": "torch",
+	"size_roblox": [
+		0.628,
+		0.754,
+		1.74
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/torch/torch.fbx",
+		"assets/models/torch/torch.glb",
+		"assets/models/torch/preview.png"
+	]
+}

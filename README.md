@@ -419,7 +419,7 @@ apply from the next phase.
 - [ ] In Studio, changing ServerStorage → GameConfig → DarkRoomLight during play brightens/darkens the house straight away.
 
 ### Flashlight
-- [ ] Every kid has a Flashlight; equip = on, click toggles; lens glows when on.
+- [ ] Every kid has a Flashlight (a teal and black torch held in the hand, pointing forward); equip = on, click toggles; the lens in its open end glows when on.
 - [ ] A 3D cone comes straight out of the lens in the direction the character faces (not the camera).
 - [ ] The cone is faint and see-through, even close to the torch: you can clearly see what's behind and inside it.
 - [ ] Other kids' cones are visible from your window.

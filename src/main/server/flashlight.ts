@@ -10,6 +10,7 @@ import {
 	inBeamCone,
 	pointCone,
 } from "shared/flashlight";
+import { fitTorch, waitForTorch } from "./torch";
 
 /**
  * Kids' flashlights, and the server-side check of what a beam is shining on (`litBy`, which the
@@ -20,7 +21,7 @@ import {
  * check starts (the kid's head) and which way it points (the character's root), and what it
  * hits (cone + raycast against the target's server-side position).
  *
- * Visuals: the light and cone live on the flashlight's lens. Each client points every kid's
+ * Visuals: the body is a model (torch.ts); the light and cone live on the flashlight's lens. Each client points every kid's
  * beam from that lens along the same direction, so it comes straight out of the torch in the
  * hand (see client/flashlight).
  */
@@ -70,12 +71,8 @@ function buildTool(): FlashlightParts {
 	lens.Color = LENS_OFF;
 	lens.CanCollide = false;
 	lens.Massless = true;
-	lens.CFrame = handle.CFrame.mul(new CFrame(0, 0, -0.68));
 	lens.Parent = tool;
-	const weld = new Instance("WeldConstraint");
-	weld.Part0 = handle;
-	weld.Part1 = lens;
-	weld.Parent = lens;
+	fitTorch(tool, handle, lens, new CFrame(0, 0, -0.68));
 
 	// The cone's planes all start at the lens's front face; plane 0 also carries the light.
 	const planes: Array<[Attachment, Attachment]> = [];
@@ -156,6 +153,11 @@ export function removeFlashlight(player: Player) {
 export function giveFlashlight(player: Player, character: Model) {
 	removeFlashlight(player);
 	const head = character.WaitForChild("Head", 5) as BasePart | undefined;
+	waitForTorch();
+	if (player.Character !== character) {
+		return; // taken or respawned while it loaded
+	}
+	removeFlashlight(player); // in case another call got here first
 	const backpack = player.FindFirstChildOfClass("Backpack");
 	if (!head || !backpack) {
 		return;
