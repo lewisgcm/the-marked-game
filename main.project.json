@@ -25,9 +25,6 @@
 			},
 			"Assets": {
 				"$className": "Folder",
-				"TeleportPad": {
-					"$path": "assets/rojo/teleport_pad.model.json"
-				},
 				"LightCone": {
 					"$path": "assets/rojo/light_cone.model.json"
 				}

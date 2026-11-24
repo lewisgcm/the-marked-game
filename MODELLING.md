@@ -59,7 +59,7 @@ Seen on Dad's import:
   Dad is `DadScale` (1.2, so 6.31 studs) and shamblers `ShamblerScale` (1.1, so 5.8); one tall
   avatar measured 6.58, the plain body 5.2.
 - Spawn points are set for a root 3 studs up, so a taller body starts higher (`spawnOne`).
-- Windows open 6 studs. Anything taller might catch its head climbing in: test it.
+- Windows open 6 studs. Dad gets through at 6.31; test anything taller.
 - **Eyes:** code adds Neon `Eye` parts just over the painted ones, so a stun can dim them. They're
   placed from the neck joint (`EYES_FROM_NECK`), because a head's centre moves with its hair or hood.
   Keep the face in `blocky.infected_face()` and the neck joint, and they fit every infected.
