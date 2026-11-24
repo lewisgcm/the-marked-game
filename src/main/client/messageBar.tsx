@@ -95,7 +95,7 @@ function TopBar() {
 	}
 	return (
 		<frame
-			Size={new UDim2(0, math.min(440, viewport.X * 0.56), 0, 0)}
+			Size={new UDim2(0, math.min(440, viewport.X * 0.46), 0, 0)}
 			Position={new UDim2(0.5, 0, 0, 54)}
 			AnchorPoint={new Vector2(0.5, 0)}
 			AutomaticSize={Enum.AutomaticSize.Y}

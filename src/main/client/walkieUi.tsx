@@ -1,6 +1,7 @@
 import React from "@rbxts/react";
 import { UserInputService } from "@rbxts/services";
 import { BaseStatus, unreadCount, WalkieMessage } from "shared/walkie";
+import { isTouch } from "./device";
 import { useStore, walkieOpenStore, walkieStore } from "./gameState";
 import { useViewport } from "./useViewport";
 
@@ -166,22 +167,55 @@ function Panel(props: { bases: BaseStatus[]; messages: WalkieMessage[]; onClose:
 	);
 }
 
-function OpenButton({ unread, onPress }: { unread: number; onPress: () => void }) {
+/** A little walkie-talkie, drawn from frames (fonts don't have one). */
+function WalkieIcon({ color }: { color: Color3 }) {
+	const box = (key: string, x: number, y: number, width: number, height: number, fill: Color3) => (
+		<frame
+			key={key}
+			Size={new UDim2(0, width, 0, height)}
+			Position={new UDim2(0, x, 0, y)}
+			BackgroundColor3={fill}
+			BorderSizePixel={0}
+		/>
+	);
+	return (
+		<frame Size={new UDim2(0, 16, 0, 30)} Position={new UDim2(0, 12, 0, 5)} BackgroundTransparency={1}>
+			{box("antenna", 1, 0, 3, 10, color)}
+			{box("body", 0, 9, 16, 21, color)}
+			{box("screen", 3, 12, 10, 5, PANEL)}
+			{box("speaker1", 3, 20, 10, 2, PANEL)}
+			{box("speaker2", 3, 24, 10, 2, PANEL)}
+		</frame>
+	);
+}
+
+/** Top left on touch, clear of the joystick; halfway down otherwise, clear of the chat. */
+function OpenButton({ unread, onPress }: { unread: boolean; onPress: () => void }) {
+	const touch = isTouch();
 	return (
 		<textbutton
-			Size={new UDim2(0, 84, 0, 40)}
-			Position={new UDim2(0, 10, 0.5, 0)}
-			AnchorPoint={new Vector2(0, 0.5)}
+			Size={new UDim2(0, 40, 0, 40)}
+			Position={touch ? new UDim2(0, 10, 0, 4) : new UDim2(0, 10, 0.5, 0)}
+			AnchorPoint={new Vector2(0, touch ? 0 : 0.5)}
 			BackgroundColor3={PANEL}
-			BackgroundTransparency={0.3}
+			BackgroundTransparency={0.4}
 			BorderSizePixel={0}
-			Font={Enum.Font.GothamBold}
-			TextSize={14}
-			TextColor3={unread > 0 ? GREEN : GREY}
-			Text={unread > 0 ? `Walkie (${unread})` : "Walkie"}
+			Text=""
 			Event={{ Activated: onPress }}
 		>
 			<uicorner CornerRadius={new UDim(0, 8)} />
+			<WalkieIcon color={unread ? PALE : GREY} />
+			{unread ? (
+				<frame
+					Size={new UDim2(0, 11, 0, 11)}
+					Position={new UDim2(1, -2, 0, 2)}
+					AnchorPoint={new Vector2(0.5, 0.5)}
+					BackgroundColor3={GREEN}
+					BorderSizePixel={0}
+				>
+					<uicorner CornerRadius={new UDim(1, 0)} />
+				</frame>
+			) : undefined}
 		</textbutton>
 	);
 }
@@ -215,7 +249,7 @@ export function WalkieUi() {
 			{open ? (
 				<Panel bases={bases} messages={messages} onClose={() => walkieOpenStore.set(false)} />
 			) : (
-				<OpenButton unread={unreadCount(messages, lastRead)} onPress={() => walkieOpenStore.set(true)} />
+				<OpenButton unread={unreadCount(messages, lastRead) > 0} onPress={() => walkieOpenStore.set(true)} />
 			)}
 		</screengui>
 	);

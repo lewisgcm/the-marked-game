@@ -202,7 +202,7 @@ src/
                        # world: world.ts (the house), neighbourhood.ts, bases.ts, npc.ts, building.ts
                        # helpers: effects.ts, prompts.ts, infectedDamage.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, messageQueue.ts, messageBar, gainFeed.ts, inventoryHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
+                       # endScreen, messageQueue.ts, messageBar, gainFeed.ts, device.ts, inventoryHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
@@ -451,7 +451,8 @@ apply from the next phase.
 - [ ] At dawn, for ~6s and with no DAWN banner: "NIGHT N SURVIVED" with infected downed, planks lost and who was taken. It doesn't cover the message bar.
 
 ### Inventory and coins
-- [ ] Right edge: "Coins 0" over five slots: Stones 20/20, Nails 10/20, three empty (in Studio one holds Fuel 1/1). Clear of the jump button and joystick on a phone.
+- [ ] Right edge: "Coins 0" (Studio: 150) over five slots: Stones 20/20, Nails 10/20, three empty and faint (in Studio one holds Fuel 1/1).
+- [ ] Phone (device emulator, landscape): the slots start at the top and use more columns instead of reaching the jump button, with 5, 8 and 12 slots. Drop and Use work in every column.
 - [ ] Anything gained (searching, picking up, taking planks, buying, coins at dawn) shows "+N Item" left of the coins for 2.5s; more of the same adds to its line. Not for your starting kit, nor for losing things.
 - [ ] Tapping a filled slot shows Drop (and Use for a medkit); tapping again hides it.
 - [ ] Drop leaves a box on the floor; anyone can pick it up. With no room: "Your pockets are full."
@@ -482,13 +483,13 @@ apply from the next phase.
 ### Walkie-talkie
 - [ ] ~4s into Day 1, after the title card, Mum's message pops up under the clock with a sound, for 6s, with "+2 more on the walkie (T)" in Studio (the bases' messages are in the log).
 - [ ] What a base says it needs ("We need 3 batteries today. 6 coins each.") matches the gold row in its list.
-- [ ] The "Walkie" button (left edge) counts unread messages, and T does the same as pressing it. Opening it clears the count; X or T closes it. It's clear of the chat box and, on a phone, the joystick still works around it.
+- [ ] The small walkie button has a green dot while there are unread messages, and T does the same as pressing it. Opening it clears the dot; X or T closes it. On PC it's halfway down the left edge, clear of the chat; on touch it's top left, clear of the joystick.
 - [ ] Bases are at the top: green "Trading" by day, "Closed until morning" at night, "No contact yet" before their first day (`OpenAllBases` at 0). Messages are newest first, with the day, and scroll.
 - [ ] Popups don't show while it's open, and typing a "t" in chat doesn't open it.
 - [ ] Two players see the same messages. Someone who loads in late has the log but no old popups.
 
 ### Maple Street
-- [ ] Two houses either side of home and two across the street, each with a front and back door, its own car (minivan, estate, hatchback; the ice-cream van is at the kerb) and garden stones. Each car's boot can be searched, and you can't walk through a car. You can't walk off the map.
+- [ ] Two houses either side of home and two across the street, each with a front and back door, its own car (minivan, estate, hatchback; the ice-cream van is at the kerb) and garden stones. Each car's boot can be searched, and you can't walk through a car. Wrecks: a school bus on its side across the road at the Treehouse end (you can walk round it), a tank at the Fire Station end, an ambulance (search the medical bag), a crashed car at a lamp post (search its boot) and a burnt car. You can't walk through them, and infected don't get stuck on them. The burnt car and the tank are on fire and smoking, and the crashed car's bonnet steams; none of it hurts, and the fires glow at night. You can't walk off the map.
 - [ ] Searching (hold E) shows "+3 Nails" beside your coins for what you got; an empty one says "Nothing useful."; the container goes dark and is empty for everyone (a few restock each morning; see Trading). What doesn't fit is left at your feet: "No room: left on the floor."
 - [ ] 25s before dusk (Studio): Mum says "The sun's going down. Get home." over the walkie and the street lamps come on; off at dawn.
 

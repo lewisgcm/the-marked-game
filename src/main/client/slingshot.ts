@@ -2,6 +2,7 @@ import { Players, UserInputService, Workspace } from "@rbxts/services";
 import { SLINGSHOT_TOOL_NAME } from "shared/combat";
 import { serverSender } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
+import { isTouch } from "./device";
 import { startFacing, stopFacing } from "./faceCamera";
 
 /**
@@ -24,8 +25,7 @@ function aimPoint(character: Model): Vector3 | undefined {
 	if (!camera) {
 		return undefined;
 	}
-	const touch = UserInputService.TouchEnabled && !UserInputService.MouseEnabled;
-	const screen = touch ? camera.ViewportSize.div(2) : UserInputService.GetMouseLocation();
+	const screen = isTouch() ? camera.ViewportSize.div(2) : UserInputService.GetMouseLocation();
 	const ray = camera.ViewportPointToRay(screen.X, screen.Y);
 	const params = new RaycastParams();
 	params.FilterType = Enum.RaycastFilterType.Exclude;

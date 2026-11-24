@@ -1,20 +1,29 @@
 import React from "@rbxts/react";
+import { GuiService } from "@rbxts/services";
 import { STACK_SIZE } from "shared/inventory";
 import { serverSender } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
+import { inventorySpace, slotGrid } from "shared/slotLayout";
+import { isTouch } from "./device";
 import { gainStore } from "./gainFeed";
 import { coinsStore, inventoryStore, useStore } from "./gameState";
 import { useTaken } from "./spectate";
+import { useViewport } from "./useViewport";
 
 /**
- * Your slots and coins, down the right edge (clear of the touch joystick and jump button). Tap a
+ * Your slots and coins, down the right edge, in as many columns as it takes to stay clear of the
+ * jump button (shared/slotLayout.ts). Tap a
  * slot for Use (medkits) and Drop. The server checks both. What you gain shows beside them for a
  * moment ("+3 Nails").
  */
 
 const CELL = 48;
 const GAP = 5;
+/** Most rows before another column. */
 const ROWS = 6;
+const COINS_WIDTH = 90;
+/** Height of the coins, above the slots. */
+const HEADER = 34;
 
 const PANEL = new Color3(0.05, 0.05, 0.07);
 const GOLD = new Color3(1, 0.85, 0.4);
@@ -30,6 +39,7 @@ function SmallButton({ text, x, onClick }: { text: string; x: number; onClick: (
 			Font={Enum.Font.GothamBold}
 			TextSize={15}
 			TextColor3={new Color3(1, 1, 1)}
+			ZIndex={5} // over the next column
 			Text={text}
 			Event={{ Activated: onClick }}
 		>
@@ -38,13 +48,13 @@ function SmallButton({ text, x, onClick }: { text: string; x: number; onClick: (
 	);
 }
 
-/** "+3 Nails" lines, left of the coins. */
-function Gains() {
+/** "+3 Nails" lines, left of the coins and slots. */
+function Gains({ panelWidth }: { panelWidth: number }) {
 	const lines = useStore(gainStore);
 	return (
 		<frame
 			Size={new UDim2(0, 130, 0, 0)}
-			Position={new UDim2(1, -GAP - 90 - 8, 0, 4)}
+			Position={new UDim2(1, -math.max(panelWidth, COINS_WIDTH + GAP) - 8, 0, 4)}
 			AnchorPoint={new Vector2(1, 0)}
 			BackgroundTransparency={1}
 		>
@@ -72,6 +82,7 @@ export function InventoryHud({ remote }: { remote: RemoteEvent }) {
 	const inventory = useStore(inventoryStore);
 	const coins = useStore(coinsStore);
 	const taken = useTaken();
+	const viewport = useViewport();
 	const [selected, setSelected] = React.useState<number>();
 
 	// What's in the slots changed, so the selection may no longer mean the same thing.
@@ -80,8 +91,10 @@ export function InventoryHud({ remote }: { remote: RemoteEvent }) {
 	if (taken) {
 		return undefined;
 	}
-	const columns = math.ceil(inventory.slots / ROWS);
-	const rows = math.min(inventory.slots, ROWS);
+	const touch = isTouch();
+	const space = inventorySpace(viewport.X, viewport.Y, GuiService.GetGuiInset()[0].Y, touch);
+	const { rows, columns } = slotGrid(inventory.slots, space - HEADER, CELL + GAP, ROWS);
+	const panelWidth = columns * (CELL + GAP);
 	const cells: React.Element[] = [];
 	for (let i = 0; i < inventory.slots; i++) {
 		const stack = inventory.stacks[i];
@@ -91,7 +104,7 @@ export function InventoryHud({ remote }: { remote: RemoteEvent }) {
 				key={`slot${i}`}
 				LayoutOrder={i}
 				BackgroundColor3={isSelected ? new Color3(0.25, 0.22, 0.14) : PANEL}
-				BackgroundTransparency={0.3}
+				BackgroundTransparency={stack ? 0.3 : 0.85}
 				BorderSizePixel={0}
 				AutoButtonColor={stack !== undefined}
 				Font={Enum.Font.GothamBold}
@@ -111,14 +124,14 @@ export function InventoryHud({ remote }: { remote: RemoteEvent }) {
 	return (
 		<screengui ResetOnSpawn={false} DisplayOrder={3}>
 			<frame
-				Size={new UDim2(0, columns * (CELL + GAP), 0, rows * (CELL + GAP) + 34)}
-				Position={new UDim2(1, -10, 0.42, 0)}
-				AnchorPoint={new Vector2(1, 0.5)}
+				Size={new UDim2(0, panelWidth, 0, rows * (CELL + GAP) + HEADER)}
+				Position={touch ? new UDim2(1, -10, 0, 0) : new UDim2(1, -10, 0.42, 0)}
+				AnchorPoint={new Vector2(1, touch ? 0 : 0.5)}
 				BackgroundTransparency={1}
 			>
-				<Gains />
+				<Gains panelWidth={panelWidth} />
 				<textlabel
-					Size={new UDim2(0, 90, 0, 28)}
+					Size={new UDim2(0, COINS_WIDTH, 0, 28)}
 					Position={new UDim2(1, -GAP, 0, 0)}
 					AnchorPoint={new Vector2(1, 0)}
 					BackgroundColor3={PANEL}
@@ -131,7 +144,11 @@ export function InventoryHud({ remote }: { remote: RemoteEvent }) {
 				>
 					<uicorner CornerRadius={new UDim(0, 8)} />
 				</textlabel>
-				<frame Size={new UDim2(1, 0, 1, -34)} Position={new UDim2(0, 0, 0, 34)} BackgroundTransparency={1}>
+				<frame
+					Size={new UDim2(1, 0, 1, -HEADER)}
+					Position={new UDim2(0, 0, 0, HEADER)}
+					BackgroundTransparency={1}
+				>
 					<uigridlayout
 						CellSize={new UDim2(0, CELL, 0, CELL)}
 						CellPadding={new UDim2(0, GAP, 0, GAP)}
