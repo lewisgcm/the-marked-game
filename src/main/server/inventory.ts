@@ -44,6 +44,7 @@ function inventoryOf(player: Player): Inventory {
 		inv = emptyInventory(gameConfig.inventorySlots.Value);
 		addItem(inv, "Stones", gameConfig.stonesStart.Value);
 		addItem(inv, "Nails", gameConfig.nailsStart.Value);
+		addItem(inv, "Fuel", gameConfig.fuelCansStart.Value);
 		inventories.set(player, inv);
 	}
 	return inv;

@@ -4,7 +4,7 @@
  * does is a number in the server config.
  */
 
-export type UpgradeId = "ReinforcedPlanks" | "DoorBar" | "SchoolRucksack" | "HikingRucksack";
+export type UpgradeId = "ReinforcedPlanks" | "DoorBar" | "SchoolRucksack" | "HikingRucksack" | "TuneUp";
 
 export interface Upgrade {
 	id: UpgradeId;
@@ -46,6 +46,13 @@ export const UPGRADES: Upgrade[] = [
 		cost: 60,
 		personal: true,
 		needs: "SchoolRucksack",
+	},
+	{
+		id: "TuneUp",
+		name: "Generator tune-up",
+		description: "The generator uses half the fuel",
+		cost: 35,
+		personal: false,
 	},
 ];
 

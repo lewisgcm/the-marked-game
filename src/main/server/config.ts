@@ -72,6 +72,22 @@ function loadGameConfig() {
 		/** Inventory slots with a hiking rucksack. */
 		hikingSlots: int("HikingSlots", 12),
 
+		// --- Generator fuel, in nights of running (shared/fuel.ts) ------------------------------------
+		/** Fuel in the generator at the start of a run. */
+		fuelStart: num("FuelStart", 1),
+		/** The most the tank holds. */
+		fuelTank: num("FuelTank", 3),
+		/** What one can adds. */
+		fuelPerCan: num("FuelPerCan", 1),
+		/** Cans each kid starts with (Studio: one, to try refuelling). */
+		fuelCansStart: int("FuelCansStart", 0, 1),
+		/** Everyone's warned when it drops to this many nights. */
+		fuelLow: num("FuelLow", 0.25),
+		/** Generator tune-up: how fast fuel burns (1 = as normal). */
+		tuneUpBurnRate: num("TuneUpBurnRate", 0.5),
+		/** Seconds to hold to pour a can in. */
+		pourSeconds: num("PourSeconds", 1.5),
+
 		// --- Dormant infected (by day, in front of screens; shared/wake.ts) ---------------------------
 		/** How far one notices a kid in front of it, in studs. */
 		wakeSightRange: num("WakeSightRange", 14),

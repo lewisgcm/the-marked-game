@@ -1,6 +1,7 @@
 import { UpgradeId } from "shared/upgrades";
 import { refreshBarricades } from "./barricades";
 import { gameConfig } from "./config";
+import { refreshGenerator } from "./generator";
 import { setSlots } from "./inventory";
 
 /**
@@ -13,4 +14,5 @@ export const UPGRADE_EFFECTS: Record<UpgradeId, (buyer: Player) => void> = {
 	DoorBar: () => refreshBarricades(),
 	SchoolRucksack: (buyer) => setSlots(buyer, gameConfig.schoolSlots.Value),
 	HikingRucksack: (buyer) => setSlots(buyer, gameConfig.hikingSlots.Value),
+	TuneUp: () => refreshGenerator(),
 };

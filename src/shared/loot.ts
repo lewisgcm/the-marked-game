@@ -36,12 +36,14 @@ export const LOOT_TABLES: Record<ContainerKind, LootEntry[]> = {
 		{ item: "Nails", weight: 5, min: 4, max: 10 },
 		{ item: "Planks", weight: 4, min: 2, max: 4 },
 		{ item: "Scrap", weight: 3, min: 1, max: 4 },
+		{ item: "Fuel", weight: 3, min: 1, max: 1 },
 	],
 	Car: [
 		{ item: "Coins", weight: 4, min: 1, max: 4 },
 		{ item: "Scrap", weight: 3, min: 1, max: 3 },
 		{ item: "Medkit", weight: 1, min: 1, max: 1 },
 		{ item: "Nails", weight: 2, min: 3, max: 6 },
+		{ item: "Fuel", weight: 2, min: 1, max: 1 },
 	],
 };
 

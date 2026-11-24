@@ -82,7 +82,10 @@ export function startSystems(world: MainWorld) {
 	});
 	startGenerator(world, {
 		canAct: canKidAct,
-		onChanged: (powered) => notifyAll(powered ? "The power's on." : "The power's off."),
+		notify,
+		notifyAll,
+		burnsFuel: () => isPlaying() && getClock().phase === "Night",
+		hasUpgrade,
 	});
 	startHints({
 		getKids: () => (isPlaying() ? livingKids() : []),

@@ -57,6 +57,31 @@ return function(t)
 		end)
 	end)
 
+	t.describe("fuel", function()
+		local function chance(kind)
+			local total, fuel = 0, 0
+			for _, entry in L.LOOT_TABLES[kind] do
+				total += entry.weight
+				if entry.item == "Fuel" then
+					fuel += entry.weight
+				end
+			end
+			return fuel / total
+		end
+		t.it("turns up in garages and cars, not indoors, and isn't common", function()
+			for _, kind in { "Garage", "Car" } do
+				t.expect(chance(kind) > 0.1 and chance(kind) < 0.25).toBe(true)
+			end
+			t.expect(chance("Kitchen")).toBe(0)
+			t.expect(chance("Drawers")).toBe(0)
+		end)
+		t.it("is one can at a time, and doesn't get scarcer", function()
+			local finds = L.rollLoot("Garage", 20, sequence(0.9, 0.99, 0.99))
+			t.expect(finds[1].item).toBe("Fuel")
+			t.expect(finds[1].count).toBe(1)
+		end)
+	end)
+
 	t.describe("describeLoot", function()
 		t.it("reads naturally", function()
 			t.expect(L.describeLoot({})).toBe("Nothing useful.")

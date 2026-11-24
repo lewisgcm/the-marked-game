@@ -198,7 +198,9 @@ to buy?*
 - [x] **Workbench** (`workbench.ts`, `shared/upgrades.ts`, spec): reinforced planks (1.5×), door bar
       (4th plank, 2×), school (8 slots) and hiking (12) rucksacks. Party upgrades are shared, whoever
       pays; rucksacks are personal. List UI scales to small screens.
-- [ ] **Generator fuel** and the tune-up.
+- [x] **Generator fuel** (`shared/fuel.ts`, spec) and the tune-up (half the burn, 35 coins). Burns only
+      at night, so Day 1's "Start the generator" tip isn't a trap. Starts with one night, holds three;
+      cans (one per slot) are in tool chests and car boots until the Fire Station sells them.
 - [ ] More workbench upgrades: shutters, scrap press.
 - [ ] `shared/pricing.ts` (pure): base prices, +15% per night for ammo, want-list bonuses. Spec.
 - [ ] First two NPC bases: **Treehouse** (kids) and **Fire Station** (adult), each with a trader

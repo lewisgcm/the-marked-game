@@ -4,7 +4,7 @@
  * unit-tested; main/server/inventory.ts owns the real ones.
  */
 
-export type ItemId = "Planks" | "Nails" | "Stones" | "Food" | "Batteries" | "Scrap" | "Medkit";
+export type ItemId = "Planks" | "Nails" | "Stones" | "Food" | "Batteries" | "Scrap" | "Medkit" | "Fuel";
 
 /** How many of each item fit in one slot. */
 export const STACK_SIZE: Record<ItemId, number> = {
@@ -15,6 +15,7 @@ export const STACK_SIZE: Record<ItemId, number> = {
 	Batteries: 4,
 	Scrap: 10,
 	Medkit: 1,
+	Fuel: 1,
 };
 
 export interface Stack {

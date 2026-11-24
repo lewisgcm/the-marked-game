@@ -172,7 +172,8 @@ the intro. Runs have no time limit.
 | 2:30 | Dawn — the infected retreat. |
 
 If the generator is **on**: house lights work, the garage door can be shut, fewer infected come
-(they avoid lit windows), but it burns fuel. If it's **off**: darkness, flashlights only, and the
+(they avoid lit windows), but it burns fuel: one can lasts one night. It burns **only at night**, so
+running it by day is free. It starts with one night's worth and holds three. If it's **off**: darkness, flashlights only, and the
 infected are bolder — more come. Screens inside the house do nothing: no adult is in there to be
 marked. (Parked idea: a screen left on at the broadcast draws the waves to that room.)
 

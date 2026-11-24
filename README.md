@@ -121,7 +121,9 @@ still join.
      up 70 studs away. They're extra to the night's waves and stay put at night. Dad waits in the
      left neighbour's garden on Day 1 and joins Night 1's first wave.
    - **Generator** (`generator.ts`): a switch in the garage for every house light; it starts off.
-     With it off, waves are 1.4× bigger (never on Night 1).
+     With it off, waves are 1.4× bigger (never on Night 1). Running it **at night** burns fuel (rules
+     in `shared/fuel.ts`): it starts with one night's worth, a can adds one, and the tank holds three.
+     Cans take a whole slot each and turn up in tool chests and car boots. The tune-up halves the burn.
    - **Tips** on Day 1 / Night 1 under the clock (`shared/hints.ts`), and a **dawn card** with what
      the night cost (`shared/nightSummary.ts`, counted in `nightReport.ts`).
    - **Barricades** (`barricades.ts`, rules in `shared/barricade.ts`): a **Take planks** prompt on
@@ -197,7 +199,7 @@ main.project.json      # main game place only
 
 tests/                 # unit tests run with Lune against the compiled out/ modules
   run.luau             #   tiny runner (describe / it / expect); `npm test`
-  unit/*.spec.luau     #   flashlight cone, party size, admission, melee reach + swing parsing, scoreboard titles
+  unit/*.spec.luau     #   flashlight cone, generator fuel, party size, admission, melee reach + swing parsing, scoreboard titles
 tools/blender/         # 3D models, built from Python with headless Blender (lib/sdf.py for organic shapes)
 assets/
   models/              # generated FBX / GLB / preview PNG (committed)
@@ -415,6 +417,11 @@ apply from the next phase.
 - [ ] The run starts with every house lamp dark; the garage generator's prompt says "Start" (E).
 - [ ] Starting it lights every lamp and says "The power's on."; the prompt becomes "Switch off" and reverses it.
 - [ ] From Night 2, a wave that spawns with the power off is bigger.
+- [ ] The prompt says how much is left: "Generator (1 night of fuel)" at the start. Running it by day or dusk doesn't lower it; at night it counts down, and pauses while it's off.
+- [ ] Pour in fuel (F, hold) uses a can, tells everyone, and adds a night. Without one: "You need a fuel can...". The two prompts don't overlap, and it's gone when a whole can wouldn't fit (3 nights).
+- [ ] With a quarter of a night left, everyone's warned; at empty the lights go out and everyone's told. Start then says "It's out of fuel...".
+- [ ] The tune-up is for everyone: the prompt's nights double at once, and it burns half as fast.
+- [ ] A dropped fuel can, and a taken kid's, can be picked up.
 
 ### Tips (Day 1 / Night 1)
 - [ ] With no planks: "Grab planks..."; carrying some: "Hold E..."; something boarded and no planks in hand: "Start the generator..."; powered: "Search the houses..." by day, "Get inside..." at dusk.
@@ -424,14 +431,14 @@ apply from the next phase.
 - [ ] At dawn, for ~10s: "NIGHT N SURVIVED" with infected downed, planks lost and who was taken; it doesn't cover the DAWN banner.
 
 ### Inventory and coins
-- [ ] Right edge: "Coins 0" over five slots: Stones 20/20, Nails 10/20, three empty. Clear of the jump button and joystick on a phone.
+- [ ] Right edge: "Coins 0" over five slots: Stones 20/20, Nails 10/20, three empty (in Studio one holds Fuel 1/1). Clear of the jump button and joystick on a phone.
 - [ ] Tapping a filled slot shows Drop (and Use for a medkit); tapping again hides it.
 - [ ] Drop leaves a box on the floor; anyone can pick it up. With no room: "Your pockets are full."
 - [ ] A medkit heals 50; at full health it says "You're not hurt." and isn't used.
 - [ ] Every kid still in at dawn gets 5 coins.
 
 ### Workbench
-- [ ] The garage workbench's prompt ("Upgrade") opens a list of four upgrades with costs and your coins (Studio starts you with 150).
+- [ ] The garage workbench's prompt ("Upgrade") opens a list of five upgrades with costs and your coins (Studio starts you with 150).
 - [ ] You can only buy what you can afford; bought ones say "Owned"; the hiking rucksack says "Needs school rucksack" first.
 - [ ] Reinforced planks and the door bar are for everyone (all players told, and it shows Owned for them). Front and back doors then take 4 planks; the garage door and windows still take 3.
 - [ ] Rucksacks are yours only: 8 slots, then 12, and they stay after you're taken.
