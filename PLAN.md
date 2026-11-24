@@ -296,7 +296,8 @@ Goal: the endless game.
 Not tied to a milestone yet.
 
 - [ ] **Rework the on-screen UI**, step by step: 1 one message bar (`shared/messages.ts`, spec;
-      `messageQueue.ts`, `messageBar.tsx`) built; 2 say less; 3 phase banners and dawn card; 4 the
+      `messageQueue.ts`, `messageBar.tsx`) done; 2 say less (`shared/gains.ts`, spec: "+3 Nails" instead
+      of a message for every search; no messages for what the lights or prompts show) built; 3 phase banners and dawn card; 4 the
       always-on parts. The note it came from:
       **too much pops up, all the time** (playtest, 24 Nov 2026). Best done
       before M4 adds distress calls. What shows today:

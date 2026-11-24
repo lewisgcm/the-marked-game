@@ -123,11 +123,3 @@ export function rollRestock(items: ItemId[], containers: number, most: number, r
 	}
 	return finds;
 }
-
-/** "Found 3 nails and 2 coins.", or that there was nothing. */
-export function describeLoot(finds: Loot[]): string {
-	if (finds.size() === 0) {
-		return "Nothing useful.";
-	}
-	return `Found ${finds.map((f) => `${f.count} ${f.item.lower()}`).join(" and ")}.`;
-}

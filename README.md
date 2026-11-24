@@ -202,7 +202,7 @@ src/
                        # world: world.ts (the house), neighbourhood.ts, bases.ts, npc.ts, building.ts
                        # helpers: effects.ts, prompts.ts, infectedDamage.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, messageQueue.ts, messageBar, inventoryHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
+                       # endScreen, messageQueue.ts, messageBar, gainFeed.ts, inventoryHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
@@ -427,10 +427,10 @@ apply from the next phase.
 
 ### Generator
 - [ ] The run starts with every house lamp dark; the garage generator's prompt says "Start" (E).
-- [ ] Starting it lights every lamp and says "The power's on."; the prompt becomes "Switch off" and reverses it.
+- [ ] Starting it lights every lamp (no message); the prompt becomes "Switch off" and reverses it.
 - [ ] From Night 2, a wave that spawns with the power off is bigger.
 - [ ] The prompt says how much is left: "Generator (1 night of fuel)" at the start. Running it by day or dusk doesn't lower it; at night it counts down, and pauses while it's off.
-- [ ] Pour in fuel (F, hold) uses a can, tells everyone, and adds a night. Without one: "You need a fuel can...". The two prompts don't overlap, and it's gone when a whole can wouldn't fit (3 nights).
+- [ ] Pour in fuel (F, hold) uses a can and adds a night to the prompt (no message). Without one: "You need a fuel can...". The two prompts don't overlap, and it's gone when a whole can wouldn't fit (3 nights).
 - [ ] With a quarter of a night left, everyone's warned; at empty the lights go out and everyone's told. Start then says "It's out of fuel...".
 - [ ] The tune-up is for everyone: the prompt's nights double at once, and it burns half as fast.
 - [ ] A dropped fuel can, and a taken kid's, can be picked up.
@@ -452,6 +452,7 @@ apply from the next phase.
 
 ### Inventory and coins
 - [ ] Right edge: "Coins 0" over five slots: Stones 20/20, Nails 10/20, three empty (in Studio one holds Fuel 1/1). Clear of the jump button and joystick on a phone.
+- [ ] Anything gained (searching, picking up, taking planks, buying, coins at dawn) shows "+N Item" left of the coins for 2.5s; more of the same adds to its line. Not for your starting kit, nor for losing things.
 - [ ] Tapping a filled slot shows Drop (and Use for a medkit); tapping again hides it.
 - [ ] Drop leaves a box on the floor; anyone can pick it up. With no room: "Your pockets are full."
 - [ ] A medkit heals 50; at full health it says "You're not hurt." and isn't used.
@@ -460,7 +461,7 @@ apply from the next phase.
 ### Workbench
 - [ ] The garage workbench's prompt ("Upgrade") opens a list of five upgrades with costs and your coins (Studio starts you with 150).
 - [ ] You can only buy what you can afford; bought ones say "Owned"; the hiking rucksack says "Needs school rucksack" first.
-- [ ] Reinforced planks and the door bar are for everyone (all players told, and it shows Owned for them). Front and back doors then take 4 planks; the garage door and windows still take 3.
+- [ ] Reinforced planks and the door bar are for everyone (the buyer gets a bottom line, the others news in the bar, and it shows Owned for them). Front and back doors then take 4 planks; the garage door and windows still take 3.
 - [ ] Rucksacks are yours only: 8 slots, then 12, and they stay after you're taken.
 - [ ] The list closes with X or when you walk away, and scrolls if it's taller than the screen (phone).
 
@@ -488,7 +489,7 @@ apply from the next phase.
 
 ### Maple Street
 - [ ] Two houses either side of home and two across the street, each with a front and back door, its own car (minivan, estate, hatchback; the ice-cream van is at the kerb) and garden stones. Each car's boot can be searched, and you can't walk through a car. You can't walk off the map.
-- [ ] Searching (hold E) shows what you found; the container goes dark and is empty for everyone (a few restock each morning; see Trading). What doesn't fit is left at your feet.
+- [ ] Searching (hold E) shows "+3 Nails" beside your coins for what you got; an empty one says "Nothing useful."; the container goes dark and is empty for everyone (a few restock each morning; see Trading). What doesn't fit is left at your feet: "No room: left on the floor."
 - [ ] 25s before dusk (Studio): Mum says "The sun's going down. Get home." over the walkie and the street lamps come on; off at dawn.
 
 ### Dormant infected

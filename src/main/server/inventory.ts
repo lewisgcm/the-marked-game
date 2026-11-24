@@ -134,12 +134,13 @@ export function dropStack(stack: Stack, position: Vector3) {
 	});
 }
 
-/** Gives `player` what fits and leaves the rest at `position`. */
-export function giveOrDrop(player: Player, item: ItemId, count: number, position: Vector3) {
+/** Gives `player` what fits and leaves the rest at `position`; returns how many were left there. */
+export function giveOrDrop(player: Player, item: ItemId, count: number, position: Vector3): number {
 	const left = count - giveItem(player, item, count);
 	if (left > 0) {
 		dropStack({ item, count: left }, position);
 	}
+	return left;
 }
 
 /** A taken kid leaves everything they carried where they were. */

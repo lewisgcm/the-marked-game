@@ -75,7 +75,6 @@ function onSwitch(player: Player) {
 		return;
 	}
 	setPowered(!powered);
-	hooks?.notifyAll(powered ? "The power's on." : "The power's off.");
 }
 
 function onPour(player: Player) {
@@ -88,7 +87,6 @@ function onPour(player: Player) {
 	}
 	fuel += gameConfig.fuelPerCan.Value;
 	refreshGenerator();
-	hooks?.notifyAll(`${player.DisplayName} refuelled the generator.`);
 }
 
 function burn(seconds: number) {

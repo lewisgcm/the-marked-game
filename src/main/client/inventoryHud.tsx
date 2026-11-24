@@ -2,12 +2,14 @@ import React from "@rbxts/react";
 import { STACK_SIZE } from "shared/inventory";
 import { serverSender } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
+import { gainStore } from "./gainFeed";
 import { coinsStore, inventoryStore, useStore } from "./gameState";
 import { useTaken } from "./spectate";
 
 /**
  * Your slots and coins, down the right edge (clear of the touch joystick and jump button). Tap a
- * slot for Use (medkits) and Drop. The server checks both.
+ * slot for Use (medkits) and Drop. The server checks both. What you gain shows beside them for a
+ * moment ("+3 Nails").
  */
 
 const CELL = 48;
@@ -33,6 +35,35 @@ function SmallButton({ text, x, onClick }: { text: string; x: number; onClick: (
 		>
 			<uicorner CornerRadius={new UDim(0, 8)} />
 		</textbutton>
+	);
+}
+
+/** "+3 Nails" lines, left of the coins. */
+function Gains() {
+	const lines = useStore(gainStore);
+	return (
+		<frame
+			Size={new UDim2(0, 130, 0, 0)}
+			Position={new UDim2(1, -GAP - 90 - 8, 0, 4)}
+			AnchorPoint={new Vector2(1, 0)}
+			BackgroundTransparency={1}
+		>
+			<uilistlayout SortOrder={Enum.SortOrder.LayoutOrder} />
+			{lines.map((line, i) => (
+				<textlabel
+					key={line.item}
+					LayoutOrder={i}
+					Size={new UDim2(1, 0, 0, 22)}
+					BackgroundTransparency={1}
+					Font={Enum.Font.GothamBold}
+					TextSize={16}
+					TextColor3={line.item === "Coins" ? GOLD : new Color3(0.95, 0.9, 0.8)}
+					TextStrokeTransparency={0.5}
+					TextXAlignment={Enum.TextXAlignment.Right}
+					Text={`+${line.count} ${line.item}`}
+				/>
+			))}
+		</frame>
 	);
 }
 
@@ -85,6 +116,7 @@ export function InventoryHud({ remote }: { remote: RemoteEvent }) {
 				AnchorPoint={new Vector2(1, 0.5)}
 				BackgroundTransparency={1}
 			>
+				<Gains />
 				<textlabel
 					Size={new UDim2(0, 90, 0, 28)}
 					Position={new UDim2(1, -GAP, 0, 0)}

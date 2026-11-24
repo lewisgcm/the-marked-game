@@ -14,7 +14,8 @@ export interface WorkbenchHooks {
 	/** Whether `player` may use prompts right now. */
 	canAct: (player: Player) => boolean;
 	notify: (player: Player, text: string) => void;
-	notifyAll: (text: string) => void;
+	/** News for everyone but `except`. */
+	notifyAll: (text: string, except: Player) => void;
 	/** Opens the list on `player`'s screen. */
 	open: (player: Player) => void;
 	/** Tells a kid which upgrades they have (the party's and their own). */
@@ -62,12 +63,12 @@ export function onBuyRequest(player: Player, payload: unknown) {
 	}
 	if (upgrade.personal) {
 		grantPersonal(player, id);
-		hooks.notify(player, `You got the ${upgrade.name.lower()}.`);
 	} else {
 		party.add(id);
 		Players.GetPlayers().forEach(resendUpgrades);
-		hooks.notifyAll(`${player.DisplayName} bought ${upgrade.name.lower()}.`);
+		hooks.notifyAll(`${player.DisplayName} bought ${upgrade.name.lower()}.`, player);
 	}
+	hooks.notify(player, `You got the ${upgrade.name.lower()}.`);
 	hooks.onBought(id, player);
 }
 

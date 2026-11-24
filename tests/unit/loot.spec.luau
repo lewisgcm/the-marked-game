@@ -116,13 +116,4 @@ return function(t)
 			t.expect(#L.rollRestock({}, 3, 2, sequence())).toBe(0)
 		end)
 	end)
-
-	t.describe("describeLoot", function()
-		t.it("reads naturally", function()
-			t.expect(L.describeLoot({})).toBe("Nothing useful.")
-			t.expect(L.describeLoot({ { item = "Nails", count = 3 }, { item = "Coins", count = 2 } })).toBe(
-				"Found 3 nails and 2 coins."
-			)
-		end)
-	end)
 end

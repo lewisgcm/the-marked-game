@@ -6,6 +6,7 @@ import { GAME_REMOTE_NAME } from "shared/remotes";
 import { CombatFeedback } from "./combatFeedback";
 import { DawnCard } from "./dawnCard";
 import { startFlashlight } from "./flashlight";
+import { startGainFeed } from "./gainFeed";
 import { startGameState } from "./gameState";
 import { InventoryHud } from "./inventoryHud";
 import { startMelee } from "./melee";
@@ -26,6 +27,7 @@ startFlashlight();
 // One early listener stores everything the server says (see gameState.ts), then asks the
 // server to re-send our state, so UI that mounts later never misses a message.
 startMessageQueue();
+startGainFeed();
 startGameState(remote);
 startMelee(remote);
 startSlingshot(remote);

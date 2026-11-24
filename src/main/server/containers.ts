@@ -1,7 +1,7 @@
 import { CollectionService } from "@rbxts/services";
 import { rootOf } from "shared/characters";
 import { ItemId } from "shared/inventory";
-import { ContainerKind, describeLoot, Loot, pickSome, rollLoot, rollRestock } from "shared/loot";
+import { ContainerKind, Loot, pickSome, rollLoot, rollRestock } from "shared/loot";
 import { LOOT_CONTAINER_TAG, STONES_TAG } from "shared/tags";
 import { addCoins } from "./coins";
 import { gameConfig } from "./config";
@@ -66,14 +66,20 @@ function setUpContainer(box: BasePart, hooks: ContainerHooks) {
 		const finds = container.stash ? [container.stash] : rollLoot(kind, hooks.getNight(), () => math.random());
 		container.stash = undefined;
 		const spot = rootOf(player.Character)?.Position ?? box.Position;
+		let dropped = 0;
 		for (const find of finds) {
 			if (find.item === "Coins") {
 				addCoins(player, find.count);
 			} else {
-				giveOrDrop(player, find.item, find.count, spot);
+				dropped += giveOrDrop(player, find.item, find.count, spot);
 			}
 		}
-		hooks.notify(player, describeLoot(finds));
+		// What they got shows beside their inventory.
+		if (finds.size() === 0) {
+			hooks.notify(player, "Nothing useful.");
+		} else if (dropped > 0) {
+			hooks.notify(player, "No room: left on the floor.");
+		}
 	});
 }
 

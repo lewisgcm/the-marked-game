@@ -31,9 +31,13 @@ export function notify(player: Player, text: string) {
 	send(player, "Notice", { text, kind: "Feedback" });
 }
 
-/** News for everyone. */
-export function notifyAll(text: string) {
-	Players.GetPlayers().forEach((player) => send(player, "Notice", { text, kind: "Info" }));
+/** News, for everyone (but `except`). */
+export function notifyAll(text: string, except?: Player) {
+	for (const player of Players.GetPlayers()) {
+		if (player !== except) {
+			send(player, "Notice", { text, kind: "Info" });
+		}
+	}
 }
 
 /** Danger: `player` should see this at once. */
