@@ -28,6 +28,21 @@ How we get from the ghost-hunt prototype to the game in [GAMEPLAY.md](GAMEPLAY.m
   Day 1. Night 1 is forgiving.
 - Lobby: school gym hall, a parent NPC at each pad. Leaderboards: best run + total nights.
 
+### Order of work (proposed 24 Nov 2026)
+
+Milestones stay grouped by theme, but we don't build them all before anyone plays. Sizes are rough.
+
+| Step | What | Size |
+|---|---|---|
+| 1 | **Finish M3:** shutters and scrap press | Small |
+| 2 | **Play a full run with friends** (published; the lobby needs 2+ players until M6). If holding the house isn't fun, fix that before adding more | — |
+| 3 | **M4**, plus the **Runner** from M5 so nights aren't all shamblers | Medium |
+| 4 | **M6** (lobby, solo play), then **M7** (first run) | Medium each |
+| 5 | **First public test**, Nights 1–5 only | — |
+| 6 | The rest of **M5** (very big), then **M8** and **M9** (big), guided by what players say | Very big |
+
+Art runs alongside, on the same branch: the infected, cars, wrecks, fire engine and torch are in.
+
 ### Still open — decide by the milestone shown
 
 | Question | Needed by | Recommendation |
@@ -35,6 +50,8 @@ How we get from the ghost-hunt prototype to the game in [GAMEPLAY.md](GAMEPLAY.m
 | Scale waves with party size? | M1 | Yes: wave size × (0.6 + 0.2 × kids), so solo is playable and 6 is chaos. |
 | Does each kid own their weapons, or is there a shared locker? | M2 | Each kid owns what they carry; a **weapon locker** at home for sharing. |
 | Save a run between sessions? Rejoin a run after disconnecting? | M8 | Rejoin yes (lobby button, M8). Saving whole runs: decide after playtests show how long runs actually last. |
+| Shorter E / F prompts (8 studs → ~5) at doors and windows, where two show at once? | Any time | Try it on openings only: less clutter, but you stand closer to board up. |
+| Tell players the power must be on before dark (it counts after 20s)? | After the friends playtest | Only if they get caught out: a word in Mum's sundown line. |
 | Kid classes (Builder / Scout / Medic / Techie)? | After M5 | Not for now; revisit if runs feel samey. |
 
 ---
@@ -201,7 +218,9 @@ to buy?*
 - [x] **Generator fuel** (`shared/fuel.ts`, spec) and the tune-up (half the burn, 35 coins). Burns only
       at night, so Day 1's "Start the generator" tip isn't a trap. Starts with one night, holds three;
       cans (one per slot) are in tool chests and car boots until the Fire Station sells them.
-- [ ] More workbench upgrades: shutters, scrap press.
+- [ ] **Window shutters**: shamblers can't fully break a shuttered ground-floor window. Per window, 30
+      coins, at the workbench until the Hardware Store exists (M5).
+- [ ] **Scrap press** (30 coins): crafts a few nails or stones from scrap.
 - [x] `shared/pricing.ts` (pure): base prices, +15% per day for scarce goods, want bonus (2×). Spec.
 - [x] First two NPC bases: **Treehouse** (kids, Day 2) and **Fire Station** (adult, Day 3), at either
       end of Maple Street (`bases.ts`, `npc.ts`), each with a trader, daily stock and one daily order
@@ -214,6 +233,8 @@ to buy?*
       Days 1–3, then each base's hello and want), base status, log, popups; Mum's sundown warning. It's
       always on you: no slot, no batteries. Intel on waves waits for waves that pick a side (M5); which
       bases survived and mark meters are M4; the first-timer/returning Mum lines need M7's flag.
+- [ ] **Playtest** with friends: do players plan trips around what they want to buy? (And the two open
+      ones from M1 and M2.)
 
 ## M4 — The Signal takes the adult bases
 
@@ -237,7 +258,7 @@ Goal: Nights 1–10 as designed in GAMEPLAY.md §9.
 - [ ] Ranged: nail gun (shares nails with barricades), crossbow (reusable bolts), **pistol**,
       **hunting rifle**, **submachine gun** (shares pistol ammo), flare gun.
 - [ ] **Gun noise**: wakes dormant infected nearby by day; pulls the wave to that side at night.
-- [ ] Map: Corner shop, Treehouse, School (lost kids, tuner), Hardware Store, Skate Park, Clinic,
+- [ ] Map: Corner shop, School (lost kids, tuner), Hardware Store, Skate Park, Clinic,
       Gas station, Police Station (armoury), Church (Mum). Areas unlock by night.
 - [ ] Remaining bases: Hardware Store, Church, School Gym, Skate Park.
 - [ ] Lost kids → escort to a kids' base for coins.
@@ -251,6 +272,8 @@ Goal: the lobby looks like MARKED. Mostly visual (GAMEPLAY.md §1).
       hall's screens glitch and every parent freezes now and then.
 - [ ] Countdown end: the parent walks the party out through the doors, fade, teleport.
 - [ ] Minimum party size **1**.
+- [ ] Delete the last ghost-prototype leftovers: `ritualItems.ts`, `recordWin` in `stats.ts`, the skull,
+      book and candles models, and old ghost comments in the lobby's `queue.ts` and `config.ts`.
 - [ ] Leaderboards: **best run** and **total nights** (replace *Wins* in `stats.ts` and
       `leaderboard.ts`; player list shows best run).
 
@@ -284,7 +307,8 @@ Goal: the endless game.
 - [ ] Blender models: the house, infected (adult rigs with red eyes), weapons, the gym hall props,
       Mum's car.
 - [ ] Audio: the Signal tone, radio bulletin voice-over, infected sounds, gunshots, ambience.
-- [ ] Mobile / tablet / console UI pass (touch buttons for every action).
+- [ ] Mobile / tablet / console UI pass (touch buttons for every action). Known: on the smallest phones
+      the 12-slot rucksack overlaps the message bar a little.
 - [ ] Performance pass with a full neighbourhood and 6 players (streaming is off, see AGENTS.md).
 - [ ] Experience Questionnaire (expect a 13+ label), thumbnails, icon, description.
 - [ ] Publish both places; wire place IDs (`src/shared/placeIds.ts`).
@@ -295,22 +319,11 @@ Goal: the endless game.
 
 Not tied to a milestone yet.
 
-- [x] **Rework the on-screen UI**, step by step: 1 one message bar (`shared/messages.ts`, spec;
-      `messageQueue.ts`, `messageBar.tsx`) done; 2 say less (`shared/gains.ts`, spec: "+3 Nails" instead
-      of a message for every search; no messages for what the lights or prompts show) done; 3 phase banners and dawn card (`shared/announce.ts`, spec) done; 4 the
-      always-on parts (walkie icon, faint empty slots, `shared/slotLayout.ts`, spec) done. The note it came from:
-      **too much pops up, all the time** (playtest, 24 Nov 2026). Best done
-      before M4 adds distress calls. What shows today:
-  - Always: clock, inventory and coins, walkie button, Night 1 tips (until Day 2).
-  - Every phase change: a big banner and chime (3s). Dawn adds the dawn card (10s) under it.
-  - Every morning: walkie popups one after another, 5s each with a sound. One to four a morning
-    in a normal run, more with every base added.
-  - Notices (3s each, and a new one replaces the last): every search, refusals ("Your pockets are
-    full."), and to **everyone**: power on/off, refuelling, low/out of fuel, upgrades bought, an
-    opening broken, a kid taken.
-  - Starting points: one queue that decides what shows and when, with priorities (danger first);
-    one walkie popup per morning ("3 new messages") with the rest in the log; things only one kid
-    did told only to that kid; search finds shown by the inventory instead of a notice.
+- [x] **Rework the on-screen UI** ("too much pops up, all the time", playtest 24 Nov 2026): one message
+      bar (`shared/messages.ts`), fewer messages and "+3 Nails" (`shared/gains.ts`), quieter phase
+      changes (`shared/announce.ts`), and a phone layout (`shared/slotLayout.ts`). All with specs.
+- [x] **Code tidy and the power fix**: shared panel, colours, sounds and prompt times; the generator only
+      counts for a wave once it's been on 20s (`powerCounts` in `shared/waves.ts`, spec).
 - [ ] Better prices at a base for filling its orders (in GAMEPLAY §7, not built).
 
 ---
@@ -324,5 +337,6 @@ Not tied to a milestone yet.
   to come earlier if playtests show long runs.
 - **Content rating.** Kids killing (infected) adults, and adults taking kids. Keep it stylised:
   static, no blood, "taken" not "eaten".
-- **Scope.** M5 is big. If time is short, ship the first public test after **M4 + M6 + M7** with
-  Nights 1–5 content only.
+- **Scope.** M5 is very big, so the first public test comes before most of it (see Order of work).
+- **Two sessions in one folder.** Art and code work share this branch. Commit by path, or use a git
+  worktree.
