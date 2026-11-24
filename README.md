@@ -114,6 +114,10 @@ still join.
      Day 2) at the left end of Maple Street and the **Fire Station** (Day 3) at the right. Each restocks
      every morning, for the whole party, and buys food, batteries and scrap, paying double for the one
      thing it wants that day. Nails cost 15% more every day. Closed at night.
+   - **Walkie-talkie** (`walkie.ts`, what's said in `shared/walkie.ts`): a few seconds into each day Mum
+     and every base in contact report in (what they want, and what they pay). New messages pop up
+     under the clock one at a time; the button on the left (or T) opens the bases and the log. Mum
+     gives the sundown warning. Any system can speak with `say(from, text)`.
    - **Maple Street** (`neighbourhood.ts`): four houses to search (`containers.ts`, tables in
      `shared/loot.ts`). A searched container stays empty for the run; nails get scarcer every night.
      Gardens have stones, back every dawn. A minute before dusk: a warning, and the street lamps.
@@ -187,14 +191,14 @@ src/
                        #   gameRemote.ts, teams.ts, party.ts, gatekeeper.ts, admission.ts
                        # systems: round.ts (day/night clock), lighting.ts, streetlights.ts, life.ts,
                        #   health.ts, inventory.ts, coins.ts, containers.ts, barricades.ts,
-                       #   generator.ts, workbench.ts, upgradeEffects.ts, trading.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
+                       #   generator.ts, workbench.ts, upgradeEffects.ts, trading.ts, walkie.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
                        #   nightReport.ts, roundStats.ts
                        # infected/: director.ts (spawning, waves), behaviours.ts (one function per
                        #   mode), senses.ts, movement.ts, body.ts, state.ts, types.ts
                        # world: world.ts (the house), neighbourhood.ts, bases.ts, npc.ts, building.ts
                        # helpers: effects.ts, prompts.ts, infectedDamage.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, shopPanel, workbenchUi, tradeUi, spectate, combatFeedback, melee.ts,
+                       # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
@@ -450,7 +454,7 @@ apply from the next phase.
 
 ### Trading
 - [ ] The Treehouse (big tree, left end of the street) has a kid behind a counter; the Fire Station (right end) has an adult behind one, inside. Both stand still, idling, with a name and no health bar.
-- [ ] "Trade" opens the base's list with your coins. In Studio both trade from Day 1; with `OpenAllBases` at 0 (editable live): "The Treehouse starts trading on Day 2.", and everyone's told when a base opens.
+- [ ] "Trade" opens the base's list with your coins. In Studio both trade from Day 1; with `OpenAllBases` at 0 (editable live): "The Treehouse starts trading on Day 2.", and the base says hello over the walkie the morning it opens.
 - [ ] Buying takes the coins, gives the lot and lowers "left today" for everyone looking. At 0: "Sold out", until the next day.
 - [ ] Greyed out when you can't afford it; "No room" when the whole lot wouldn't fit. Nothing is charged.
 - [ ] Selling takes one item at a time and pays what the button says; greyed out at "You have 0". One row says "Wanted today!" in gold and pays double; it's a different item the next day.
@@ -458,10 +462,18 @@ apply from the next phase.
 - [ ] At night the traders say "Closed until morning.", and buying from a list left open does too.
 - [ ] The list closes with X or when you walk away.
 
+### Walkie-talkie
+- [ ] ~4s into Day 1, after the title card, Mum's message pops up under the clock with a sound, for 5s. In Studio both bases then say what they want, one after another.
+- [ ] What a base says it wants and pays matches the gold row in its list.
+- [ ] The "Walkie" button (left edge) counts unread messages, and T does the same as pressing it. Opening it clears the count; X or T closes it. It's clear of the chat box and, on a phone, the joystick still works around it.
+- [ ] Bases are at the top: green "Trading" by day, "Closed until morning" at night, "No contact yet" before their first day (`OpenAllBases` at 0). Messages are newest first, with the day, and scroll.
+- [ ] Popups don't show while it's open, and typing a "t" in chat doesn't open it.
+- [ ] Two players see the same messages. Someone who loads in late has the log but no old popups.
+
 ### Maple Street
 - [ ] Two houses either side of home and two across the street, each with a front and back door, car and garden stones. You can't walk off the map.
 - [ ] Searching (hold E) shows what you found; the container goes dark and stays empty, for everyone, all run. What doesn't fit is left at your feet.
-- [ ] 25s before dusk (Studio): "The sun's going down. Get home." and the street lamps come on; off at dawn.
+- [ ] 25s before dusk (Studio): Mum says "The sun's going down. Get home." over the walkie and the street lamps come on; off at dawn.
 
 ### Dormant infected
 - [ ] By day one stands in each house facing the TV. You can walk behind it; crossing in front, touching it or shining a torch on it wakes it.

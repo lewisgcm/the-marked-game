@@ -80,6 +80,12 @@ function loadGameConfig() {
 		/** 1: every base trades from Day 1 (Studio, to try them without waiting). */
 		openAllBases: int("OpenAllBases", 0, 1),
 
+		// --- Walkie-talkie (what's said: shared/walkie.ts) ----------------------------------------------
+		/** Seconds into the day the morning report comes (after the day's title). */
+		morningReportDelay: num("MorningReportDelay", 4),
+		/** Most messages kept in the log. */
+		walkieLog: int("WalkieLog", 30),
+
 		// --- Generator fuel, in nights of running (shared/fuel.ts) ------------------------------------
 		/** Fuel in the generator at the start of a run. */
 		fuelStart: num("FuelStart", 1),

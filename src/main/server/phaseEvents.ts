@@ -1,11 +1,12 @@
 import { Players } from "@rbxts/services";
 import { Clock, DayPhase } from "shared/phases";
+import { MUM, SUNDOWN } from "shared/walkie";
 import { refillPile } from "./barricades";
 import { addCoins } from "./coins";
 import { gameConfig } from "./config";
 import { refillGardens } from "./containers";
 import { returnAllTaken } from "./elimination";
-import { notifyAll, send } from "./gameRemote";
+import { send } from "./gameRemote";
 import { healAll } from "./health";
 import { retreatAll, spawnDormant, startNight } from "./infected/director";
 import { setPhaseLighting } from "./lighting";
@@ -15,25 +16,32 @@ import { getClock } from "./round";
 import { setStreetLights } from "./streetlights";
 import { isPlaying, livingKids } from "./teams";
 import { startTradingDay } from "./trading";
+import { refreshWalkie, say, sayMorningReport } from "./walkie";
 
 /** What happens as each phase of the day/night clock begins. */
 
-/** Late in the day: a warning to head home, and the street lamps come on. */
-function scheduleSundown(night: number) {
-	task.delay(math.max(0, gameConfig.daySeconds.Value - gameConfig.sundownSeconds.Value), () => {
-		const clock = getClock();
-		if (isPlaying() && clock.night === night && clock.phase === "Day") {
-			setStreetLights(true);
-			notifyAll("The sun's going down. Get home.");
+/** Does something `seconds` into a phase, unless it (or the run) is over by then. */
+function later(clock: Clock, seconds: number, act: () => void) {
+	task.delay(math.max(0, seconds), () => {
+		const now = getClock();
+		if (isPlaying() && now.night === clock.night && now.phase === clock.phase) {
+			act();
 		}
 	});
+}
+
+/** Late in the day: a warning to head home, and the street lamps come on. */
+function onSundown() {
+	setStreetLights(true);
+	say(MUM, SUNDOWN);
 }
 
 function onDay(clock: Clock, street: Neighbourhood) {
 	clearSummary();
 	spawnDormant(street.dormantSpots, clock.night, clock.night === 1 ? street.dadSpot : undefined);
-	startTradingDay(clock.night);
-	scheduleSundown(clock.night);
+	startTradingDay();
+	later(clock, gameConfig.morningReportDelay.Value, () => sayMorningReport(clock.night));
+	later(clock, gameConfig.daySeconds.Value - gameConfig.sundownSeconds.Value, onSundown);
 }
 
 function onNight(clock: Clock) {
@@ -65,4 +73,5 @@ export function onPhase(clock: Clock, street: Neighbourhood) {
 	print(`[Main] ${clock.phase} ${clock.night}`);
 	setPhaseLighting(clock.phase);
 	ON_PHASE[clock.phase](clock, street);
+	refreshWalkie(); // bases open and close
 }

@@ -7,6 +7,7 @@ import { currentSummary } from "./nightReport";
 import { isMember } from "./party";
 import { getScoreboard } from "./roundEnd";
 import { livingKids } from "./teams";
+import { resendWalkie } from "./walkie";
 import { resendUpgrades } from "./workbench";
 
 /**
@@ -22,6 +23,7 @@ export function resync(player: Player) {
 	resendCoins(player);
 	resendUpgrades(player);
 	resendHint(player);
+	resendWalkie(player);
 	const summary = currentSummary();
 	if (summary) {
 		send(player, "NightSummary", summary);

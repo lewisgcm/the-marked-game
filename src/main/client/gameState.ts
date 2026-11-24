@@ -6,6 +6,7 @@ import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
 import { TradeView } from "shared/pricing";
 import { UpgradeId } from "shared/upgrades";
+import { WalkieState } from "shared/walkie";
 
 /**
  * The local player's game state, as told by the server, kept in small stores.
@@ -63,6 +64,8 @@ export const upgradesStore = new Store<UpgradeId[]>([]);
 export const workbenchOpenStore = new Store<boolean>(false);
 /** The trader's list that's showing, if any. */
 export const tradeStore = new Store<TradeView | undefined>(undefined);
+/** The walkie-talkie: its log, and how each base is doing. */
+export const walkieStore = new Store<WalkieState>({ messages: [], bases: [] });
 /** Your Night 1 tip ("" for none). */
 export const hintStore = new Store<string>("");
 /** Last night's summary, with when it arrived. */
@@ -89,6 +92,7 @@ export function startGameState(remote: RemoteEvent) {
 				tradeStore.set(view);
 			}
 		},
+		Walkie: (state) => walkieStore.set(state),
 		Hint: (text) => hintStore.set(text),
 		NightSummary: (summary) => nightSummaryStore.set({ summary, at: os.clock() }),
 		Scoreboard: (cards) => scoreboardStore.set(cards),

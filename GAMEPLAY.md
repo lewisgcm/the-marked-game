@@ -123,7 +123,8 @@ door is unboarded.
   a screen — three times and they're gone. I'm at the church. Board up the house before dark."*)
   and **hints**, not a checklist: board the front door, try Maple Street, be home before dark.
   Hints never block anything and switch off once you've finished a Night 1. Returning players
-  get just *"Board up the house before dark. I'll call you."*
+  get just *"Board up the house before dark. I'll call you."* (Until M7 can tell them apart, everyone
+  hears a short version on Day 1 and the screens warning on Day 2.)
 - **Dad** stands frozen in the neighbour's front garden, staring at their TV through the window —
   the first dormant infected players see.
 

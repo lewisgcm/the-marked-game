@@ -209,7 +209,10 @@ to buy?*
       Stone pouch, blueprints, lures and the fire axe come with the things they need (M5).
 - [x] Trade UI (`tradeUi.tsx`; the list is shared with the workbench in `shopPanel.tsx`). Clients send
       only a base and an item; `trading.ts` checks day, reach, stock, coins and room.
-- [ ] **Walkie-talkie** UI: morning report, base status, messages log.
+- [x] **Walkie-talkie** (`walkie.ts`, `walkieUi.tsx`, `shared/walkie.ts`, spec): morning report (Mum on
+      Days 1–3, then each base's hello and want), base status, log, popups; Mum's sundown warning. It's
+      always on you: no slot, no batteries. Intel on waves waits for waves that pick a side (M5); which
+      bases survived and mark meters are M4; the first-timer/returning Mum lines need M7's flag.
 
 ## M4 — The Signal takes the adult bases
 

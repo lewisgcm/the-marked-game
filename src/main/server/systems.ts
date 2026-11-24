@@ -19,8 +19,9 @@ import { getClock } from "./round";
 import { onLeaveRequest } from "./roundEnd";
 import { onShootRequest, startSlingshot } from "./slingshot";
 import { canKidAct, isPlaying, livingKids } from "./teams";
-import { onTradeBuyRequest, onTradeSellRequest, startTrading } from "./trading";
+import { baseReports, onTradeBuyRequest, onTradeSellRequest, startTrading } from "./trading";
 import { UPGRADE_EFFECTS } from "./upgradeEffects";
+import { startWalkie } from "./walkie";
 import { hasUpgrade, onBuyRequest, startWorkbench } from "./workbench";
 import { MainWorld } from "./world";
 
@@ -67,9 +68,13 @@ export function startSystems(world: MainWorld) {
 	startTrading({
 		canAct: canKidAct,
 		notify,
-		notifyAll,
 		open: (player, view) => send(player, "OpenTrade", view),
 		update: (view) => Players.GetPlayers().forEach((p) => send(p, "UpdateTrade", view)),
+	});
+	startWalkie({
+		getReports: baseReports,
+		send: (player, state) => send(player, "Walkie", state),
+		sendAll: (state) => Players.GetPlayers().forEach((p) => send(p, "Walkie", state)),
 	});
 	startSlingshot({
 		canAttack: canKidAct,

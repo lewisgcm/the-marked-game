@@ -3,6 +3,7 @@ import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
 import { TradeView } from "shared/pricing";
 import { TradeRequest } from "shared/trade";
+import { WalkieState } from "shared/walkie";
 import { UpgradeId } from "shared/upgrades";
 
 /**
@@ -59,6 +60,8 @@ export interface GameServerMessages {
 	OpenTrade: TradeView;
 	/** Everyone: a trader's list changed (shown only if you have it open). */
 	UpdateTrade: TradeView;
+	/** The walkie-talkie's log, and how each base is doing. */
+	Walkie: WalkieState;
 	/** Your Night 1 tip; "" for none. */
 	Hint: string;
 	/** Everyone, at dawn: what the night cost. */

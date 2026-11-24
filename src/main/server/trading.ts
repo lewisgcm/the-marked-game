@@ -4,6 +4,7 @@ import { ItemId } from "shared/inventory";
 import { pickWanted, SaleRow, TradeView, tradeView } from "shared/pricing";
 import { TRADER_TAG } from "shared/tags";
 import { isTrading, parseTradeRequest, saleStatus } from "shared/trade";
+import { BaseReport } from "shared/walkie";
 import { addCoins, coinsOf, spendCoins } from "./coins";
 import { gameConfig } from "./config";
 import { giveItem, itemRoom, takeItem } from "./inventory";
@@ -11,16 +12,15 @@ import { inReach, makePrompt, promptAnchor } from "./prompts";
 import { getClock } from "./round";
 
 /**
- * Trading with the bases (who sells what: shared/bases.ts; prices: shared/pricing.ts; rules: shared/trade.ts). Every morning
- * each base restocks and picks the one thing it wants most. A trader's prompt opens its list on
- * the kid's screen; the client then only says which item, and everything is checked here.
+ * Trading with the bases (who sells what: shared/bases.ts; prices: shared/pricing.ts; rules:
+ * shared/trade.ts). Every morning each base restocks and picks the one thing it wants most. A
+ * trader's prompt opens its list on the kid's screen; the client then only says which item, and everything is checked here.
  */
 
 export interface TradingHooks {
 	/** Whether `player` may use prompts right now. */
 	canAct: (player: Player) => boolean;
 	notify: (player: Player, text: string) => void;
-	notifyAll: (text: string) => void;
 	/** Opens a base's list on `player`'s screen. */
 	open: (player: Player, view: TradeView) => void;
 	/** A base's stock or prices changed: update it for anyone who has it open. */
@@ -120,8 +120,27 @@ export function onTradeSellRequest(player: Player, payload: unknown) {
 	}
 }
 
-/** Morning: every base restocks and picks what it wants; new ones announce themselves. */
-export function startTradingDay(day: number) {
+/** How every base is doing right now, for the walkie. */
+export function baseReports(): BaseReport[] {
+	const { night, phase } = getClock();
+	return BASES.map((base) => {
+		const want = viewOf(base).buys.find((row) => row.wanted);
+		return {
+			name: base.name,
+			trader: base.trader,
+			where: base.where,
+			opens: base.opens,
+			hello: base.hello,
+			inContact: isTrading(base, night, false, openAll()),
+			openNow: isTrading(base, night, phase === "Night", openAll()),
+			wanted: want?.item,
+			wantedPrice: want?.price ?? 0,
+		};
+	});
+}
+
+/** Morning: every base restocks and picks what it wants. */
+export function startTradingDay() {
 	for (const base of BASES) {
 		const stall = stalls[base.id];
 		base.sells.forEach((offer) => stall.stock.set(offer.item, offer.stock));
@@ -131,9 +150,6 @@ export function startTradingDay(day: number) {
 			math.random(),
 		);
 		hooks?.update(viewOf(base));
-		if (base.opens === day && !openAll()) {
-			hooks?.notifyAll(`The ${base.name} is trading, at ${base.where}.`);
-		}
 	}
 }
 

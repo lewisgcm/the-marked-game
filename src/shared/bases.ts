@@ -38,6 +38,8 @@ export interface Base {
 	trader: string;
 	/** Where it is, for notices. */
 	where: string;
+	/** What it says over the walkie the morning it opens. */
+	hello: string;
 	/** The first day it trades. */
 	opens: number;
 	sells: Offer[];
@@ -51,6 +53,7 @@ export const BASES: Base[] = [
 		kind: "Kids",
 		trader: "Treehouse Gang",
 		where: "the left end of Maple Street",
+		hello: "Anyone there? We're in the treehouse, left end of Maple Street. Come and trade!",
 		opens: 2,
 		sells: [
 			{ item: "Stones", count: 20, price: 4, stock: 3 },
@@ -69,6 +72,7 @@ export const BASES: Base[] = [
 		kind: "Adults",
 		trader: "Fire Chief",
 		where: "the right end of Maple Street",
+		hello: "Fire Station here, right end of Maple Street. We've got fuel and medkits.",
 		opens: 3,
 		sells: [
 			{ item: "Fuel", count: 1, price: 15, stock: 2 },

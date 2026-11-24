@@ -15,6 +15,7 @@ import { RoundHud } from "./roundHud";
 import { startSlingshot } from "./slingshot";
 import { Spectate } from "./spectate";
 import { TradeUi } from "./tradeUi";
+import { WalkieUi } from "./walkieUi";
 import { WorkbenchUi } from "./workbenchUi";
 
 startFlicker();
@@ -38,6 +39,7 @@ function App() {
 			<InventoryHud remote={remote} />
 			<WorkbenchUi remote={remote} />
 			<TradeUi remote={remote} />
+			<WalkieUi />
 			<Spectate />
 			<CombatFeedback />
 		</>
