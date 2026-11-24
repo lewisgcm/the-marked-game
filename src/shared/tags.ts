@@ -15,6 +15,15 @@ export const HOUSE_LIGHT_TAG = "HouseLight";
 /** Screens in the house (the living-room TV). */
 export const SCREEN_TAG = "Screen";
 
+/** Things kids can search for loot; the "Kind" attribute says what's in them (shared/loot.ts). */
+export const LOOT_CONTAINER_TAG = "LootContainer";
+
+/** Stone patches in gardens: pick stones up, back every dawn. */
+export const STONES_TAG = "Stones";
+
+/** Street lamps' lights: on from late afternoon until dawn. */
+export const STREET_LIGHT_TAG = "StreetLight";
+
 /** Garage props the later systems hook into. */
 export const GENERATOR_TAG = "Generator";
 export const WORKBENCH_TAG = "Workbench";

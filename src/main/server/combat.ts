@@ -18,6 +18,8 @@ import { recordStat } from "./roundStats";
 export interface CombatHooks {
 	/** Whether `player` may swing right now (a kid who's still in, during play). */
 	canAttack: (player: Player) => boolean;
+	/** Something made a noise here (wakes dormant infected nearby). */
+	makeNoise: (position: Vector3, radius: number) => void;
 	/** Tells an attacker their swing connected. */
 	sendHitResult: (attacker: Player, kind: "Hit" | "Kill") => void;
 }
@@ -122,6 +124,7 @@ function batSwing(player: Player, candidates: Model[]) {
 		return;
 	}
 	playSound(root, SWING_SOUND);
+	hooks.makeNoise(root.Position, gameConfig.batNoise.Value);
 
 	const target = candidates.find(
 		(m) => humanoidOf(m) !== undefined && canReach(player, m, gameConfig.batRange.Value),

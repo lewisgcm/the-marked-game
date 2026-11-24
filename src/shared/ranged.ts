@@ -1,5 +1,5 @@
 /**
- * Ranged weapons (the slingshot for now): validating a client's aim, and ammo. Pure (plain
+ * Ranged weapons (the slingshot for now): validating a client's aim, and cooldowns. Pure (plain
  * numbers, no Roblox services) so it's unit-tested; main/server/slingshot.ts uses it.
  *
  * The client only says which way it's aiming; the server casts the shot itself from the kid's
@@ -25,9 +25,4 @@ export function normaliseAim(x: number, y: number, z: number): [number, number, 
 /** Whether a weapon used at `lastAt` can fire again at `now`, `cooldown` seconds apart. */
 export function cooldownReady(now: number, lastAt: number | undefined, cooldown: number): boolean {
 	return lastAt === undefined || now - lastAt >= cooldown;
-}
-
-/** Ammo after a dawn refill: `refill` more, but never above `max` (and never taken away). */
-export function refillAmmo(current: number, refill: number, max: number): number {
-	return math.max(current, math.min(max, current + refill));
 }

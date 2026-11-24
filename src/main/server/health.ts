@@ -42,6 +42,16 @@ export function damageKid(player: Player, amount: number) {
 	}
 }
 
+/** Heals a kid by `amount`. False (and nothing happens) if they don't need it. */
+export function healKid(player: Player, amount: number): boolean {
+	const humanoid = humanoidOf(player);
+	if (!humanoid || humanoid.Health >= humanoid.MaxHealth) {
+		return false;
+	}
+	humanoid.Health = math.min(humanoid.MaxHealth, humanoid.Health + amount);
+	return true;
+}
+
 /** Dawn: every kid still in is healed to full. */
 export function healAll(kids: Player[]) {
 	for (const player of kids) {

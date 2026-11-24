@@ -1,5 +1,5 @@
 import { Players } from "@rbxts/services";
-import { dropPlanks } from "./barricades";
+import { dropAll } from "./inventory";
 import { removeWeapon } from "./combat";
 import { removeFlashlight } from "./flashlight";
 import { removeSlingshot } from "./slingshot";
@@ -45,10 +45,10 @@ function checkAllTaken(leaving?: Player) {
 	}
 }
 
-function onTaken(player: Player) {
+function onTaken(player: Player, position: Vector3 | undefined) {
 	removeFlashlight(player);
 	removeWeapon(player);
-	dropPlanks(player);
+	dropAll(player, position);
 	removeSlingshot(player);
 	noteTaken(player.DisplayName);
 	const firstNight = isFirstNight();

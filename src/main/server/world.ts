@@ -10,7 +10,8 @@ import {
 	SCREEN_TAG,
 	WORKBENCH_TAG,
 } from "shared/tags";
-import { Opening, wallPieces } from "shared/walls";
+import { Opening } from "shared/walls";
+import { Axis, slab, THICK, wall } from "./building";
 
 /**
  * The family house (GAMEPLAY.md §5), a blockout built at runtime from plain parts. The street is
@@ -46,7 +47,6 @@ const STOREY = 12; // wall height per floor
 const UPPER_Y = 13; // upstairs floor level (a 1-stud slab on top of the ground-floor walls)
 const ROOF_Y = UPPER_Y + STOREY;
 const BASEMENT_Y = -12;
-const THICK = 1;
 
 // The two staircases in the hall.
 const UP_STAIRS = { x0: 8, x1: 12, z0: 6, z1: 20 };
@@ -116,57 +116,6 @@ export interface MainWorld {
 /** Whether `position` is inside the house's walls (any floor, or the basement). */
 export function isInsideHouse(position: Vector3): boolean {
 	return position.X > X0 && position.X < X1 && position.Z > Z0 && position.Z < Z1;
-}
-
-type Axis = "X" | "Z";
-
-/**
- * A wall along `axis` (X: runs along X at z = `at`; Z: runs along Z at x = `at`), from `from` to
- * `to`, standing on `baseY`, with `openings` cut out (positions along the wall).
- */
-function wall(
-	parent: Instance,
-	axis: Axis,
-	at: number,
-	from: number,
-	to: number,
-	baseY: number,
-	height: number,
-	openings: Opening[],
-	style: PartOptions,
-) {
-	for (const piece of wallPieces(from, to, height, openings)) {
-		const length = piece.to - piece.from;
-		const mid = (piece.from + piece.to) / 2;
-		const tall = piece.top - piece.bottom;
-		const y = baseY + piece.bottom + tall / 2;
-		const size = axis === "X" ? new Vector3(length, tall, THICK) : new Vector3(THICK, tall, length);
-		const position = axis === "X" ? new Vector3(mid, y, at) : new Vector3(at, y, mid);
-		part(parent, "Wall", size, new CFrame(position), style);
-	}
-}
-
-/** A horizontal slab from (x0, z0) to (x1, z1), top surface at `topY`. */
-function slab(
-	parent: Instance,
-	name: string,
-	x0: number,
-	x1: number,
-	z0: number,
-	z1: number,
-	topY: number,
-	style: PartOptions,
-) {
-	if (x1 - x0 <= 0 || z1 - z0 <= 0) {
-		return;
-	}
-	part(
-		parent,
-		name,
-		new Vector3(x1 - x0, THICK, z1 - z0),
-		new CFrame((x0 + x1) / 2, topY - THICK / 2, (z0 + z1) / 2),
-		style,
-	);
 }
 
 /** A slab with a rectangular hole cut out (for a staircase): up to four slabs around it. */
@@ -535,7 +484,7 @@ function buildLamps(parent: Instance): Lamp[] {
 function buildInfectedSpawns(parent: Instance): CFrame[] {
 	const spawns = folder(parent, "InfectedSpawns");
 	// Across the street, the back garden, and both sides; each faces the house.
-	const points = [new Vector3(0, 3, -80), new Vector3(0, 3, 70), new Vector3(-80, 3, 0), new Vector3(80, 3, 0)];
+	const points = [new Vector3(0, 3, -80), new Vector3(0, 3, 70), new Vector3(-62, 3, 0), new Vector3(62, 3, 0)];
 	return points.map((point) => {
 		const cframe = CFrame.lookAt(point, new Vector3(0, 3, 0));
 		const marker = part(spawns, "InfectedSpawn", new Vector3(4, 1, 4), cframe, {

@@ -28,7 +28,7 @@ function loadGameConfig() {
 
 		// --- Day/night clock (GAMEPLAY.md §4). Studio values are short, to see a cycle quickly. --
 		/** Day: scavenge and trade. */
-		daySeconds: int("DaySeconds", 180, 40),
+		daySeconds: int("DaySeconds", 180, 90),
 		/** Dusk: get home, barricade, deal with screens; the broadcast hits partway through. */
 		duskSeconds: int("DuskSeconds", 45, 20),
 		/** Night: hold the house. */
@@ -40,6 +40,35 @@ function loadGameConfig() {
 		endScreenSeconds: int("EndScreenSeconds", 15),
 		/** Seconds before a kid who reset (not taken) respawns. */
 		respawnDelay: num("RespawnDelay", 3),
+
+		/** The "sun's going down" warning and street lamps come this long before dusk. */
+		sundownSeconds: num("SundownSeconds", 60, 25),
+
+		// --- Inventory, loot and coins -------------------------------------------------------------
+		/** Inventory slots (rucksacks add more, M3). */
+		inventorySlots: int("InventorySlots", 5),
+		/** Nails each kid starts with (one per plank nailed up). */
+		nailsStart: int("NailsStart", 10),
+		/** Seconds to hold to search a container. */
+		searchSeconds: num("SearchSeconds", 1.2),
+		/** How far the noise of searching carries to dormant infected, in studs. */
+		searchNoise: num("SearchNoise", 14),
+		/** Health a medkit gives back. */
+		medkitHeal: num("MedkitHeal", 50),
+		/** Coins for each kid still in at dawn. */
+		coinsPerDawn: int("CoinsPerDawn", 5),
+
+		// --- Dormant infected (by day, in front of screens; shared/wake.ts) ---------------------------
+		/** How far one notices a kid in front of it, in studs. */
+		wakeSightRange: num("WakeSightRange", 14),
+		/** Half its field of view, in degrees. */
+		wakeHalfAngle: num("WakeHalfAngle", 60),
+		/** A kid this close wakes it, whichever way it faces, in studs. */
+		wakeTouchRange: num("WakeTouchRange", 4),
+		/** How far the noise of a bat swing carries, in studs. */
+		batNoise: num("BatNoise", 18),
+		/** By day, a woken one gives up on a kid this far away, in studs. */
+		giveUpRange: num("GiveUpRange", 70),
 
 		// --- Lighting -------------------------------------------------------------------------
 		/**
@@ -56,8 +85,8 @@ function loadGameConfig() {
 		plankHealth: num("PlankHealth", 100),
 		/** Night 1 is forgiving: planks nailed on Day 1 or Night 1 get this much more health. */
 		firstNightPlankMultiplier: num("FirstNightPlankMultiplier", 2),
-		/** Planks a kid can carry. */
-		plankCarryMax: int("PlankCarryMax", 5),
+		/** Most planks taken from the pile in one go. */
+		planksPerGrab: int("PlanksPerGrab", 5),
 		/** Planks in the garage pile at the start of a run. */
 		plankPileStart: int("PlankPileStart", 30),
 		/** Planks added to the pile at every dawn. */
@@ -106,10 +135,8 @@ function loadGameConfig() {
 		slingshotCooldown: num("SlingshotCooldown", 0.6),
 		/** Stones each kid starts with. */
 		stonesStart: int("StonesStart", 20),
-		/** Stones each kid gets back at dawn (up to StonesMax). */
-		stonesDawnRefill: int("StonesDawnRefill", 10),
-		/** Most stones a kid can carry. */
-		stonesMax: int("StonesMax", 20),
+		/** Stones in a garden patch (back every dawn). */
+		stonesPerPatch: int("StonesPerPatch", 10),
 
 		// --- Flashlight stun (shared/stun.ts) ------------------------------------------------------
 		/** Seconds a beam must stay on an infected to stun it. */

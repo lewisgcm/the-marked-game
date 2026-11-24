@@ -1,4 +1,4 @@
-import { CollectionService, Players } from "@rbxts/services";
+import { CollectionService } from "@rbxts/services";
 import {
 	addPlank,
 	Barricade,
@@ -12,6 +12,7 @@ import {
 } from "shared/barricade";
 import { PLANK_PILE_TAG } from "shared/tags";
 import { gameConfig } from "./config";
+import { giveItem, itemCount, itemRoom, takeItem } from "./inventory";
 import { inReach, makePrompt, promptAnchor } from "./prompts";
 import { recordStat } from "./roundStats";
 import { Entry, MainWorld } from "./world";
@@ -19,7 +20,8 @@ import { Entry, MainWorld } from "./world";
 /**
  * Barricades: kids carry planks from the garage pile and nail them over doors and windows
  * (rules in shared/barricade.ts). All state is server-side; the planks are real parts, and an
- * opening with any plank up is blocked by its (invisible) slot part.
+ * opening with any plank up is blocked by its (invisible) slot part. Nailing one up costs a
+ * plank and a nail from the kid's inventory; taking it down gives both back.
  *
  * Prompts: "Board up" (E, hold) and "Take down" (F, short hold) at every opening, and
  * "Take planks" on the pile. Who may use them, and whether they have planks, is checked here
@@ -30,8 +32,6 @@ export interface BarricadeHooks {
 	/** Whether `player` may use prompts right now (a kid who's still in, during play). */
 	canAct: (player: Player) => boolean;
 	notify: (player: Player, text: string) => void;
-	/** Tells a kid how many planks they're carrying. */
-	sendPlanks: (player: Player, count: number) => void;
 	/** Whether planks nailed now get the Night 1 bonus. */
 	isFirstNight: () => boolean;
 }
@@ -52,31 +52,8 @@ const PROMPT_INSET = 1.2;
 
 let hooks: BarricadeHooks | undefined;
 const states = new Map<Entry, EntryState>();
-const carrying = new Map<Player, number>();
 let pileStock = 0;
 let pilePrompt: ProximityPrompt | undefined;
-
-Players.PlayerRemoving.Connect((player) => carrying.delete(player));
-
-/** Planks `player` is carrying. */
-export function planksOf(player: Player): number {
-	return carrying.get(player) ?? 0;
-}
-
-function setPlanks(player: Player, count: number) {
-	carrying.set(player, count);
-	hooks?.sendPlanks(player, count);
-}
-
-/** Re-sends `player` their plank count (for resync). */
-export function resendPlanks(player: Player) {
-	hooks?.sendPlanks(player, planksOf(player));
-}
-
-/** A taken kid loses what they were carrying. */
-export function dropPlanks(player: Player) {
-	setPlanks(player, 0);
-}
 
 function playSound(parent: Instance, id: string) {
 	const sound = new Instance("Sound");
@@ -117,15 +94,20 @@ function onBoard(player: Player, state: EntryState) {
 	if (!hooks || !hooks.canAct(player) || !inReach(player, state.board)) {
 		return;
 	}
-	if (planksOf(player) <= 0) {
+	if (itemCount(player, "Planks") <= 0) {
 		hooks.notify(player, "You need planks. There's a pile in the garage.");
+		return;
+	}
+	if (itemCount(player, "Nails") <= 0) {
+		hooks.notify(player, "You need nails. Search the houses on Maple Street.");
 		return;
 	}
 	const multiplier = hooks.isFirstNight() ? gameConfig.firstNightPlankMultiplier.Value : 1;
 	if (!addPlank(state.barricade, gameConfig.plankSlots.Value, gameConfig.plankHealth.Value * multiplier)) {
 		return;
 	}
-	setPlanks(player, planksOf(player) - 1);
+	takeItem(player, "Planks", 1);
+	takeItem(player, "Nails", 1);
 	recordStat(player, "planksNailed");
 	playSound(state.entry.slot, NAIL_SOUND);
 	refresh(state);
@@ -135,12 +117,13 @@ function onTakeDown(player: Player, state: EntryState) {
 	if (!hooks || !hooks.canAct(player) || !inReach(player, state.takeDown)) {
 		return;
 	}
-	if (planksOf(player) >= gameConfig.plankCarryMax.Value) {
-		hooks.notify(player, "Your hands are full.");
+	if (itemRoom(player, "Planks") <= 0) {
+		hooks.notify(player, "Your pockets are full.");
 		return;
 	}
 	if (removePlank(state.barricade)) {
-		setPlanks(player, planksOf(player) + 1);
+		giveItem(player, "Planks", 1);
+		giveItem(player, "Nails", 1);
 		recordStat(player, "planksNailed", -1); // nailing and un-nailing doesn't earn Carpenter
 		refresh(state);
 	}
@@ -186,13 +169,13 @@ function setUpPile() {
 		if (!hooks || !hooks.canAct(player) || !inReach(player, prompt)) {
 			return;
 		}
-		const take = planksToTake(planksOf(player), gameConfig.plankCarryMax.Value, pileStock);
+		const take = planksToTake(0, math.min(itemRoom(player, "Planks"), gameConfig.planksPerGrab.Value), pileStock);
 		if (take <= 0) {
-			hooks.notify(player, pileStock <= 0 ? "The pile is empty. More at dawn." : "Your hands are full.");
+			hooks.notify(player, pileStock <= 0 ? "The pile is empty. More at dawn." : "Your pockets are full.");
 			return;
 		}
 		pileStock -= take;
-		setPlanks(player, planksOf(player) + take);
+		giveItem(player, "Planks", take);
 		refreshPile();
 	});
 	refreshPile();

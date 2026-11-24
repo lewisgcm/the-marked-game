@@ -1,3 +1,4 @@
+import { Inventory } from "shared/inventory";
 import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
 
@@ -43,10 +44,10 @@ export interface GameServerMessages {
 	HitResult: "Hit" | "Kill";
 	/** You were struck. */
 	Hurt: undefined;
-	/** How many planks you're carrying. */
-	Planks: number;
-	/** How many stones you have for the slingshot. */
-	Stones: number;
+	/** What you're carrying. */
+	Inventory: Inventory;
+	/** Your coins. */
+	Coins: number;
 	/** Your Night 1 tip; "" for none. */
 	Hint: string;
 	/** Everyone, at dawn: what the night cost. */
@@ -71,4 +72,8 @@ export interface GameClientMessages {
 	 * held, stones, cooldown) and casts the shot itself from the kid's head.
 	 */
 	Shoot: Vector3;
+	/** Use what's in this inventory slot (0-based). */
+	UseItem: number;
+	/** Drop what's in this inventory slot (0-based). */
+	DropItem: number;
 }

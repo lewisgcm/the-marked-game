@@ -22,6 +22,7 @@ export interface HintSituation {
 export const GRAB_PLANKS = "Grab planks from the pile in the garage.";
 export const BOARD_UP = "Hold E at a door or window to nail a plank up.";
 export const START_GENERATOR = "Start the generator in the garage.";
+export const EXPLORE = "Search the houses on Maple Street. Be home before dark.";
 export const GET_INSIDE = "Get inside. They come at night.";
 export const FIGHT = "Swing the bat, or hold your flashlight on them to stun them.";
 
@@ -42,5 +43,5 @@ export function chooseHint(s: HintSituation): string | undefined {
 	if (!s.powered) {
 		return START_GENERATOR;
 	}
-	return s.phase === "Dusk" ? GET_INSIDE : undefined;
+	return s.phase === "Dusk" ? GET_INSIDE : EXPLORE;
 }

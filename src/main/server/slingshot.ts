@@ -1,7 +1,8 @@
 import { CollectionService, Players, TweenService, Workspace } from "@rbxts/services";
 import { INFECTED_TAG, SLINGSHOT_TOOL_NAME } from "shared/combat";
-import { cooldownReady, normaliseAim, refillAmmo } from "shared/ranged";
+import { cooldownReady, normaliseAim } from "shared/ranged";
 import { gameConfig } from "./config";
+import { takeItem } from "./inventory";
 import { recordStat } from "./roundStats";
 
 /**
@@ -15,8 +16,6 @@ import { recordStat } from "./roundStats";
 export interface SlingshotHooks {
 	canAttack: (player: Player) => boolean;
 	sendHitResult: (attacker: Player, kind: "Hit" | "Kill") => void;
-	/** Tells a kid how many stones they have. */
-	sendStones: (player: Player, count: number) => void;
 }
 
 const STONE_SPEED = 120; // studs per second, for the visible stone
@@ -25,36 +24,13 @@ const SHOOT_SOUND = "rbxasset://sounds/swordslash.wav";
 const HIT_FLASH = new Color3(1, 0.15, 0.15);
 
 let hooks: SlingshotHooks | undefined;
-const stones = new Map<Player, number>();
 const lastShotAt = new Map<Player, number>();
 const tools = new Map<Player, Tool>();
 
 Players.PlayerRemoving.Connect((player) => {
-	stones.delete(player);
 	lastShotAt.delete(player);
 	tools.delete(player);
 });
-
-function stonesOf(player: Player): number {
-	return stones.get(player) ?? gameConfig.stonesStart.Value;
-}
-
-function setStones(player: Player, count: number) {
-	stones.set(player, count);
-	hooks?.sendStones(player, count);
-}
-
-/** Re-sends `player` their stone count (for resync). */
-export function resendStones(player: Player) {
-	hooks?.sendStones(player, stonesOf(player));
-}
-
-/** Dawn: everyone gets some stones back. */
-export function refillStones(kids: Player[]) {
-	for (const player of kids) {
-		setStones(player, refillAmmo(stonesOf(player), gameConfig.stonesDawnRefill.Value, gameConfig.stonesMax.Value));
-	}
-}
 
 /** A stone flying from `from` to `to`, for everyone to see. */
 function flyStone(from: Vector3, to: Vector3) {
@@ -112,12 +88,10 @@ export function onShootRequest(player: Player, payload: unknown) {
 	if (!aim || !cooldownReady(now, lastShotAt.get(player), gameConfig.slingshotCooldown.Value)) {
 		return;
 	}
-	const left = stonesOf(player);
-	if (left <= 0) {
+	if (!takeItem(player, "Stones", 1)) {
 		return;
 	}
 	lastShotAt.set(player, now);
-	setStones(player, left - 1);
 
 	const direction = new Vector3(aim[0], aim[1], aim[2]);
 	const origin = head.Position;

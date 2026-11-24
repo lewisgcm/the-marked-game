@@ -1,6 +1,7 @@
 import { CollectionService, PathfindingService, Players, ServerStorage, Workspace } from "@rbxts/services";
 import { INFECTED_TAG } from "shared/combat";
 import { isStunned, newStun, StunState, stepStun } from "shared/stun";
+import { shouldWake } from "shared/wake";
 import { infectedHealth, planNight, Wave, waveSize } from "shared/waves";
 import { damageEntry, isEntryBlocked } from "./barricades";
 import { gameConfig } from "./config";
@@ -16,6 +17,11 @@ import { Entry, isInsideHouse, MainWorld } from "./world";
  *  - **enter** once it's open (climbing in through windows),
  *  - **chase** the nearest kid with pathfinding, hitting them when in reach. If there's no way
  *    in to a kid (everything boarded), it goes back to bashing the nearest opening.
+ *
+ * By day, **dormant** ones stand in the neighbours' houses staring at a screen until something
+ * wakes them (shared/wake.ts, noise, or being hit). A woken one chases; by day it gives up on kids
+ * who get far away and goes back to its screen. Dad waits next door on Day 1, and Night 1's first
+ * wave wakes him.
  *
  * A flashlight held on one for a moment **stuns** it for a couple of seconds (shared/stun.ts):
  * it stops dead, its eyes dim, then it shrugs off beams for a while.
@@ -35,6 +41,8 @@ export interface InfectedHooks {
 	isFirstNight: () => boolean;
 	/** Whether any kid's flashlight beam is on `model` right now. */
 	isLit: (model: Model) => boolean;
+	/** Whether the night is on (woken infected never give up then). */
+	isNight: () => boolean;
 	/** Whether the generator is running (off: more infected come). */
 	isPowered: () => boolean;
 	/** A plank was broken off an opening. */
@@ -43,7 +51,7 @@ export interface InfectedHooks {
 	onDowned: () => void;
 }
 
-type Mode = "approach" | "enter" | "chase" | "retreat";
+type Mode = "dormant" | "approach" | "enter" | "chase" | "return" | "retreat";
 
 interface Infected {
 	model: Model;
@@ -51,6 +59,8 @@ interface Infected {
 	root: BasePart;
 	isDad: boolean;
 	mode: Mode;
+	/** Where a dormant one stands (and goes back to); undefined for the night's waves. */
+	spot?: CFrame;
 	entry?: Entry;
 	waypoints: PathWaypoint[];
 	waypointIndex: number;
@@ -78,6 +88,7 @@ const HIT_SOUND = "rbxasset://sounds/swordlunge.wav";
 let hooks: InfectedHooks | undefined;
 let world: MainWorld | undefined;
 let template: Model | undefined;
+let templateReady = false;
 const alive = new Map<Model, Infected>();
 const holder = new Instance("Folder");
 holder.Name = "Infected";
@@ -358,8 +369,62 @@ function enter(inf: Infected) {
 	}
 }
 
+/** Wakes a dormant one: it goes for the kids. */
+function wake(inf: Infected) {
+	if (inf.mode === "dormant") {
+		setMode(inf, "chase");
+	}
+}
+
+function dormant(inf: Infected) {
+	const kid = nearestKid(inf.root.Position);
+	const lit = hooks?.isLit(inf.model) ?? false;
+	if (lit) {
+		wake(inf);
+		return;
+	}
+	if (!kid) {
+		return;
+	}
+	const toKid = flat(kid.root.Position.sub(inf.root.Position));
+	const facing = toKid.Magnitude > 0.1 ? toKid.Unit.Dot(flat(inf.root.CFrame.LookVector).Unit) : 1;
+	const situation = { distance: kid.distance, facing, canSee: canSee(inf, kid.player), lit };
+	const settings = {
+		sightRange: gameConfig.wakeSightRange.Value,
+		halfAngle: gameConfig.wakeHalfAngle.Value,
+		touchRange: gameConfig.wakeTouchRange.Value,
+	};
+	if (shouldWake(situation, settings)) {
+		wake(inf);
+	}
+}
+
+/** Back to its screen; kids who come close on the way are fair game. */
+function goBack(inf: Infected) {
+	const spot = inf.spot;
+	const kid = nearestKid(inf.root.Position);
+	if (!spot || (kid && kid.distance < gameConfig.wakeSightRange.Value && canSee(inf, kid.player))) {
+		setMode(inf, "chase");
+		return;
+	}
+	if (flatDistance(inf.root.Position, spot.Position) < 3) {
+		stop(inf);
+		face(inf, spot.Position.add(spot.LookVector.mul(10)));
+		setMode(inf, "dormant");
+		return;
+	}
+	if (!pathTo(inf, spot.Position)) {
+		walkTo(inf, spot.Position);
+	}
+}
+
 function chase(inf: Infected) {
 	const kid = nearestKid(inf.root.Position);
+	const gaveUp = !kid || kid.distance > gameConfig.giveUpRange.Value;
+	if (inf.spot && gaveUp && !(hooks?.isNight() ?? false)) {
+		setMode(inf, "return");
+		return;
+	}
 	if (!kid) {
 		stop(inf);
 		return;
@@ -424,6 +489,10 @@ function dissolve(inf: Infected) {
 /** Steps the flashlight stun; a stunned infected stands still instead of thinking. */
 function thinkOrStun(inf: Infected) {
 	const now = os.clock();
+	if (inf.mode === "dormant") {
+		dormant(inf); // a beam wakes it rather than stunning it
+		return;
+	}
 	const lit = inf.mode !== "retreat" && hooks !== undefined && hooks.isLit(inf.model);
 	const settings = {
 		litSeconds: gameConfig.stunLitSeconds.Value,
@@ -448,6 +517,8 @@ function think(inf: Infected) {
 		enter(inf);
 	} else if (inf.mode === "chase") {
 		chase(inf);
+	} else if (inf.mode === "return") {
+		goBack(inf);
 	} else {
 		retreat(inf);
 	}
@@ -471,8 +542,20 @@ function startWalkAnimation(humanoid: Humanoid) {
 	});
 }
 
-function spawnOne(at: CFrame, night: number, isDad: boolean) {
-	if (!template || alive.size() >= gameConfig.maxInfected.Value) {
+/** Infected on the move (dormant ones don't count towards MaxInfected). */
+function activeCount(): number {
+	let count = 0;
+	for (const [, inf] of alive) {
+		if (inf.mode !== "dormant") {
+			count += 1;
+		}
+	}
+	return count;
+}
+
+/** Spawns one at `at`; `spot` makes it dormant there. */
+function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame) {
+	if (!template || (!spot && activeCount() >= gameConfig.maxInfected.Value)) {
 		return;
 	}
 	const model = template.Clone();
@@ -506,7 +589,8 @@ function spawnOne(at: CFrame, night: number, isDad: boolean) {
 		humanoid,
 		root,
 		isDad,
-		mode: "approach",
+		mode: spot ? "dormant" : "approach",
+		spot,
 		waypoints: [],
 		waypointIndex: 0,
 		lastPathAt: 0,
@@ -521,6 +605,13 @@ function spawnOne(at: CFrame, night: number, isDad: boolean) {
 	if (isDad) {
 		dadAround = true;
 	}
+	let health0 = health;
+	humanoid.HealthChanged.Connect((now) => {
+		if (now < health0) {
+			wake(inf); // hitting it wakes it
+		}
+		health0 = now;
+	});
 	humanoid.Died.Connect(() => {
 		hooks?.onDowned();
 		dissolve(inf);
@@ -542,8 +633,16 @@ function spawnWave(wave: Wave, night: number) {
 		return;
 	}
 	const rng = new Random();
-	if (wave.dad && !dadAround) {
-		spawnOne(spawns[0], night, true); // Dad comes from the street
+	if (wave.dad) {
+		if (!dadAround) {
+			spawnOne(spawns[0], night, true); // Dad comes from the street
+		}
+		for (const [, inf] of alive) {
+			if (inf.isDad && inf.mode === "dormant") {
+				inf.spot = undefined; // from the garden next door, with the wave
+				setMode(inf, "approach");
+			}
+		}
 	}
 	const powered = hooks?.isPowered() ?? true;
 	const count = waveSize(wave.shamblers, night, powered, gameConfig.powerOffWaveMultiplier.Value);
@@ -577,7 +676,40 @@ export function retreatAll() {
 	generation += 1;
 	for (const [, inf] of alive) {
 		inf.entry = undefined;
-		setMode(inf, "retreat");
+		if (inf.mode !== "dormant") {
+			inf.spot = undefined; // a woken one leaves too; its spot is filled again in the morning
+			setMode(inf, "retreat");
+		}
+	}
+}
+
+/** Day: puts a dormant infected at every spot that hasn't got one. Dad waits at `dadSpot` on Day 1. */
+export function spawnDormant(spots: CFrame[], night: number, dadSpot?: CFrame) {
+	task.spawn(() => {
+		while (!templateReady) {
+			task.wait(0.5); // the body is still being made
+		}
+		for (const spot of spots) {
+			let taken = false;
+			for (const [, inf] of alive) {
+				taken = taken || inf.spot === spot;
+			}
+			if (!taken) {
+				spawnOne(spot, night, false, spot);
+			}
+		}
+		if (dadSpot && !dadAround) {
+			spawnOne(dadSpot, night, true, dadSpot);
+		}
+	});
+}
+
+/** A noise at `position`: wakes dormant infected within `radius` studs. */
+export function hearNoise(position: Vector3, radius: number) {
+	for (const [, inf] of alive) {
+		if (inf.root.Position.sub(position).Magnitude <= radius) {
+			wake(inf);
+		}
 	}
 }
 
@@ -586,5 +718,6 @@ export function startInfected(mainWorld: MainWorld, infectedHooks: InfectedHooks
 	hooks = infectedHooks;
 	task.spawn(() => {
 		template = buildTemplate();
+		templateReady = true;
 	});
 }

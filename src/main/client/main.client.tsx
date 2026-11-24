@@ -33,7 +33,7 @@ function App() {
 			<NoticeHud />
 			<HintHud />
 			<DawnCard />
-			<InventoryHud />
+			<InventoryHud remote={remote} />
 			<Spectate />
 			<CombatFeedback />
 		</>

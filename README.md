@@ -11,10 +11,10 @@ scavenge and trade by day, and survive as many nights as you can.
 - **[GAMEPLAY.md](GAMEPLAY.md)**: the game design.
 - **[PLAN.md](PLAN.md)**: the build plan, milestone by milestone.
 
-> **Current state: M1 built, awaiting its playtest.** Kids hold the family house through an endless
-> day/night clock: barricades, a generator, waves of infected, bat, slingshot and flashlight stun.
-> The neighbourhood, loot and trading come next (M2+), and the lobby still looks like the
-> ghost-hunt prototype's churchyard until M6 (that prototype: git tag `ghost-prototype`, design in
+> **Current state: M1 and M2 built, awaiting playtests.** Kids hold the family house through an
+> endless day/night clock (barricades, generator, waves of infected) and search Maple Street by day
+> for supplies. Trading comes next (M3), and the lobby still looks like the ghost-hunt prototype's
+> churchyard until M6 (that prototype: git tag `ghost-prototype`, design in
 > [docs/archive/GAMEPLAY-ghost-prototype.md](docs/archive/GAMEPLAY-ghost-prototype.md)). This README
 > describes **what the code does today**, and is updated as each milestone in [PLAN.md](PLAN.md)
 > lands.
@@ -81,7 +81,7 @@ still join.
    each character).
 3. **The day/night clock** (`shared/phases.ts`, driven by `round.ts`): Day (3:00) → Dusk (0:45)
    → Night (2:30) → Dawn (0:45), then the next day, with no last night. In Studio the phases are
-   40/20/60/15 seconds. The top of the screen shows e.g. "NIGHT 2 · 1:12" in the phase's colour
+   90/20/60/15 seconds. The top of the screen shows e.g. "NIGHT 2 · 1:12" in the phase's colour
    (red in the last 10s of day or dusk); each new phase shows a big title with a hint and a
    chime; the sky and indoor light blend to the phase over ~6s (`lighting.ts`). The phases don't
    change anything else yet — the systems that use them arrive through M1.
@@ -104,19 +104,29 @@ still join.
    - **Slingshot** (`slingshot.ts`, rules in `shared/ranged.ts`): click to fire a stone where you
      aim (the mouse on PC, the screen centre on touch). The client only sends the direction; the
      server checks it and casts the shot itself from the kid's head: 10 damage, 80 studs, one
-     shot every 0.6s. 20 stones to start, +10 at dawn (max 20).
+     shot every 0.6s. Stones come from the inventory.
    - **Flashlight stun** (`shared/stun.ts`): hold a beam on an infected for 0.6s and it stops
      dead for 2s, eyes dimmed; then beams don't work on it for 5s.
+   - **Maple Street** (`neighbourhood.ts`): four houses to search (`containers.ts`, tables in
+     `shared/loot.ts`). A searched container stays empty for the run; nails get scarcer every night.
+     Gardens have stones, back every dawn. A minute before dusk: a warning, and the street lamps.
+   - **Inventory** (`inventory.ts`, rules in `shared/inventory.ts`): 5 slots of stacks down the right
+     edge; tap one to Drop it (or Use a medkit: +50 health). Kids start with 20 stones and 10 nails.
+     Coins and the starter tools use no slots. A taken kid's slots are left where they were.
+   - **Dormant infected** stand in the neighbours' houses by day, staring at the TV. Crossing in
+     front, touching one, a torch beam, a nearby noise or a hit wakes it (`shared/wake.ts`); it gives
+     up 70 studs away. They're extra to the night's waves and stay put at night. Dad waits in the
+     left neighbour's garden on Day 1 and joins Night 1's first wave.
    - **Generator** (`generator.ts`): a switch in the garage for every house light; it starts off.
      With it off, waves are 1.4× bigger (never on Night 1).
    - **Tips** on Day 1 / Night 1 under the clock (`shared/hints.ts`), and a **dawn card** with what
      the night cost (`shared/nightSummary.ts`, counted in `nightReport.ts`).
    - **Barricades** (`barricades.ts`, rules in `shared/barricade.ts`): a **Take planks** prompt on
-     the garage pile fills a kid up to 5 (the pile starts at 30, +10 every dawn). Every door and
-     window takes 3 planks: hold **Board up** (E) to nail one, **Take down** (F) to pull one off
-     and get it back. While any plank is up the opening is blocked for everyone. Planks have 100
+     the garage pile gives up to 5 (the pile starts at 30, +10 every dawn). Every door and
+     window takes 3 planks: hold **Board up** (E) to nail one (a
+     plank and a nail), **Take down** (F) to pull one off
+     and get both back. While any plank is up the opening is blocked for everyone. Planks have 100
      health (double if nailed on Day/Night 1); the infected will wear down the outermost one.
-     Carried planks show bottom-left and are lost when a kid is taken.
    - **The infected** (`infected.ts`, waves in `shared/waves.ts`): at night they come in waves
      from all four sides (Night 1: Dad + 1, then 2 more; from Night 2, three growing waves scaled
      by party size). Grey R15 bodies with glowing red eyes; **Dad** wears a blue shirt and comes
@@ -166,7 +176,8 @@ src/
                        #   "Ready"), gameRemote.ts, teams.ts
                        # systems: world.ts (house), party.ts, round.ts (day/night clock), lighting.ts,
                        #   life.ts, health.ts, flashlight.ts, combat.ts, slingshot.ts, barricades.ts,
-                       #   infected.ts, generator.ts, hints.ts, nightReport.ts, prompts.ts,
+                       #   infected.ts, neighbourhood.ts, building.ts, containers.ts, inventory.ts,
+                       #   coins.ts, streetlights.ts, generator.ts, hints.ts, nightReport.ts, prompts.ts,
                        #   speed.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
                        # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, spectate, combatFeedback, melee.ts,
@@ -371,7 +382,7 @@ apply from the next phase.
 - [ ] Six ground-floor windows and the three doors are open gaps you can walk or climb through (low sills); upstairs windows are glass.
 - [ ] Outside: grass all round, a pavement and street out front, a driveway to the garage.
 - [ ] Day is visibly brighter than night through the windows and outside; indoors stays navigable at night.
-- [ ] Then "DAY 1 · 0:40" (Studio) at the top, in sync across windows, counting down; red in the last 10s.
+- [ ] Then "DAY 1 · 1:30" (Studio) at the top, in sync across windows, counting down; red in the last 10s.
 - [ ] Each phase change shows a big title + hint and a chime: DUSK (orange), NIGHT 1 (red), DAWN (pink), DAY 2 (white). The clock pill matches.
 - [ ] The light blends over a few seconds: bright by day, orange at dusk, darkest at night, pinkish at dawn. Indoors stays navigable at night.
 - [ ] Changing `NightSeconds` in ServerStorage → GameConfig during play changes the next night's length.
@@ -398,19 +409,38 @@ apply from the next phase.
 - [ ] From Night 2, a wave that spawns with the power off is bigger.
 
 ### Tips (Day 1 / Night 1)
-- [ ] With no planks: "Grab planks..."; carrying some: "Hold E..."; something boarded and no planks in hand: "Start the generator..."; powered: nothing by day, "Get inside..." at dusk.
+- [ ] With no planks: "Grab planks..."; carrying some: "Hold E..."; something boarded and no planks in hand: "Start the generator..."; powered: "Search the houses..." by day, "Get inside..." at dusk.
 - [ ] At night: "They're at the <opening>!" while one is bashed, otherwise how to fight. Nothing at dawn, while taken, or from Day 2.
 
 ### Dawn card
 - [ ] At dawn, for ~10s: "NIGHT N SURVIVED" with infected downed, planks lost and who was taken; it doesn't cover the DAWN banner.
 
+### Inventory and coins
+- [ ] Right edge: "Coins 0" over five slots: Stones 20/20, Nails 10/20, three empty. Clear of the jump button and joystick on a phone.
+- [ ] Tapping a filled slot shows Drop (and Use for a medkit); tapping again hides it.
+- [ ] Drop leaves a box on the floor; anyone can pick it up. With no room: "Your pockets are full."
+- [ ] A medkit heals 50; at full health it says "You're not hurt." and isn't used.
+- [ ] Every kid still in at dawn gets 5 coins.
+
+### Maple Street
+- [ ] Two houses either side of home and two across the street, each with a front and back door, car and garden stones. You can't walk off the map.
+- [ ] Searching (hold E) shows what you found; the container goes dark and stays empty, for everyone, all run. What doesn't fit is left at your feet.
+- [ ] 25s before dusk (Studio): "The sun's going down. Get home." and the street lamps come on; off at dawn.
+
+### Dormant infected
+- [ ] By day one stands in each house facing the TV. You can walk behind it; crossing in front, touching it or shining a torch on it wakes it.
+- [ ] Searching the drawers in the same room, or swinging a bat nearby, wakes it. So does hitting it.
+- [ ] A woken one chases you; far enough away by day, it walks back to its TV. At dawn it leaves with the others.
+- [ ] A killed one is replaced the next morning.
+- [ ] Day 1: Dad stands in the left neighbour's garden, and comes with Night 1's first wave (only one Dad).
+
 ### Slingshot
-- [ ] Every kid has a Slingshot; bottom-left shows "Stones 20".
+- [ ] Every kid has a Slingshot, and "Stones 20/20" in a slot from the very start.
 - [ ] Holding it turns you to face the camera, like the bat.
 - [ ] PC: clicking fires a small stone toward the mouse; it flies visibly and stops at walls. Touch: it fires at the middle of the screen.
 - [ ] Hitting an infected: it flashes red, a hit marker shows, Stones drops by one. Six hits bring a Night 1 shambler down (60 health, 10 each).
 - [ ] Holding the mouse/spamming fires at most about one stone every 0.6s.
-- [ ] At 0 stones clicking does nothing; at dawn you get 10 back (never more than 20).
+- [ ] At 0 stones clicking does nothing; gathering from a garden patch gives 10, and the patch is back at dawn.
 - [ ] Other players see your stones fly.
 
 ### Flashlight stun
@@ -419,13 +449,13 @@ apply from the next phase.
 - [ ] A stunned infected can still be hit with the bat and slingshot.
 
 ### Barricades
-- [ ] Bottom-left shows "Planks 0/5" (grey); it's hidden while spectating.
-- [ ] The garage pile prompt says "Take planks (30 left)"; using it gives 5 and the count drops to 25. Using it with full hands: "Your hands are full."
+- [ ] The garage pile prompt says "Take planks (30 left)"; using it gives 5 and the count drops to 25. With no room: "Your pockets are full."
 - [ ] At every door and window (from inside, and outside): "Board up (0/3)" (E, hold ~1s) and, once a plank is up, "Take down" (F).
+- [ ] Boarding up uses a plank and a nail; without nails: "You need nails...".
 - [ ] Board up without planks: "You need planks. There's a pile in the garage."
 - [ ] Each plank appears across the opening at a slight angle, on the inside; at 3/3 the Board up prompt goes away.
 - [ ] With 1+ planks up you can't walk or climb through the opening; taking them all down opens it again.
-- [ ] Take down gives the plank back (count goes up); with full hands it says so and leaves the plank.
+- [ ] Take down gives the plank and nail back; with no room for a plank it says so and leaves it up.
 - [ ] At dawn the pile goes up by 10.
 - [ ] Two players: planks one kid nails show for the other; each has their own count.
 - [ ] Prompts do nothing behind the "DAY 1" card.
@@ -445,7 +475,7 @@ apply from the next phase.
 - [ ] At 0 health you're taken: "You were taken!", the camera follows another kid (or none, solo).
 - [ ] Night 1: you're back in the basement after ~15s with your bat and flashlight; the run doesn't end even if everyone's taken.
 - [ ] Later nights: you're back at dawn; if every kid is taken at once, the run ends with "SURVIVED N NIGHTS".
-- [ ] Carried planks are lost when taken.
+- [ ] Your slots are left as boxes where you were taken, and anyone can pick them up; coins are kept.
 - [ ] Resetting at night counts as taken; resetting by day respawns you after ~3s.
 
 ### Baseball bat

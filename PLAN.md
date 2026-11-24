@@ -161,25 +161,33 @@ in M4.
 Goal: a reason to leave the house. Playtest question: *is the day tense, and does the walk home
 at dusk feel risky?*
 
-- [ ] Neighbourhood blockout: home + 4–5 houses on Maple Street, gardens, the street.
-- [ ] Loot containers (cupboards, drawers, car boots) on tagged spawns. `shared/loot.ts` (pure):
-      weighted tables that scale by night (ammo falls to 40% by Night 10, 25% by Night 20). Spec.
-- [ ] **Looted stays looted** for the run.
-- [ ] **Slot-based inventory** (server-owned): 5 slots to start, each a tool or a stack of one
-      resource (planks, nails, stones, ammo, items); coins don't use a slot. Replaces the M1
-      "Planks N/5" counter. `shared/inventory.ts` (pure: add, stack, remove, full). Spec.
-- [ ] **Rucksacks**: school rucksack (8 slots), hiking rucksack (12), from the workbench (M3).
-- [ ] Hotbar + inventory UI; taken kids drop everything where they were taken.
-- [ ] **Coins**: pickups, +5 per kid at dawn, store + HUD counter.
-- [ ] Dormant infected in front of screens by day; noise and flashlight wake them.
-- [ ] "Sun's going down" warning, streetlights at 2:00.
+- [x] Neighbourhood blockout (`neighbourhood.ts`): two houses either side of home, two across the
+      street, cars, gardens, street lamps, invisible map edge. Side infected spawns moved to ±62.
+- [x] Loot containers (`containers.ts`): cupboards, drawers, tool chests, car boots, the searchable
+      ones tagged. `shared/loot.ts` (pure): weighted tables, nails 40% by Night 10, 25% by Night 20.
+      Spec.
+- [x] **Looted stays looted** for the run; garden stones come back at dawn.
+- [x] **Slot inventory** (`inventory.ts`): 5 slots of stacks; coins and the starter tools
+      (flashlight, bat, slingshot) don't use slots, or there'd be no room left. `shared/inventory.ts`
+      (pure). Spec. Nailing a plank now costs a nail; stones come from here; medkits heal 50.
+- [x] Inventory UI down the right edge: tap a slot for Drop / Use. Dropped stacks can be picked up;
+      a taken kid leaves everything where they were (but keeps their coins).
+- [x] **Coins** (`coins.ts`): found, +5 per kid still in at dawn, HUD counter.
+- [x] **Dormant infected** in front of screens by day: crossing in front, bumping, a beam, noise
+      (searching nearby, bat swings) or a hit wakes them (`shared/wake.ts`, spec). They give up 70
+      studs away. They stay dormant at night until the broadcast exists (M4), so Night 1 stays easy.
+      Dad waits next door on Day 1; Night 1's first wave wakes him.
+- [x] "The sun's going down" and street lamps 60 s before dusk.
+- [ ] **Weapon locker** at home: nothing to share until there are found weapons (M5).
+- [ ] **Playtest**: is the day tense, and does the walk home at dusk feel risky?
 
 ## M3 — Workbench, trading and the walkie-talkie
 
 Goal: a reason to spend coins. Playtest question: *do players plan trips around what they want
 to buy?*
 
-- [ ] Workbench upgrades (reinforced planks, door bar, bigger backpack, generator tune-up,
+- [ ] **Rucksacks** at the workbench: school (8 slots), hiking (12).
+- [ ] Workbench upgrades (reinforced planks, door bar, generator tune-up,
       shutters, scrap press). Bought on the server; state goes to the client stores.
 - [ ] `shared/pricing.ts` (pure): base prices, +15% per night for ammo, want-list bonuses. Spec.
 - [ ] First two NPC bases: **Treehouse** (kids) and **Fire Station** (adult), each with a trader

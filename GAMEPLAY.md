@@ -263,11 +263,12 @@ back at the door the next night. A story thread for a later chapter.
 ### Inventory
 - **Slot-based**: every kid starts with **5 slots**. A slot holds one weapon or tool, or a stack
   of one resource (e.g. up to 5 planks, 20 stones, 12 pistol rounds; stack sizes to tune).
-  Coins don't take a slot.
+  Coins and the starter tools (flashlight, bat, slingshot) don't take a slot; weapons found
+  later do.
 - **Rucksacks** add slots: a **school rucksack** (8 slots) and a **hiking rucksack** (12),
   bought at the workbench (and maybe found or traded later).
 - Full inventory means choosing what to leave behind, which keeps trips out meaningful.
-- Taken kids drop everything they carried where they were taken.
+- Taken kids drop everything in their slots where they were taken. They keep their coins.
 
 ### Health
 Each kid has **100 health**. Infected hits do damage (about 15 for a shambler, more for tougher

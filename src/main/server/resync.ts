@@ -1,10 +1,10 @@
-import { resendPlanks } from "./barricades";
+import { resendCoins } from "./coins";
 import { send } from "./gameRemote";
 import { resendHint } from "./hints";
+import { resendInventory } from "./inventory";
 import { isAlive } from "./life";
 import { currentSummary } from "./nightReport";
 import { isMember } from "./party";
-import { resendStones } from "./slingshot";
 import { getScoreboard } from "./roundEnd";
 import { livingKids } from "./teams";
 
@@ -17,8 +17,8 @@ export function resync(player: Player) {
 	if (!isMember(player)) {
 		return; // not in the run yet; they'll get their state when they join
 	}
-	resendPlanks(player);
-	resendStones(player);
+	resendInventory(player);
+	resendCoins(player);
 	resendHint(player);
 	const summary = currentSummary();
 	if (summary) {

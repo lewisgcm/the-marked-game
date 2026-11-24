@@ -1,6 +1,7 @@
 import React from "@rbxts/react";
 import { onServerMessage, serverSender } from "shared/net";
 import { GameClientMessages, GameServerMessages } from "shared/remotes";
+import { emptyInventory, Inventory } from "shared/inventory";
 import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
 
@@ -50,10 +51,10 @@ export const spectateStore = new Store<number[]>([]);
 export const noticeStore = new Store<{ text: string; at: number } | undefined>(undefined);
 /** Your latest swing that connected (for the hit marker). */
 export const hitStore = new Store<{ kind: "Hit" | "Kill"; at: number } | undefined>(undefined);
-/** Planks you're carrying. */
-export const planksStore = new Store<number>(0);
-/** Stones for the slingshot. */
-export const stonesStore = new Store<number>(0);
+/** What you're carrying. */
+export const inventoryStore = new Store<Inventory>(emptyInventory(5));
+/** Your coins. */
+export const coinsStore = new Store<number>(0);
 /** Your Night 1 tip ("" for none). */
 export const hintStore = new Store<string>("");
 /** Last night's summary, with when it arrived. */
@@ -70,8 +71,8 @@ export function startGameState(remote: RemoteEvent) {
 		Notice: (text) => noticeStore.set({ text, at: os.clock() }),
 		HitResult: (kind) => hitStore.set({ kind, at: os.clock() }),
 		Hurt: () => hurtStore.set(os.clock()),
-		Planks: (count) => planksStore.set(count),
-		Stones: (count) => stonesStore.set(count),
+		Inventory: (inventory) => inventoryStore.set(inventory),
+		Coins: (coins) => coinsStore.set(coins),
 		Hint: (text) => hintStore.set(text),
 		NightSummary: (summary) => nightSummaryStore.set({ summary, at: os.clock() }),
 		Scoreboard: (cards) => scoreboardStore.set(cards),
