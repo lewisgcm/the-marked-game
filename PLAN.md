@@ -295,10 +295,10 @@ Goal: the endless game.
 
 Not tied to a milestone yet.
 
-- [ ] **Rework the on-screen UI**, step by step: 1 one message bar (`shared/messages.ts`, spec;
+- [x] **Rework the on-screen UI**, step by step: 1 one message bar (`shared/messages.ts`, spec;
       `messageQueue.ts`, `messageBar.tsx`) done; 2 say less (`shared/gains.ts`, spec: "+3 Nails" instead
       of a message for every search; no messages for what the lights or prompts show) done; 3 phase banners and dawn card (`shared/announce.ts`, spec) done; 4 the
-      always-on parts (walkie icon, faint empty slots, `shared/slotLayout.ts`, spec) built. The note it came from:
+      always-on parts (walkie icon, faint empty slots, `shared/slotLayout.ts`, spec) done. The note it came from:
       **too much pops up, all the time** (playtest, 24 Nov 2026). Best done
       before M4 adds distress calls. What shows today:
   - Always: clock, inventory and coins, walkie button, Night 1 tips (until Day 2).

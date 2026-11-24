@@ -84,7 +84,12 @@ function setUpContainer(box: BasePart, hooks: ContainerHooks) {
 }
 
 function setUpStones(patch: BasePart, hooks: ContainerHooks) {
-	const prompt = makePrompt(promptAnchor(patch, new Vector3(0, 1, 0)), "Gather stones", Enum.KeyCode.E, 0.6);
+	const prompt = makePrompt(
+		promptAnchor(patch, new Vector3(0, 1, 0)),
+		"Gather stones",
+		Enum.KeyCode.E,
+		gameConfig.holdStones.Value,
+	);
 	stonePrompts.push(prompt);
 	prompt.Triggered.Connect((player) => {
 		if (!hooks.canAct(player) || !inReach(player, prompt)) {

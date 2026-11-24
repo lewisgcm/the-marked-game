@@ -145,7 +145,7 @@ function setUpEntry(entry: Entry) {
 
 	const board = makePrompt(anchor, "Board up", Enum.KeyCode.E, gameConfig.boardHoldSeconds.Value);
 	board.ObjectText = entry.name;
-	const takeDown = makePrompt(anchor, "Take down", Enum.KeyCode.F, 0.5);
+	const takeDown = makePrompt(anchor, "Take down", Enum.KeyCode.F, gameConfig.holdTakeDown.Value);
 	takeDown.UIOffset = new Vector2(0, 70); // below the board prompt
 
 	const visuals = new Instance("Folder");
@@ -172,7 +172,7 @@ function setUpPile() {
 		return;
 	}
 	const anchor = promptAnchor(pile, new Vector3(0, 2, 0));
-	const prompt = makePrompt(anchor, "Take planks", Enum.KeyCode.E, 0.4);
+	const prompt = makePrompt(anchor, "Take planks", Enum.KeyCode.E, gameConfig.holdTakePlanks.Value);
 	prompt.ObjectText = "Plank pile";
 	pilePrompt = prompt;
 	prompt.Triggered.Connect((player) => {

@@ -1,6 +1,7 @@
 import React from "@rbxts/react";
 import { RunService, Workspace } from "@rbxts/services";
 import { hitStore, hurtStore, useStore } from "./gameState";
+import { WHITE } from "./theme";
 
 /**
  * Melee feedback: a hit marker in the middle of the screen when your swing connects (red for a
@@ -77,7 +78,7 @@ export function CombatFeedback() {
  * blank square). White for a hit, bigger and red for a kill.
  */
 function HitMarker(props: { kill: boolean }) {
-	const color = props.kill ? new Color3(1, 0.2, 0.2) : new Color3(1, 1, 1);
+	const color = props.kill ? new Color3(1, 0.2, 0.2) : WHITE;
 	const length = props.kill ? 16 : 12;
 	const thickness = props.kill ? 4 : 3;
 	const gap = props.kill ? 14 : 10; // distance from centre to the middle of each tick

@@ -73,7 +73,8 @@ playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
 - **Text on screen** goes through the one message bar (`shared/messages.ts`): `notify` replies to what
   a kid just did (bottom line), `notifyAll` is news, `alertAll`/`alertPlayer` is danger, `say` is the
   walkie. Don't add other popups, and don't say what the world or the HUD already shows.
-- **Lists to buy from** use `client/shopPanel.tsx`.
+- **Lists to buy from** use `client/shopPanel.tsx`; any other window uses `client/panel.tsx`. Shared
+  colours are in `client/theme.ts`, sounds go through `client/sound.ts`.
 - **Numbers:** balance values that make sense alone go in `config.ts` (editable live in Studio).
   Tables and formulas (waves, loot, stack sizes) live in `src/shared/` so they can be unit-tested.
 

@@ -21,6 +21,11 @@ export interface Stall {
 	stock: Map<ItemId, number>;
 }
 
+/** "1 coin", "6 coins". */
+export function coinsText(count: number): string {
+	return count === 1 ? "1 coin" : `${count} coins`;
+}
+
 /** A base's price on this day: scarce goods go up by `rise` of the Day 1 price every day. */
 export function salePrice(price: number, day: number, scarce: boolean, rise: number): number {
 	return scarce ? math.round(price * (1 + rise * math.max(0, day - 1))) : price;

@@ -3,7 +3,7 @@ import { CollectionService } from "@rbxts/services";
 import { findBase } from "shared/bases";
 import { countOf, Inventory, roomFor } from "shared/inventory";
 import { serverSender } from "shared/net";
-import { BuyRow, SaleRow, TradeView } from "shared/pricing";
+import { BuyRow, coinsText, SaleRow, TradeView } from "shared/pricing";
 import { GameClientMessages } from "shared/remotes";
 import { TRADER_TAG } from "shared/tags";
 import { saleStatus, sellCount, unitPrice } from "shared/trade";
@@ -21,10 +21,6 @@ function saleButton(row: SaleRow, coins: number, room: number): string {
 		return "Sold out";
 	}
 	return status === "noRoom" ? "No room" : coinsText(row.price);
-}
-
-function coinsText(count: number): string {
-	return count === 1 ? "1 coin" : `${count} coins`;
 }
 
 function sellButton(row: BuyRow, have: number): string {
@@ -72,7 +68,7 @@ export function TradeUi({ remote }: { remote: RemoteEvent }) {
 	}
 	return (
 		<ShopPanel
-			title={`${findBase(view.base).name}  -  ${coins} coins`}
+			title={`${findBase(view.base).name}  -  ${coinsText(coins)}`}
 			target={CollectionService.GetTagged(TRADER_TAG).find((c) => c.GetAttribute("Base") === view.base)}
 			onClose={() => tradeStore.set(undefined)}
 			rows={tradeRows(view, coins, inventory, send)}

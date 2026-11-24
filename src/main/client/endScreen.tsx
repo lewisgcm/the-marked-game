@@ -3,6 +3,7 @@ import { EndReason } from "shared/round";
 import { ScoreCard } from "shared/scoreboard";
 import { scoreboardStore, useStore } from "./gameState";
 import { useViewport } from "./useViewport";
+import { PALE, WHITE } from "./theme";
 
 /**
  * The end screen: how the run ended, a card per kid (avatar, name, fun title, a few stats), and
@@ -55,7 +56,7 @@ function Card({ card, order }: { card: ScoreCard; order: number }) {
 				BackgroundColor3={new Color3(0.15, 0.15, 0.18)}
 				Image={`rbxthumb://type=AvatarHeadShot&id=${card.userId}&w=150&h=150`}
 				ImageTransparency={card.taken ? 0.5 : 0}
-				ImageColor3={card.taken ? new Color3(0.6, 0.6, 0.6) : new Color3(1, 1, 1)}
+				ImageColor3={card.taken ? new Color3(0.6, 0.6, 0.6) : WHITE}
 			>
 				<uicorner CornerRadius={new UDim(1, 0)} />
 			</imagelabel>
@@ -118,7 +119,7 @@ export function EndScreen({
 					BackgroundTransparency={1}
 					Font={Enum.Font.GothamBold}
 					TextSize={20}
-					TextColor3={new Color3(0.9, 0.9, 0.92)}
+					TextColor3={PALE}
 					Text={END_TEXT[reason ?? "AllTaken"]}
 				/>
 				<frame
@@ -145,7 +146,7 @@ export function EndScreen({
 					AutoButtonColor={!leaving}
 					Font={Enum.Font.GothamBold}
 					TextSize={20}
-					TextColor3={new Color3(1, 1, 1)}
+					TextColor3={WHITE}
 					Text={leaving ? "Heading back..." : `Back to lobby (${secondsLeft})`}
 					Event={{
 						Activated: () => {

@@ -9,6 +9,7 @@ import { gainStore } from "./gainFeed";
 import { coinsStore, inventoryStore, useStore } from "./gameState";
 import { useTaken } from "./spectate";
 import { useViewport } from "./useViewport";
+import { BUTTON, CREAM, GOLD, PANEL, WHITE } from "./theme";
 
 /**
  * Your slots and coins, down the right edge, in as many columns as it takes to stay clear of the
@@ -25,20 +26,17 @@ const COINS_WIDTH = 90;
 /** Height of the coins, above the slots. */
 const HEADER = 34;
 
-const PANEL = new Color3(0.05, 0.05, 0.07);
-const GOLD = new Color3(1, 0.85, 0.4);
-
 function SmallButton({ text, x, onClick }: { text: string; x: number; onClick: () => void }) {
 	return (
 		<textbutton
 			Size={new UDim2(0, 62, 0, 36)}
 			Position={new UDim2(0, x, 0.5, 0)}
 			AnchorPoint={new Vector2(1, 0.5)}
-			BackgroundColor3={new Color3(0.2, 0.2, 0.25)}
+			BackgroundColor3={BUTTON}
 			BorderSizePixel={0}
 			Font={Enum.Font.GothamBold}
 			TextSize={15}
-			TextColor3={new Color3(1, 1, 1)}
+			TextColor3={WHITE}
 			ZIndex={5} // over the next column
 			Text={text}
 			Event={{ Activated: onClick }}
@@ -67,7 +65,7 @@ function Gains({ panelWidth }: { panelWidth: number }) {
 					BackgroundTransparency={1}
 					Font={Enum.Font.GothamBold}
 					TextSize={16}
-					TextColor3={line.item === "Coins" ? GOLD : new Color3(0.95, 0.9, 0.8)}
+					TextColor3={line.item === "Coins" ? GOLD : CREAM}
 					TextStrokeTransparency={0.5}
 					TextXAlignment={Enum.TextXAlignment.Right}
 					Text={`+${line.count} ${line.item}`}
@@ -109,7 +107,7 @@ export function InventoryHud({ remote }: { remote: RemoteEvent }) {
 				AutoButtonColor={stack !== undefined}
 				Font={Enum.Font.GothamBold}
 				TextSize={12}
-				TextColor3={new Color3(0.95, 0.9, 0.8)}
+				TextColor3={CREAM}
 				Text={stack ? `${stack.item}\n${stack.count}/${STACK_SIZE[stack.item]}` : ""}
 				Event={{ Activated: () => setSelected(stack && !isSelected ? i : undefined) }}
 			>

@@ -1,4 +1,4 @@
-import { CollectionService, Workspace } from "@rbxts/services";
+import { CollectionService, Players, Workspace } from "@rbxts/services";
 import { aliveHumanoidOf, rootOf } from "shared/characters";
 import { BAT_TOOL_NAME, INFECTED_TAG } from "shared/combat";
 import { checkMeleeReach, parseSwingCandidates } from "shared/melee";
@@ -34,6 +34,11 @@ const SOUND_RANGE = 60;
 let hooks: CombatHooks | undefined;
 const lastSwingAt = new Map<Player, number>();
 const weapons = new Map<Player, Tool>();
+
+Players.PlayerRemoving.Connect((player) => {
+	lastSwingAt.delete(player);
+	weapons.delete(player);
+});
 
 function offCooldown(player: Player, cooldown: number): boolean {
 	const now = os.clock();

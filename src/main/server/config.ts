@@ -60,6 +60,18 @@ function loadGameConfig() {
 		/** Coins for each kid still in at dawn. */
 		coinsPerDawn: int("CoinsPerDawn", 5),
 
+		// --- Prompts: seconds to hold (read at the start of a run) ------------------------------------
+		/** Things that happen at once: picking up, trading, the workbench. */
+		holdQuick: num("HoldQuick", 0.2),
+		/** Gathering stones from a garden patch. */
+		holdStones: num("HoldStones", 0.6),
+		/** Taking planks from the pile. */
+		holdTakePlanks: num("HoldTakePlanks", 0.4),
+		/** Taking a plank down. */
+		holdTakeDown: num("HoldTakeDown", 0.5),
+		/** Switching the generator on or off. */
+		holdGenerator: num("HoldGenerator", 0.8),
+
 		// --- Workbench upgrades (costs: shared/upgrades.ts) --------------------------------------------
 		/** Reinforced planks: planks nailed afterwards have this many times the health. */
 		reinforcedPlankMultiplier: num("ReinforcedPlankMultiplier", 1.5),
@@ -177,6 +189,8 @@ function loadGameConfig() {
 		infectedAttackRange: num("InfectedAttackRange", 5),
 		/** An infected outside goes for a kid it can see within this distance, in studs. */
 		infectedSightRange: num("InfectedSightRange", 40),
+		/** The power only counts once it's been on for this long, in seconds (Studio nights are shorter). */
+		powerSettleSeconds: num("PowerSettleSeconds", 20, 8),
 		/** With the generator off, waves are this many times bigger (never on Night 1). */
 		powerOffWaveMultiplier: num("PowerOffWaveMultiplier", 1.4),
 		/** At dawn, one still walking off after this long dissolves where it is, in seconds. */

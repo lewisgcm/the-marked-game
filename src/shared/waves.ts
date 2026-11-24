@@ -48,6 +48,14 @@ export function waveSize(shamblers: number, night: number, powered: boolean, off
 	return powered || night <= 1 ? shamblers : math.max(shamblers, math.round(shamblers * offMultiplier));
 }
 
+/**
+ * Whether the power counts for a wave: it has to have been on for `settle` seconds, so switching it
+ * on just as they arrive doesn't. `onFor` is how long it's been on; undefined when it's off.
+ */
+export function powerCounts(onFor: number | undefined, settle: number): boolean {
+	return onFor !== undefined && onFor >= settle;
+}
+
 /** An infected's health on `night`: `base`, plus `perNight` (a fraction) for every night after the first. */
 export function infectedHealth(night: number, base: number, perNight: number): number {
 	return base * (1 + perNight * math.max(0, night - 1));

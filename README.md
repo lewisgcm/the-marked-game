@@ -130,7 +130,8 @@ still join.
      up 70 studs away. They're extra to the night's waves and stay put at night. Dad waits in the
      left neighbour's garden on Day 1 and joins Night 1's first wave.
    - **Generator** (`generator.ts`): a switch in the garage for every house light; it starts off.
-     With it off, waves are 1.4× bigger (never on Night 1). Running it **at night** burns fuel (rules
+     With it off, waves are 1.4× bigger (never on Night 1); it only counts once it's been on for 20s
+     (8s in Studio), so flicking it on as a wave arrives doesn't help. Running it **at night** burns fuel (rules
      in `shared/fuel.ts`): it starts with one night's worth, a can adds one, and the tank holds three.
      Cans take a whole slot each and turn up in tool chests and car boots. The tune-up halves the burn.
    - **Messages** (`shared/messages.ts`): one at a time in the bar under the clock, danger first (it
@@ -202,7 +203,7 @@ src/
                        # world: world.ts (the house), neighbourhood.ts, bases.ts, npc.ts, building.ts
                        # helpers: effects.ts, prompts.ts, infectedDamage.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, messageQueue.ts, messageBar, gainFeed.ts, device.ts, inventoryHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
+                       # endScreen, messageQueue.ts, messageBar, gainFeed.ts, device.ts, theme.ts, sound.ts, panel, inventoryHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
@@ -428,7 +429,7 @@ apply from the next phase.
 ### Generator
 - [ ] The run starts with every house lamp dark; the garage generator's prompt says "Start" (E).
 - [ ] Starting it lights every lamp (no message); the prompt becomes "Switch off" and reverses it.
-- [ ] From Night 2, a wave that spawns with the power off is bigger.
+- [ ] From Night 2, a wave that spawns with the power off, or on for less than 20s (Studio 8s), is bigger. Switching it on at dusk (free) always counts.
 - [ ] The prompt says how much is left: "Generator (1 night of fuel)" at the start. Running it by day or dusk doesn't lower it; at night it counts down, and pauses while it's off.
 - [ ] Pour in fuel (F, hold) uses a can and adds a night to the prompt (no message). Without one: "You need a fuel can...". The two prompts don't overlap, and it's gone when a whole can wouldn't fit (3 nights).
 - [ ] With a quarter of a night left, everyone's warned; at empty the lights go out and everyone's told. Start then says "It's out of fuel...".

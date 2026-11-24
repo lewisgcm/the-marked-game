@@ -1,9 +1,11 @@
 import React from "@rbxts/react";
-import { SoundService, UserInputService } from "@rbxts/services";
+import { UserInputService } from "@rbxts/services";
 import { BarKind } from "shared/messages";
 import { useStore } from "./gameState";
 import { BarView, barStore, feedbackStore } from "./messageQueue";
+import { PING, playLocalSound } from "./sound";
 import { useViewport } from "./useViewport";
+import { GREEN, GREY, PALE, PANEL } from "./theme";
 
 /**
  * The only two places text pops up: one message at a time under the clock (danger, the walkie,
@@ -12,28 +14,14 @@ import { useViewport } from "./useViewport";
 
 /** Seconds a reply shows for. */
 const FEEDBACK_SECONDS = 2;
-// Built-in Studio sound; swap for a crackle later.
-const CRACKLE = "rbxasset://sounds/electronicpingshort.wav";
 
-const PANEL = new Color3(0.05, 0.05, 0.07);
-const GREEN = new Color3(0.55, 0.85, 0.55);
-const GREY = new Color3(0.65, 0.65, 0.7);
 const TIP = new Color3(1, 0.92, 0.7);
 const REPLY = new Color3(1, 0.85, 0.6);
 const TEXT: Record<BarKind, Color3> = {
 	Danger: new Color3(1, 0.45, 0.4),
-	Walkie: new Color3(0.9, 0.9, 0.92),
-	Info: new Color3(0.9, 0.9, 0.92),
+	Walkie: PALE,
+	Info: PALE,
 };
-
-function crackle() {
-	const sound = new Instance("Sound");
-	sound.SoundId = CRACKLE;
-	sound.Volume = 0.4;
-	sound.PlaybackSpeed = 0.6;
-	SoundService.PlayLocalSound(sound);
-	task.delay(2, () => sound.Destroy());
-}
 
 interface LineProps {
 	order: number;
@@ -85,7 +73,7 @@ function TopBar() {
 
 	React.useEffect(() => {
 		if (message?.kind === "Walkie") {
-			crackle();
+			playLocalSound(PING, 0.4, 0.6); // a crackle, for now
 		}
 	}, [message]);
 

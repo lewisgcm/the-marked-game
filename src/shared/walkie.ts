@@ -31,10 +31,10 @@ export interface BaseReport {
 	/** Whether it's made contact: it trades today, though maybe not right now. */
 	inContact: boolean;
 	openNow: boolean;
-	/** What it still has on order today: what, how many, and the coins it pays for each. */
+	/** What it still has on order today: what, how many, and what it pays for each ("6 coins"). */
 	wanted?: ItemId;
 	wantedCount: number;
-	wantedPrice: number;
+	wantedPrice: string;
 }
 
 /** A base as the walkie's list shows it. */
@@ -61,10 +61,6 @@ const MUM_LINES: Record<number, string | undefined> = {
 	[3]: "They'll come harder every night now. Keep those planks up.",
 };
 
-function coins(count: number): string {
-	return count === 1 ? "1 coin" : `${count} coins`;
-}
-
 /** Everything said on the morning of `day`, in order. */
 export function morningReport(day: number, reports: BaseReport[]): WalkieLine[] {
 	const lines: WalkieLine[] = [];
@@ -82,7 +78,7 @@ export function morningReport(day: number, reports: BaseReport[]): WalkieLine[] 
 		if (base.wanted !== undefined) {
 			lines.push({
 				from: base.trader,
-				text: `We need ${base.wantedCount} ${base.wanted.lower()} today. ${coins(base.wantedPrice)} each.`,
+				text: `We need ${base.wantedCount} ${base.wanted.lower()} today. ${base.wantedPrice} each.`,
 			});
 		}
 	}
@@ -96,7 +92,7 @@ export function baseStatus(base: BaseReport): BaseStatus {
 	}
 	const want =
 		base.wanted !== undefined
-			? `. Wants ${base.wantedCount} ${base.wanted.lower()} (${coins(base.wantedPrice)} each)`
+			? `. Wants ${base.wantedCount} ${base.wanted.lower()} (${base.wantedPrice} each)`
 			: "";
 	return {
 		name: base.name,

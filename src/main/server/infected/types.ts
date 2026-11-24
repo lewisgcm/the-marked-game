@@ -21,7 +21,7 @@ export interface InfectedHooks {
 	isLit: (model: Model) => boolean;
 	/** Whether the night is on (woken infected never give up then). */
 	isNight: () => boolean;
-	/** Whether the generator is running (off: more infected come). */
+	/** Whether the generator counts for a wave (if not, more infected come). */
 	isPowered: () => boolean;
 	/** A plank was broken off an opening. */
 	onPlankBroken: () => void;

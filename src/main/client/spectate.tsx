@@ -2,6 +2,7 @@ import React from "@rbxts/react";
 import { ContextActionService, Players, Workspace } from "@rbxts/services";
 import { TAKEN_ATTRIBUTE } from "shared/combat";
 import { spectateStore, useStore } from "./gameState";
+import { BUTTON, PANEL, WHITE } from "./theme";
 
 /**
  * Spectating for kids who were taken. The server sends the user IDs of the kids still in; the
@@ -68,11 +69,11 @@ export function Spectate() {
 			Size={new UDim2(0, 44, 0, 44)}
 			Position={new UDim2(x, x === 0 ? 8 : -52, 0.5, 0)}
 			AnchorPoint={new Vector2(0, 0.5)}
-			BackgroundColor3={new Color3(0.2, 0.2, 0.25)}
+			BackgroundColor3={BUTTON}
 			BorderSizePixel={0}
 			Font={Enum.Font.GothamBlack}
 			TextSize={22}
-			TextColor3={new Color3(1, 1, 1)}
+			TextColor3={WHITE}
 			Text={text}
 			Event={{ Activated: () => cycle(step) }}
 		>
@@ -86,7 +87,7 @@ export function Spectate() {
 				Size={new UDim2(0, 420, 0, 60)}
 				Position={new UDim2(0.5, 0, 1, -24)}
 				AnchorPoint={new Vector2(0.5, 1)}
-				BackgroundColor3={new Color3(0.05, 0.05, 0.07)}
+				BackgroundColor3={PANEL}
 				BackgroundTransparency={0.25}
 				BorderSizePixel={0}
 			>

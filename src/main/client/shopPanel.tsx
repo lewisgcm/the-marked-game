@@ -1,7 +1,9 @@
 import React from "@rbxts/react";
 import { Players, RunService } from "@rbxts/services";
 import { rootOf } from "shared/characters";
+import { Panel, PANEL_FOOT, PANEL_TITLE } from "./panel";
 import { useViewport } from "./useViewport";
+import { GOLD, GREY, ROW, WHITE } from "./theme";
 
 /**
  * A list of things to buy or sell (the workbench, the traders). Closes with the X, or when you
@@ -9,9 +11,8 @@ import { useViewport } from "./useViewport";
  */
 
 const WIDTH = 380;
-const ROW = 62;
+const ROW_HEIGHT = 62;
 const GAP = 8;
-const TITLE = 54;
 /** Closes past this distance, in studs (the server checks reach on every purchase). */
 const CLOSE_DISTANCE = 14;
 
@@ -35,7 +36,7 @@ export interface ShopRowProps {
 	onPress: () => void;
 }
 
-export function ShopRow({ order, name, description, button, enabled, highlight, onPress }: ShopRowProps) {
+function ShopRow({ order, name, description, button, enabled, highlight, onPress }: ShopRowProps) {
 	const label = (y: number, text: string, size: number, color: Color3, bold: boolean) => (
 		<textlabel
 			Size={new UDim2(1, -150, 0, 22)}
@@ -49,14 +50,9 @@ export function ShopRow({ order, name, description, button, enabled, highlight, 
 			Text={text}
 		/>
 	);
-	const detail = highlight === true ? new Color3(1, 0.85, 0.4) : new Color3(0.65, 0.65, 0.7);
+	const detail = highlight === true ? GOLD : GREY;
 	return (
-		<frame
-			LayoutOrder={order}
-			Size={new UDim2(1, 0, 0, ROW)}
-			BackgroundColor3={new Color3(0.1, 0.1, 0.13)}
-			BorderSizePixel={0}
-		>
+		<frame LayoutOrder={order} Size={new UDim2(1, 0, 0, ROW_HEIGHT)} BackgroundColor3={ROW} BorderSizePixel={0}>
 			<uicorner CornerRadius={new UDim(0, 8)} />
 			{label(8, name, 16, new Color3(0.95, 0.93, 0.88), true)}
 			{label(32, description, 12, detail, false)}
@@ -70,7 +66,7 @@ export function ShopRow({ order, name, description, button, enabled, highlight, 
 				Font={Enum.Font.GothamBold}
 				TextSize={14}
 				TextWrapped={true}
-				TextColor3={enabled ? new Color3(1, 1, 1) : new Color3(0.6, 0.6, 0.64)}
+				TextColor3={enabled ? WHITE : new Color3(0.6, 0.6, 0.64)}
 				Text={button}
 				Event={{
 					Activated: () => {
@@ -107,58 +103,24 @@ export function ShopPanel({ title, target, rows, onClose }: ShopPanelProps) {
 	}, [target]);
 
 	const scale = math.min(1, (viewport.X * 0.94) / WIDTH);
-	const height = math.min(TITLE + rows.size() * (ROW + GAP) + GAP, (viewport.Y * 0.8) / scale);
+	const height = math.min(PANEL_TITLE + rows.size() * (ROW_HEIGHT + GAP) + PANEL_FOOT, (viewport.Y * 0.8) / scale);
 	return (
 		<screengui ResetOnSpawn={false} DisplayOrder={6}>
-			<frame
-				Size={new UDim2(0, WIDTH, 0, height)}
-				Position={new UDim2(0.5, 0, 0.5, 0)}
-				AnchorPoint={new Vector2(0.5, 0.5)}
-				BackgroundColor3={new Color3(0.05, 0.05, 0.07)}
-				BackgroundTransparency={0.1}
-				BorderSizePixel={0}
+			<Panel
+				title={title}
+				titleColor={GOLD}
+				size={new Vector2(WIDTH, height)}
+				position={new UDim2(0.5, 0, 0.5, 0)}
+				anchor={new Vector2(0.5, 0.5)}
+				scale={scale}
+				contentHeight={rows.size() * (ROW_HEIGHT + GAP) - GAP}
+				gap={GAP}
+				onClose={onClose}
 			>
-				<uiscale Scale={scale} />
-				<uicorner CornerRadius={new UDim(0, 12)} />
-				<textlabel
-					Size={new UDim2(1, -70, 0, 48)}
-					Position={new UDim2(0, 16, 0, 0)}
-					BackgroundTransparency={1}
-					Font={Enum.Font.GothamBlack}
-					TextSize={20}
-					TextColor3={new Color3(1, 0.85, 0.4)}
-					TextXAlignment={Enum.TextXAlignment.Left}
-					Text={title}
-				/>
-				<textbutton
-					Size={new UDim2(0, 40, 0, 40)}
-					Position={new UDim2(1, -6, 0, 6)}
-					AnchorPoint={new Vector2(1, 0)}
-					BackgroundColor3={new Color3(0.2, 0.2, 0.25)}
-					BorderSizePixel={0}
-					Font={Enum.Font.GothamBold}
-					TextSize={18}
-					TextColor3={new Color3(1, 1, 1)}
-					Text="X"
-					Event={{ Activated: onClose }}
-				>
-					<uicorner CornerRadius={new UDim(0, 8)} />
-				</textbutton>
-				<scrollingframe
-					Size={new UDim2(1, -24, 1, -TITLE - GAP)}
-					Position={new UDim2(0, 12, 0, TITLE)}
-					BackgroundTransparency={1}
-					BorderSizePixel={0}
-					ScrollBarThickness={4}
-					ScrollingDirection={Enum.ScrollingDirection.Y}
-					CanvasSize={new UDim2(0, 0, 0, rows.size() * (ROW + GAP) - GAP)}
-				>
-					<uilistlayout Padding={new UDim(0, GAP)} SortOrder={Enum.SortOrder.LayoutOrder} />
-					{rows.map((row) => (
-						<ShopRow key={`row${row.order}`} {...row} />
-					))}
-				</scrollingframe>
-			</frame>
+				{rows.map((row) => (
+					<ShopRow key={`row${row.order}`} {...row} />
+				))}
+			</Panel>
 		</screengui>
 	);
 }

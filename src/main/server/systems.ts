@@ -7,7 +7,7 @@ import { onSwingRequest, startCombat } from "./combat";
 import { startContainers } from "./containers";
 import { litBy } from "./flashlight";
 import { alertAll, notify, notifyAll, remote, send } from "./gameRemote";
-import { isPowered, startGenerator } from "./generator";
+import { isPowered, keepsThemWary, startGenerator } from "./generator";
 import { damageKid, healKid, startHealth } from "./health";
 import { startHints } from "./hints";
 import { attackedEntry } from "./infected/behaviours";
@@ -91,7 +91,7 @@ export function startSystems(world: MainWorld) {
 		isFirstNight,
 		isLit: (model) => litBy(model).size() > 0,
 		isNight: () => getClock().phase === "Night",
-		isPowered,
+		isPowered: keepsThemWary,
 		onPlankBroken: notePlankLost,
 		onDowned: noteInfectedDowned,
 	});

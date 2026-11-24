@@ -1,6 +1,7 @@
 import React from "@rbxts/react";
 import { CollectionService } from "@rbxts/services";
 import { serverSender } from "shared/net";
+import { coinsText } from "shared/pricing";
 import { GameClientMessages } from "shared/remotes";
 import { WORKBENCH_TAG } from "shared/tags";
 import { findUpgrade, Upgrade, UPGRADES, UpgradeStatus, upgradeStatus } from "shared/upgrades";
@@ -17,7 +18,7 @@ function buttonText(upgrade: Upgrade, status: UpgradeStatus): string {
 	if (status === "needsOther" && upgrade.needs) {
 		return `Needs ${findUpgrade(upgrade.needs).name.lower()}`;
 	}
-	return `${upgrade.cost} coins`;
+	return coinsText(upgrade.cost);
 }
 
 export function WorkbenchUi({ remote }: { remote: RemoteEvent }) {
@@ -32,7 +33,7 @@ export function WorkbenchUi({ remote }: { remote: RemoteEvent }) {
 	}
 	return (
 		<ShopPanel
-			title={`Workbench  -  ${coins} coins`}
+			title={`Workbench  -  ${coinsText(coins)}`}
 			target={CollectionService.GetTagged(WORKBENCH_TAG)[0]}
 			onClose={() => workbenchOpenStore.set(false)}
 			rows={UPGRADES.map((upgrade, i) => {

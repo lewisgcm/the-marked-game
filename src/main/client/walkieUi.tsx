@@ -3,7 +3,9 @@ import { UserInputService } from "@rbxts/services";
 import { BaseStatus, unreadCount, WalkieMessage } from "shared/walkie";
 import { isTouch } from "./device";
 import { useStore, walkieOpenStore, walkieStore } from "./gameState";
+import { Panel } from "./panel";
 import { useViewport } from "./useViewport";
+import { GOLD, GREEN, GREY, PALE, PANEL, ROW } from "./theme";
 
 /**
  * The walkie-talkie: a button on the left (or T) opens the bases and the message log. New messages
@@ -11,12 +13,6 @@ import { useViewport } from "./useViewport";
  */
 
 const OPEN_KEY = Enum.KeyCode.T;
-const PANEL = new Color3(0.05, 0.05, 0.07);
-const ROW = new Color3(0.1, 0.1, 0.13);
-const PALE = new Color3(0.9, 0.9, 0.92);
-const GREY = new Color3(0.65, 0.65, 0.7);
-const GREEN = new Color3(0.55, 0.85, 0.55);
-const GOLD = new Color3(1, 0.85, 0.4);
 
 /** One entry in the list: a heading, what's beside it, and a wrapped line below. */
 function Entry(props: { order: number; heading: string; aside: string; text: string; color: Color3 }) {
@@ -85,7 +81,7 @@ function Heading({ order, text }: { order: number; text: string }) {
 	);
 }
 
-function Panel(props: { bases: BaseStatus[]; messages: WalkieMessage[]; onClose: () => void }) {
+function Log(props: { bases: BaseStatus[]; messages: WalkieMessage[]; onClose: () => void }) {
 	const viewport = useViewport();
 	const { bases, messages } = props;
 	const entries: React.Element[] = [<Heading key="bases" order={0} text="BASES" />];
@@ -117,53 +113,17 @@ function Panel(props: { bases: BaseStatus[]; messages: WalkieMessage[]; onClose:
 		);
 	}
 	return (
-		<frame
-			Size={new UDim2(0, math.min(320, viewport.X * 0.6), 0, math.min(400, viewport.Y * 0.75))}
-			Position={new UDim2(0, 10, 0.5, 0)}
-			AnchorPoint={new Vector2(0, 0.5)}
-			BackgroundColor3={PANEL}
-			BackgroundTransparency={0.1}
-			BorderSizePixel={0}
+		<Panel
+			title="Walkie-talkie"
+			titleColor={GREEN}
+			size={new Vector2(math.min(320, viewport.X * 0.6), math.min(400, viewport.Y * 0.75))}
+			position={new UDim2(0, 10, 0.5, 0)}
+			anchor={new Vector2(0, 0.5)}
+			gap={6}
+			onClose={props.onClose}
 		>
-			<uicorner CornerRadius={new UDim(0, 12)} />
-			<textlabel
-				Size={new UDim2(1, -70, 0, 48)}
-				Position={new UDim2(0, 14, 0, 0)}
-				BackgroundTransparency={1}
-				Font={Enum.Font.GothamBlack}
-				TextSize={20}
-				TextColor3={GREEN}
-				TextXAlignment={Enum.TextXAlignment.Left}
-				Text="Walkie-talkie"
-			/>
-			<textbutton
-				Size={new UDim2(0, 40, 0, 40)}
-				Position={new UDim2(1, -6, 0, 6)}
-				AnchorPoint={new Vector2(1, 0)}
-				BackgroundColor3={new Color3(0.2, 0.2, 0.25)}
-				BorderSizePixel={0}
-				Font={Enum.Font.GothamBold}
-				TextSize={18}
-				TextColor3={new Color3(1, 1, 1)}
-				Text="X"
-				Event={{ Activated: props.onClose }}
-			>
-				<uicorner CornerRadius={new UDim(0, 8)} />
-			</textbutton>
-			<scrollingframe
-				Size={new UDim2(1, -20, 1, -60)}
-				Position={new UDim2(0, 12, 0, 52)}
-				BackgroundTransparency={1}
-				BorderSizePixel={0}
-				ScrollBarThickness={4}
-				ScrollingDirection={Enum.ScrollingDirection.Y}
-				CanvasSize={new UDim2(0, 0, 0, 0)}
-				AutomaticCanvasSize={Enum.AutomaticSize.Y}
-			>
-				<uilistlayout Padding={new UDim(0, 6)} SortOrder={Enum.SortOrder.LayoutOrder} />
-				{entries}
-			</scrollingframe>
-		</frame>
+			{entries}
+		</Panel>
 	);
 }
 
@@ -247,7 +207,7 @@ export function WalkieUi() {
 	return (
 		<screengui ResetOnSpawn={false} DisplayOrder={4}>
 			{open ? (
-				<Panel bases={bases} messages={messages} onClose={() => walkieOpenStore.set(false)} />
+				<Log bases={bases} messages={messages} onClose={() => walkieOpenStore.set(false)} />
 			) : (
 				<OpenButton unread={unreadCount(messages, lastRead) > 0} onPress={() => walkieOpenStore.set(true)} />
 			)}

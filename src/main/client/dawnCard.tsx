@@ -1,5 +1,6 @@
 import React from "@rbxts/react";
 import { nightSummaryStore, useStore } from "./gameState";
+import { PALE, PINK } from "./theme";
 
 /** Dawn: the night is over, and what it cost. The only thing that announces dawn (no banner). */
 
@@ -38,7 +39,7 @@ export function DawnCard() {
 					BackgroundTransparency={1}
 					Font={Enum.Font.GothamBlack}
 					TextSize={24}
-					TextColor3={new Color3(1, 0.82, 0.8)}
+					TextColor3={PINK}
 					Text={latest.summary.title}
 				/>
 				{latest.summary.lines.map((line, i) => (
@@ -49,7 +50,7 @@ export function DawnCard() {
 						Font={Enum.Font.GothamBold}
 						TextSize={17}
 						TextTruncate={Enum.TextTruncate.AtEnd}
-						TextColor3={new Color3(0.9, 0.9, 0.92)}
+						TextColor3={PALE}
 						Text={line}
 					/>
 				))}

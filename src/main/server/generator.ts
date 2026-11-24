@@ -2,6 +2,7 @@ import { CollectionService } from "@rbxts/services";
 import { burnFuel, canPour, fuelText, justRanLow, nightsLeft } from "shared/fuel";
 import { GENERATOR_TAG } from "shared/tags";
 import { UpgradeId } from "shared/upgrades";
+import { powerCounts } from "shared/waves";
 import { gameConfig } from "./config";
 import { takeItem } from "./inventory";
 import { inReach, makePrompt, promptAnchor } from "./prompts";
@@ -35,10 +36,17 @@ let lamps: Lamp[] = [];
 let switchPrompt: ProximityPrompt | undefined;
 let pourPrompt: ProximityPrompt | undefined;
 let powered = false;
+/** When it was last switched on (os.clock). */
+let poweredAt = 0;
 let fuel = gameConfig.fuelStart.Value;
 
 export function isPowered(): boolean {
 	return powered;
+}
+
+/** Whether the infected are kept wary: on, and not only just. */
+export function keepsThemWary(): boolean {
+	return powerCounts(powered ? os.clock() - poweredAt : undefined, gameConfig.powerSettleSeconds.Value);
 }
 
 function burnRate(): number {
@@ -60,6 +68,9 @@ export function refreshGenerator() {
 }
 
 function setPowered(on: boolean) {
+	if (on && !powered) {
+		poweredAt = os.clock();
+	}
 	powered = on;
 	for (const lamp of lamps) {
 		lamp.light.Enabled = on;
@@ -124,7 +135,7 @@ export function startGenerator(world: MainWorld, generatorHooks: GeneratorHooks)
 				act(player);
 			}
 		});
-	switchPrompt = makePrompt(anchor, "Start", Enum.KeyCode.E, 0.8);
+	switchPrompt = makePrompt(anchor, "Start", Enum.KeyCode.E, gameConfig.holdGenerator.Value);
 	connect(switchPrompt, onSwitch);
 	pourPrompt = makePrompt(anchor, "Pour in fuel", Enum.KeyCode.F, gameConfig.pourSeconds.Value);
 	pourPrompt.UIOffset = new Vector2(0, 70); // below the switch

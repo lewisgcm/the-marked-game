@@ -1,5 +1,5 @@
 import React from "@rbxts/react";
-import { ReplicatedStorage, RunService, SoundService, TweenService, Workspace } from "@rbxts/services";
+import { ReplicatedStorage, RunService, TweenService, Workspace } from "@rbxts/services";
 import { announcementFor } from "shared/announce";
 import { serverSender } from "shared/net";
 import { Clock, DayPhase, phaseTitle } from "shared/phases";
@@ -15,6 +15,8 @@ import {
 	RunPhase,
 } from "shared/round";
 import { EndScreen } from "./endScreen";
+import { PING, playLocalSound } from "./sound";
+import { PALE, PANEL, PINK } from "./theme";
 
 /**
  * The "DAY 1" title card, the day/night clock, how phase changes are announced
@@ -22,9 +24,6 @@ import { EndScreen } from "./endScreen";
  * (shared/round.ts); it computes the remaining time from server time, so it needs no
  * per-second messages.
  */
-
-// Built-in Studio sounds, so no uploaded audio is needed. Swap for real assets later.
-const PHASE_SOUND = "rbxasset://sounds/electronicpingshort.wav";
 
 /** Seconds a phase-change banner stays up. */
 const BANNER_SECONDS = 2;
@@ -36,7 +35,7 @@ const PHASE_COLOR: Record<DayPhase, Color3> = {
 	Day: new Color3(1, 0.97, 0.88),
 	Dusk: new Color3(1, 0.62, 0.35),
 	Night: new Color3(0.95, 0.35, 0.35),
-	Dawn: new Color3(1, 0.82, 0.8),
+	Dawn: PINK,
 };
 
 /** The advice under a banner. */
@@ -73,14 +72,6 @@ function sameState(a: RunState, b: RunState): boolean {
 		a.nightsSurvived === b.nightsSurvived &&
 		a.reason === b.reason
 	);
-}
-
-function playSound(id: string) {
-	const sound = new Instance("Sound");
-	sound.SoundId = id;
-	sound.Volume = 0.6;
-	SoundService.PlayLocalSound(sound);
-	task.delay(2, () => sound.Destroy());
 }
 
 function useRunState(): RunState {
@@ -164,7 +155,7 @@ function ClockPill({ clock, seconds, pulse }: { clock: Clock; seconds: number; p
 			Size={new UDim2(0, 200, 0, 40)}
 			Position={new UDim2(0.5, 0, 0, 8)}
 			AnchorPoint={new Vector2(0.5, 0)}
-			BackgroundColor3={new Color3(0.05, 0.05, 0.07)}
+			BackgroundColor3={PANEL}
 			BackgroundTransparency={0.3}
 			BorderSizePixel={0}
 			Font={Enum.Font.GothamBlack}
@@ -204,7 +195,7 @@ function PhaseBanner({ clock }: { clock: Clock }) {
 					BackgroundTransparency={1}
 					Font={Enum.Font.GothamBold}
 					TextSize={18}
-					TextColor3={new Color3(0.9, 0.9, 0.92)}
+					TextColor3={PALE}
 					TextStrokeTransparency={0.5}
 					Text={advice}
 				/>
@@ -229,7 +220,7 @@ export function RoundHud({ remote }: { remote: RemoteEvent }) {
 		}
 		const announcement = announcementFor(clock);
 		if (announcement.chime) {
-			playSound(PHASE_SOUND);
+			playLocalSound(PING, 0.6);
 		}
 		if (announcement.pulse) {
 			setPulse((count) => count + 1);

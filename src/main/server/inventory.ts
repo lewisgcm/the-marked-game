@@ -114,7 +114,12 @@ export function dropStack(stack: Stack, position: Vector3) {
 	box.CanQuery = false;
 	box.Position = floorBelow(position).add(new Vector3(0, 0.4, 0));
 	box.Parent = pickups;
-	const prompt = makePrompt(promptAnchor(box, new Vector3(0, 0.6, 0)), "Pick up", Enum.KeyCode.E, 0.2);
+	const prompt = makePrompt(
+		promptAnchor(box, new Vector3(0, 0.6, 0)),
+		"Pick up",
+		Enum.KeyCode.E,
+		gameConfig.holdQuick.Value,
+	);
 	const label = () => (prompt.ObjectText = `${stack.item} x${stack.count}`);
 	label();
 	prompt.Triggered.Connect((player) => {

@@ -1,7 +1,7 @@
 import { CollectionService } from "@rbxts/services";
 import { Base, BASES, BaseId, findBase } from "shared/bases";
 import { ItemId } from "shared/inventory";
-import { Stall, startStallDay, TradeView, tradeView } from "shared/pricing";
+import { coinsText, Stall, startStallDay, TradeView, tradeView } from "shared/pricing";
 import { TRADER_TAG } from "shared/tags";
 import { buyLot, isTrading, parseTradeRequest, SaleStatus, sellItems, Wallet } from "shared/trade";
 import { BaseReport } from "shared/walkie";
@@ -149,7 +149,7 @@ export function baseReports(): BaseReport[] {
 			openNow: isOpenNow(base),
 			wanted: order?.item,
 			wantedCount: order?.wanted ?? 0,
-			wantedPrice: order?.orderPrice ?? 0,
+			wantedPrice: coinsText(order?.orderPrice ?? 0),
 		};
 	});
 }
@@ -193,7 +193,12 @@ export function startTrading(tradingHooks: TradingHooks) {
 			warn(`[Trading] ${counter.GetFullName()} isn't a known base's counter.`);
 			continue;
 		}
-		const prompt = makePrompt(promptAnchor(counter, new Vector3(0, 1.5, 0)), "Trade", Enum.KeyCode.E, 0.2);
+		const prompt = makePrompt(
+			promptAnchor(counter, new Vector3(0, 1.5, 0)),
+			"Trade",
+			Enum.KeyCode.E,
+			gameConfig.holdQuick.Value,
+		);
 		prompt.ObjectText = base.trader;
 		prompts.set(base.id, prompt);
 		prompt.Triggered.Connect((player) => {

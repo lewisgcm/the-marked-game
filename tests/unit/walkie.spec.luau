@@ -13,7 +13,7 @@ return function(t)
 			openNow = true,
 			wanted = "Food",
 			wantedCount = 3,
-			wantedPrice = 4,
+			wantedPrice = "4 coins",
 		}
 		for k, v in overrides do
 			r[k] = if v == "none" then nil else v
@@ -39,7 +39,7 @@ return function(t)
 			t.expect(lines[3].text).toBe("We need 3 food today. 4 coins each.")
 		end)
 		t.it("after that, only what it wants", function()
-			local lines = W.morningReport(9, { report({ wantedCount = 2, wantedPrice = 1 }) })
+			local lines = W.morningReport(9, { report({ wantedCount = 2, wantedPrice = "1 coin" }) })
 			t.expect(#lines).toBe(1)
 			t.expect(lines[1].text).toBe("We need 2 food today. 1 coin each.")
 		end)

@@ -2,6 +2,14 @@
 return function(t)
 	local P = require("../../out/shared/pricing")
 
+	t.describe("coinsText", function()
+		t.it("one coin, more coins, and none", function()
+			t.expect(P.coinsText(1)).toBe("1 coin")
+			t.expect(P.coinsText(6)).toBe("6 coins")
+			t.expect(P.coinsText(0)).toBe("0 coins")
+		end)
+	end)
+
 	t.describe("salePrice", function()
 		t.it("scarce goods rise 15% of the Day 1 price a day", function()
 			t.expect(P.salePrice(20, 1, true, 0.15)).toBe(20)

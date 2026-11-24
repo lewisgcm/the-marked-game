@@ -2,6 +2,7 @@ import { CollectionService, Players } from "@rbxts/services";
 import { WORKBENCH_TAG } from "shared/tags";
 import { findUpgrade, parseUpgrade, UpgradeId, upgradeStatus } from "shared/upgrades";
 import { coinsOf, spendCoins } from "./coins";
+import { gameConfig } from "./config";
 import { inReach, makePrompt, promptAnchor } from "./prompts";
 
 /**
@@ -80,7 +81,12 @@ export function startWorkbench(workbenchHooks: WorkbenchHooks) {
 		warn("[Workbench] No workbench in the world.");
 		return;
 	}
-	const use = makePrompt(promptAnchor(bench, new Vector3(0, 2, 0)), "Upgrade", Enum.KeyCode.E, 0.2);
+	const use = makePrompt(
+		promptAnchor(bench, new Vector3(0, 2, 0)),
+		"Upgrade",
+		Enum.KeyCode.E,
+		gameConfig.holdQuick.Value,
+	);
 	use.ObjectText = "Workbench";
 	use.Triggered.Connect((player) => {
 		if (workbenchHooks.canAct(player) && inReach(player, use)) {
