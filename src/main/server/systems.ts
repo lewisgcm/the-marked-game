@@ -1,6 +1,6 @@
 import { onClientMessage } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
-import { anyBoarded, damageEntry, isEntryBlocked, startBarricades } from "./barricades";
+import { anyBoarded, damageEntry, isEntryBlocked, refreshBarricades, startBarricades } from "./barricades";
 import { startCoins } from "./coins";
 import { onSwingRequest, startCombat } from "./combat";
 import { startContainers } from "./containers";
@@ -18,6 +18,7 @@ import { getClock } from "./round";
 import { onLeaveRequest } from "./roundEnd";
 import { onShootRequest, startSlingshot } from "./slingshot";
 import { canKidAct, isPlaying, livingKids } from "./teams";
+import { hasUpgrade, onBuyRequest, startWorkbench } from "./workbench";
 import { MainWorld } from "./world";
 
 /**
@@ -50,6 +51,15 @@ export function startSystems(world: MainWorld) {
 		canAct: canKidAct,
 		notify,
 		isFirstNight,
+		hasUpgrade,
+	});
+	startWorkbench({
+		canAct: canKidAct,
+		notify,
+		notifyAll,
+		open: (player) => send(player, "OpenWorkbench", undefined),
+		sendUpgrades: (player, owned) => send(player, "Upgrades", owned),
+		onPartyUpgrade: refreshBarricades,
 	});
 	startSlingshot({
 		canAttack: canKidAct,
@@ -95,6 +105,7 @@ export function listenToClients() {
 		Shoot: onShootRequest,
 		UseItem: onUseRequest,
 		DropItem: onDropRequest,
+		BuyUpgrade: onBuyRequest,
 		LeaveRound: onLeaveRequest,
 	});
 }

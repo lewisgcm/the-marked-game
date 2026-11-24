@@ -7,10 +7,12 @@ import {
 	DamageResult,
 	emptyBarricade,
 	isBlocked,
+	newPlankHealth,
 	planksToTake,
 	removePlank,
 } from "shared/barricade";
 import { PLANK_PILE_TAG } from "shared/tags";
+import { UpgradeId } from "shared/upgrades";
 import { gameConfig } from "./config";
 import { giveItem, itemCount, itemRoom, takeItem } from "./inventory";
 import { playSound } from "./effects";
@@ -35,6 +37,8 @@ export interface BarricadeHooks {
 	notify: (player: Player, text: string) => void;
 	/** Whether planks nailed now get the Night 1 bonus. */
 	isFirstNight: () => boolean;
+	/** Workbench upgrades the party has. */
+	hasUpgrade: (id: UpgradeId) => boolean;
 }
 
 interface EntryState {
@@ -57,6 +61,12 @@ const states = new Map<Entry, EntryState>();
 let pileStock = 0;
 let pilePrompt: ProximityPrompt | undefined;
 
+/** How many planks an opening takes: a door bar adds to the front and back doors. */
+function slotsOf(entry: Entry): number {
+	const extra = entry.kind === "Door" && hooks?.hasUpgrade("DoorBar") ? gameConfig.doorBarSlots.Value : 0;
+	return gameConfig.plankSlots.Value + extra;
+}
+
 /** Redraws an opening's planks and updates its prompts and blocker. */
 function refresh(state: EntryState) {
 	const { entry, barricade, visuals } = state;
@@ -65,7 +75,7 @@ function refresh(state: EntryState) {
 	// Spread the planks over the opening, each at a slight angle, on the house side.
 	const tilts = [0.12, -0.1, 0.07, -0.05];
 	for (let i = 0; i < count; i++) {
-		const y = ((i + 1) / (gameConfig.plankSlots.Value + 1) - 0.5) * entry.height;
+		const y = ((i + 1) / (slotsOf(entry) + 1) - 0.5) * entry.height;
 		const plank = new Instance("Part");
 		plank.Name = "Plank";
 		plank.Size = new Vector3(entry.width + 1, 0.9, 0.35);
@@ -76,7 +86,7 @@ function refresh(state: EntryState) {
 		plank.Parent = visuals;
 	}
 	entry.slot.CanCollide = isBlocked(barricade);
-	const slots = gameConfig.plankSlots.Value;
+	const slots = slotsOf(entry);
 	state.board.ActionText = `Board up (${count}/${slots})`;
 	state.board.Enabled = canAddPlank(barricade, slots);
 	state.takeDown.Enabled = count > 0;
@@ -94,8 +104,16 @@ function onBoard(player: Player, state: EntryState) {
 		hooks.notify(player, "You need nails. Search the houses on Maple Street.");
 		return;
 	}
-	const multiplier = hooks.isFirstNight() ? gameConfig.firstNightPlankMultiplier.Value : 1;
-	if (!addPlank(state.barricade, gameConfig.plankSlots.Value, gameConfig.plankHealth.Value * multiplier)) {
+	const { entry, barricade } = state;
+	const health = newPlankHealth({
+		base: gameConfig.plankHealth.Value,
+		firstNight: hooks.isFirstNight() ? gameConfig.firstNightPlankMultiplier.Value : 1,
+		reinforced: hooks.hasUpgrade("ReinforcedPlanks") ? gameConfig.reinforcedPlankMultiplier.Value : 1,
+		index: barricade.planks.size(),
+		normalSlots: gameConfig.plankSlots.Value,
+		doorBar: gameConfig.doorBarMultiplier.Value,
+	});
+	if (!addPlank(barricade, slotsOf(entry), health)) {
 		return;
 	}
 	takeItem(player, "Planks", 1);
@@ -183,6 +201,13 @@ export function refillPile() {
 export function isEntryBlocked(entry: Entry): boolean {
 	const state = states.get(entry);
 	return state !== undefined && isBlocked(state.barricade);
+}
+
+/** Updates every opening (a door bar changes how many planks they take). */
+export function refreshBarricades() {
+	for (const [, state] of states) {
+		refresh(state);
+	}
 }
 
 /** Whether any door or window has a plank up. */

@@ -55,8 +55,22 @@ function loadGameConfig() {
 		searchNoise: num("SearchNoise", 14),
 		/** Health a medkit gives back. */
 		medkitHeal: num("MedkitHeal", 50),
+		/** Coins each kid starts with (Studio: enough to try the workbench). */
+		coinsStart: int("CoinsStart", 0, 150),
 		/** Coins for each kid still in at dawn. */
 		coinsPerDawn: int("CoinsPerDawn", 5),
+
+		// --- Workbench upgrades (costs: shared/upgrades.ts) --------------------------------------------
+		/** Reinforced planks: planks nailed afterwards have this many times the health. */
+		reinforcedPlankMultiplier: num("ReinforcedPlankMultiplier", 1.5),
+		/** Door bar: extra plank slots on the front and back doors. */
+		doorBarSlots: int("DoorBarSlots", 1),
+		/** Door bar: a plank in an extra slot has this many times the health. */
+		doorBarMultiplier: num("DoorBarMultiplier", 2),
+		/** Inventory slots with a school rucksack. */
+		schoolSlots: int("SchoolSlots", 8),
+		/** Inventory slots with a hiking rucksack. */
+		hikingSlots: int("HikingSlots", 12),
 
 		// --- Dormant infected (by day, in front of screens; shared/wake.ts) ---------------------------
 		/** How far one notices a kid in front of it, in studs. */

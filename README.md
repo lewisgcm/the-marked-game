@@ -107,6 +107,9 @@ still join.
      shot every 0.6s. Stones come from the inventory.
    - **Flashlight stun** (`shared/stun.ts`): hold a beam on an infected for 0.6s and it stops
      dead for 2s, eyes dimmed; then beams don't work on it for 5s.
+   - **Workbench** (`workbench.ts`, list in `shared/upgrades.ts`): spend coins on tougher planks, a
+     door bar (a fourth, sturdier plank on the front and back doors) and rucksacks (8 and 12
+     slots). Rucksacks are personal; the rest are for the whole party, whoever pays.
    - **Maple Street** (`neighbourhood.ts`): four houses to search (`containers.ts`, tables in
      `shared/loot.ts`). A searched container stays empty for the run; nails get scarcer every night.
      Gardens have stones, back every dawn. A minute before dusk: a warning, and the street lamps.
@@ -178,14 +181,14 @@ src/
                        #   gameRemote.ts, teams.ts, party.ts, gatekeeper.ts, admission.ts
                        # systems: round.ts (day/night clock), lighting.ts, streetlights.ts, life.ts,
                        #   health.ts, inventory.ts, coins.ts, containers.ts, barricades.ts,
-                       #   generator.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
+                       #   generator.ts, workbench.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
                        #   nightReport.ts, roundStats.ts
                        # infected/: director.ts (spawning, waves), behaviours.ts (one function per
                        #   mode), senses.ts, movement.ts, body.ts, state.ts, types.ts
                        # world: world.ts (the house), neighbourhood.ts, building.ts
                        # helpers: effects.ts, prompts.ts, infectedDamage.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, spectate, combatFeedback, melee.ts,
+                       # endScreen, noticeHud, inventoryHud, hintHud, dawnCard, workbenchUi, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
@@ -426,6 +429,13 @@ apply from the next phase.
 - [ ] Drop leaves a box on the floor; anyone can pick it up. With no room: "Your pockets are full."
 - [ ] A medkit heals 50; at full health it says "You're not hurt." and isn't used.
 - [ ] Every kid still in at dawn gets 5 coins.
+
+### Workbench
+- [ ] The garage workbench's prompt ("Upgrade") opens a list of four upgrades with costs and your coins (Studio starts you with 150).
+- [ ] You can only buy what you can afford; bought ones say "Owned"; the hiking rucksack says "Needs school rucksack" first.
+- [ ] Reinforced planks and the door bar are for everyone (all players told, and it shows Owned for them). Front and back doors then take 4 planks; the garage door and windows still take 3.
+- [ ] Rucksacks are yours only: 8 slots, then 12, and they stay after you're taken.
+- [ ] The list closes with X or when you walk away, and fits on a phone.
 
 ### Maple Street
 - [ ] Two houses either side of home and two across the street, each with a front and back door, car and garden stones. You can't walk off the map.

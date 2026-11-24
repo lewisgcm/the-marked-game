@@ -16,6 +16,25 @@ export function emptyBarricade(): Barricade {
 	return { planks: [] };
 }
 
+/** What decides a new plank's health. */
+export interface PlankConditions {
+	base: number;
+	/** 1 normally; more on Night 1. */
+	firstNight: number;
+	/** 1 without reinforced planks. */
+	reinforced: number;
+	/** Which plank of its opening it is (0-based). */
+	index: number;
+	/** Slots every opening has; anything past them is a door bar's. */
+	normalSlots: number;
+	/** How much sturdier a plank in a door bar's slot is. */
+	doorBar: number;
+}
+
+export function newPlankHealth(c: PlankConditions): number {
+	return c.base * c.firstNight * c.reinforced * (c.index >= c.normalSlots ? c.doorBar : 1);
+}
+
 /** Whether there's room for another plank. */
 export function canAddPlank(barricade: Barricade, slots: number): boolean {
 	return barricade.planks.size() < slots;

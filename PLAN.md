@@ -195,9 +195,11 @@ in AGENTS.md → Code structure.
 Goal: a reason to spend coins. Playtest question: *do players plan trips around what they want
 to buy?*
 
-- [ ] **Rucksacks** at the workbench: school (8 slots), hiking (12).
-- [ ] Workbench upgrades (reinforced planks, door bar, generator tune-up,
-      shutters, scrap press). Bought on the server; state goes to the client stores.
+- [x] **Workbench** (`workbench.ts`, `shared/upgrades.ts`, spec): reinforced planks (1.5×), door bar
+      (4th plank, 2×), school (8 slots) and hiking (12) rucksacks. Party upgrades are shared, whoever
+      pays; rucksacks are personal. List UI scales to small screens.
+- [ ] **Generator fuel** and the tune-up.
+- [ ] More workbench upgrades: shutters, scrap press.
 - [ ] `shared/pricing.ts` (pure): base prices, +15% per night for ammo, want-list bonuses. Spec.
 - [ ] First two NPC bases: **Treehouse** (kids) and **Fire Station** (adult), each with a trader
       prompt, stock and a daily want list.

@@ -1,8 +1,8 @@
 import React from "@rbxts/react";
-import { Workspace } from "@rbxts/services";
 import { EndReason } from "shared/round";
 import { ScoreCard } from "shared/scoreboard";
 import { scoreboardStore, useStore } from "./gameState";
+import { useViewport } from "./useViewport";
 
 /**
  * The end screen: how the run ended, a card per kid (avatar, name, fun title, a few stats), and
@@ -23,19 +23,6 @@ const FOOTER_HEIGHT = 80;
 
 const TAKEN_COLOR = new Color3(1, 0.35, 0.35);
 const KID_COLOR = new Color3(1, 0.8, 0.45);
-
-function useViewport(): Vector2 {
-	const camera = Workspace.CurrentCamera;
-	const [size, setSize] = React.useState(camera ? camera.ViewportSize : new Vector2(1280, 720));
-	React.useEffect(() => {
-		if (!camera) {
-			return;
-		}
-		const connection = camera.GetPropertyChangedSignal("ViewportSize").Connect(() => setSize(camera.ViewportSize));
-		return () => connection.Disconnect();
-	}, [camera]);
-	return size;
-}
 
 function Card({ card, order }: { card: ScoreCard; order: number }) {
 	const accent = card.taken ? TAKEN_COLOR : KID_COLOR;

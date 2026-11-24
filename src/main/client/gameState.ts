@@ -4,6 +4,7 @@ import { GameClientMessages, GameServerMessages } from "shared/remotes";
 import { emptyInventory, Inventory } from "shared/inventory";
 import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
+import { UpgradeId } from "shared/upgrades";
 
 /**
  * The local player's game state, as told by the server, kept in small stores.
@@ -55,6 +56,10 @@ export const hitStore = new Store<{ kind: "Hit" | "Kill"; at: number } | undefin
 export const inventoryStore = new Store<Inventory>(emptyInventory(5));
 /** Your coins. */
 export const coinsStore = new Store<number>(0);
+/** Upgrades you have: the party's and your own. */
+export const upgradesStore = new Store<UpgradeId[]>([]);
+/** Whether the workbench list is showing. */
+export const workbenchOpenStore = new Store<boolean>(false);
 /** Your Night 1 tip ("" for none). */
 export const hintStore = new Store<string>("");
 /** Last night's summary, with when it arrived. */
@@ -73,6 +78,8 @@ export function startGameState(remote: RemoteEvent) {
 		Hurt: () => hurtStore.set(os.clock()),
 		Inventory: (inventory) => inventoryStore.set(inventory),
 		Coins: (coins) => coinsStore.set(coins),
+		Upgrades: (owned) => upgradesStore.set(owned),
+		OpenWorkbench: () => workbenchOpenStore.set(true),
 		Hint: (text) => hintStore.set(text),
 		NightSummary: (summary) => nightSummaryStore.set({ summary, at: os.clock() }),
 		Scoreboard: (cards) => scoreboardStore.set(cards),

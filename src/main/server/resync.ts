@@ -7,6 +7,7 @@ import { currentSummary } from "./nightReport";
 import { isMember } from "./party";
 import { getScoreboard } from "./roundEnd";
 import { livingKids } from "./teams";
+import { resendUpgrades } from "./workbench";
 
 /**
  * Re-sends a player everything about their own state. Called when their client reports it has
@@ -19,6 +20,7 @@ export function resync(player: Player) {
 	}
 	resendInventory(player);
 	resendCoins(player);
+	resendUpgrades(player);
 	resendHint(player);
 	const summary = currentSummary();
 	if (summary) {

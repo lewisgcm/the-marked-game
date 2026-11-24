@@ -54,6 +54,13 @@ export function resendInventory(player: Player) {
 	hooks?.sendInventory(player, inventoryOf(player));
 }
 
+/** Gives `player` a bigger bag (never a smaller one). */
+export function setSlots(player: Player, slots: number) {
+	const inv = inventoryOf(player);
+	inv.slots = math.max(inv.slots, slots);
+	resendInventory(player);
+}
+
 export function itemCount(player: Player, item: ItemId): number {
 	return countOf(inventoryOf(player), item);
 }

@@ -14,6 +14,7 @@ import { NoticeHud } from "./noticeHud";
 import { RoundHud } from "./roundHud";
 import { startSlingshot } from "./slingshot";
 import { Spectate } from "./spectate";
+import { WorkbenchUi } from "./workbenchUi";
 
 startFlicker();
 
@@ -34,6 +35,7 @@ function App() {
 			<HintHud />
 			<DawnCard />
 			<InventoryHud remote={remote} />
+			<WorkbenchUi remote={remote} />
 			<Spectate />
 			<CombatFeedback />
 		</>

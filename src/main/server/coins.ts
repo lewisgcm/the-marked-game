@@ -1,4 +1,5 @@
 import { Players } from "@rbxts/services";
+import { gameConfig } from "./config";
 
 /** Each kid's coins. Server-owned; they don't use inventory slots and survive being taken. */
 
@@ -7,12 +8,21 @@ const purse = new Map<Player, number>();
 Players.PlayerRemoving.Connect((player) => purse.delete(player));
 
 export function coinsOf(player: Player): number {
-	return purse.get(player) ?? 0;
+	return purse.get(player) ?? gameConfig.coinsStart.Value;
 }
 
 export function addCoins(player: Player, amount: number) {
 	purse.set(player, coinsOf(player) + amount);
 	send?.(player, coinsOf(player));
+}
+
+/** Takes exactly `amount` from `player`, or nothing if they can't afford it. */
+export function spendCoins(player: Player, amount: number): boolean {
+	if (amount <= 0 || coinsOf(player) < amount) {
+		return false;
+	}
+	addCoins(player, -amount);
+	return true;
 }
 
 /** Re-sends `player` their coins (for resync). */

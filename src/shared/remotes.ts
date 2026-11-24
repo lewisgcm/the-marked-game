@@ -1,6 +1,7 @@
 import { Inventory } from "shared/inventory";
 import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
+import { UpgradeId } from "shared/upgrades";
 
 /**
  * Message maps for each RemoteEvent: message name -> payload type. Send and receive through
@@ -48,6 +49,10 @@ export interface GameServerMessages {
 	Inventory: Inventory;
 	/** Your coins. */
 	Coins: number;
+	/** The upgrades you have: the party's and your own. */
+	Upgrades: UpgradeId[];
+	/** You used the workbench: show its list. */
+	OpenWorkbench: undefined;
 	/** Your Night 1 tip; "" for none. */
 	Hint: string;
 	/** Everyone, at dawn: what the night cost. */
@@ -74,6 +79,8 @@ export interface GameClientMessages {
 	Shoot: Vector3;
 	/** Use what's in this inventory slot (0-based). */
 	UseItem: number;
+	/** Buy this workbench upgrade. */
+	BuyUpgrade: UpgradeId;
 	/** Drop what's in this inventory slot (0-based). */
 	DropItem: number;
 }

@@ -26,6 +26,27 @@ return function(t)
 		end)
 	end)
 
+	t.describe("newPlankHealth", function()
+		local function health(overrides)
+			local c = { base = 100, firstNight = 1, reinforced = 1, index = 0, normalSlots = 3, doorBar = 2 }
+			for k, v in overrides do
+				c[k] = v
+			end
+			return b.newPlankHealth(c)
+		end
+		t.it("plain planks get the base", function()
+			t.expect(health({})).toBe(100)
+			t.expect(health({ index = 2 })).toBe(100)
+		end)
+		t.it("only a door bar's extra slot is sturdier", function()
+			t.expect(health({ index = 3 })).toBe(200)
+		end)
+		t.it("bonuses multiply", function()
+			t.expect(health({ firstNight = 2, reinforced = 1.5 })).toBe(300)
+			t.expect(health({ firstNight = 2, reinforced = 1.5, index = 3 })).toBe(600)
+		end)
+	end)
+
 	t.describe("damageBarricade", function()
 		t.it("wears down the outermost plank first", function()
 			local bar = withPlanks(100, 100)
