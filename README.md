@@ -82,9 +82,9 @@ still join.
 3. **The day/night clock** (`shared/phases.ts`, driven by `round.ts`): Day (3:00) → Dusk (0:45)
    → Night (2:30) → Dawn (0:45), then the next day, with no last night. In Studio the phases are
    90/20/60/15 seconds. The top of the screen shows e.g. "NIGHT 2 · 1:12" in the phase's colour
-   (red in the last 10s of day or dusk); each new phase shows a big title with a hint and a
-   chime; the sky and indoor light blend to the phase over ~6s (`lighting.ts`). The phases don't
-   change anything else yet — the systems that use them arrive through M1.
+   (red in the last 10s of day or dusk); how each phase is announced is in
+   `shared/announce.ts` (a banner for days and nights, a pulse of the clock at dusk, the dawn card at
+   dawn, always with a chime); the sky and indoor light blend to the phase over ~6s (`lighting.ts`).
    - Kids start in the **basement** of the family house (a blockout built at runtime by
      `src/main/server/world.ts`; layout diagram at the top of that file) with a **flashlight**,
      a **baseball bat** and a **slingshot**. Ground floor: living room, dining room, kitchen, garage (workbench,
@@ -405,7 +405,7 @@ apply from the next phase.
 - [ ] Outside: grass all round, a pavement and street out front, a driveway to the garage.
 - [ ] Day is visibly brighter than night through the windows and outside; indoors stays navigable at night.
 - [ ] Then "DAY 1 · 1:30" (Studio) at the top, in sync across windows, counting down; red in the last 10s.
-- [ ] Each phase change shows a big title + hint and a chime: DUSK (orange), NIGHT 1 (red), DAWN (pink), DAY 2 (white). The clock pill matches.
+- [ ] Each phase change chimes. NIGHT 1 (red) and DAY 2 (white) show a title for 2s, with a line of advice until Night 2 and just the title from Day 3. DUSK has no title: the clock turns orange and swells once. DAWN has only the dawn card. The clock pill matches the phase.
 - [ ] The light blends over a few seconds: bright by day, orange at dusk, darkest at night, pinkish at dawn. Indoors stays navigable at night.
 - [ ] Changing `NightSeconds` in ServerStorage → GameConfig during play changes the next night's length.
 - [ ] A player who resets respawns after ~3s in the basement with all three tools (by day).
@@ -448,7 +448,7 @@ apply from the next phase.
 - [ ] At night: "They're at the <opening>!" while one is bashed, otherwise how to fight. Nothing at dawn, while taken, or from Day 2.
 
 ### Dawn card
-- [ ] At dawn, for ~10s: "NIGHT N SURVIVED" with infected downed, planks lost and who was taken; it doesn't cover the DAWN banner.
+- [ ] At dawn, for ~6s and with no DAWN banner: "NIGHT N SURVIVED" with infected downed, planks lost and who was taken. It doesn't cover the message bar.
 
 ### Inventory and coins
 - [ ] Right edge: "Coins 0" over five slots: Stones 20/20, Nails 10/20, three empty (in Studio one holds Fuel 1/1). Clear of the jump button and joystick on a phone.

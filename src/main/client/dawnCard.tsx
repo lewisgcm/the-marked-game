@@ -1,9 +1,9 @@
 import React from "@rbxts/react";
 import { nightSummaryStore, useStore } from "./gameState";
 
-/** What last night cost, shown for a few seconds at dawn (below the DAWN banner). */
+/** Dawn: the night is over, and what it cost. The only thing that announces dawn (no banner). */
 
-const SHOW_SECONDS = 10;
+const SHOW_SECONDS = 6;
 
 export function DawnCard() {
 	const latest = useStore(nightSummaryStore);
@@ -25,7 +25,7 @@ export function DawnCard() {
 		<screengui ResetOnSpawn={false} DisplayOrder={4}>
 			<frame
 				Size={new UDim2(0, 320, 0, 60 + latest.summary.lines.size() * 26)}
-				Position={new UDim2(0.5, 0, 0.5, 0)}
+				Position={new UDim2(0.5, 0, 0.34, 0)}
 				AnchorPoint={new Vector2(0.5, 0)}
 				BackgroundColor3={new Color3(0.06, 0.05, 0.07)}
 				BackgroundTransparency={0.2}

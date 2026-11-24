@@ -1,5 +1,6 @@
 import React from "@rbxts/react";
-import { ReplicatedStorage, RunService, SoundService, Workspace } from "@rbxts/services";
+import { ReplicatedStorage, RunService, SoundService, TweenService, Workspace } from "@rbxts/services";
+import { announcementFor } from "shared/announce";
 import { serverSender } from "shared/net";
 import { Clock, DayPhase, phaseTitle } from "shared/phases";
 import { GameClientMessages } from "shared/remotes";
@@ -16,8 +17,8 @@ import {
 import { EndScreen } from "./endScreen";
 
 /**
- * The "DAY 1" title card, the day/night clock, a banner on every phase change, and the end
- * screen. Purely a display of the run state the server publishes on ReplicatedStorage
+ * The "DAY 1" title card, the day/night clock, how phase changes are announced
+ * (shared/announce.ts), and the end screen. Purely a display of the run state the server publishes on ReplicatedStorage
  * (shared/round.ts); it computes the remaining time from server time, so it needs no
  * per-second messages.
  */
@@ -26,7 +27,10 @@ import { EndScreen } from "./endScreen";
 const PHASE_SOUND = "rbxasset://sounds/electronicpingshort.wav";
 
 /** Seconds a phase-change banner stays up. */
-const BANNER_SECONDS = 3;
+const BANNER_SECONDS = 2;
+/** How much the clock swells at dusk, and seconds each way. */
+const PULSE_SCALE = 1.25;
+const PULSE_SECONDS = 0.35;
 
 const PHASE_COLOR: Record<DayPhase, Color3> = {
 	Day: new Color3(1, 0.97, 0.88),
@@ -35,12 +39,10 @@ const PHASE_COLOR: Record<DayPhase, Color3> = {
 	Dawn: new Color3(1, 0.82, 0.8),
 };
 
-/** What the banner says under each phase's title. */
-const PHASE_HINT: Record<DayPhase, string> = {
+/** The advice under a banner. */
+const PHASE_ADVICE: Partial<Record<DayPhase, string>> = {
 	Day: "Scavenge. Be home before dark.",
-	Dusk: "Get home. Board up. Night is coming.",
 	Night: "Hold the house.",
-	Dawn: "You made it through the night.",
 };
 
 interface RunState {
@@ -142,9 +144,21 @@ function TitleCard() {
 	);
 }
 
-/** Top of the screen: "NIGHT 2 · 1:12". Turns red in the last 10 seconds of the day or dusk. */
-function ClockPill({ clock, seconds }: { clock: Clock; seconds: number }) {
+/**
+ * Top of the screen: "NIGHT 2 · 1:12". Turns red in the last 10 seconds of the day or dusk, and
+ * swells once whenever `pulse` changes.
+ */
+function ClockPill({ clock, seconds, pulse }: { clock: Clock; seconds: number; pulse: number }) {
 	const urgent = seconds <= 10 && (clock.phase === "Day" || clock.phase === "Dusk");
+	const scale = React.useRef<UIScale>();
+
+	React.useEffect(() => {
+		if (pulse > 0 && scale.current) {
+			const info = new TweenInfo(PULSE_SECONDS, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, true);
+			TweenService.Create(scale.current, info, { Scale: PULSE_SCALE }).Play();
+		}
+	}, [pulse]);
+
 	return (
 		<textlabel
 			Size={new UDim2(0, 200, 0, 40)}
@@ -158,39 +172,43 @@ function ClockPill({ clock, seconds }: { clock: Clock; seconds: number }) {
 			TextColor3={urgent ? new Color3(1, 0.35, 0.3) : PHASE_COLOR[clock.phase]}
 			Text={`${phaseTitle(clock)} · ${formatClock(seconds)}`}
 		>
+			<uiscale ref={scale} />
 			<uicorner CornerRadius={new UDim(0, 8)} />
 		</textlabel>
 	);
 }
 
-/** A big title in the middle of the screen when the phase changes ("NIGHT 2", "DAWN"...). */
+/** A title in the middle of the screen as a day or night begins ("NIGHT 2"). */
 function PhaseBanner({ clock }: { clock: Clock }) {
+	const advice = announcementFor(clock).advice ? PHASE_ADVICE[clock.phase] : undefined;
 	return (
 		<frame
-			Size={new UDim2(1, 0, 0, 130)}
-			Position={new UDim2(0.5, 0, 0.3, 0)}
+			Size={new UDim2(1, 0, 0, 80)}
+			Position={new UDim2(0.5, 0, 0.4, 0)}
 			AnchorPoint={new Vector2(0.5, 0.5)}
 			BackgroundTransparency={1}
 		>
 			<textlabel
-				Size={new UDim2(1, 0, 0, 90)}
+				Size={new UDim2(1, 0, 0, 50)}
 				BackgroundTransparency={1}
 				Font={Enum.Font.GothamBlack}
-				TextSize={80}
+				TextSize={48}
 				TextColor3={PHASE_COLOR[clock.phase]}
 				TextStrokeTransparency={0.4}
 				Text={phaseTitle(clock)}
 			/>
-			<textlabel
-				Size={new UDim2(1, 0, 0, 30)}
-				Position={new UDim2(0, 0, 0, 92)}
-				BackgroundTransparency={1}
-				Font={Enum.Font.GothamBold}
-				TextSize={22}
-				TextColor3={new Color3(0.9, 0.9, 0.92)}
-				TextStrokeTransparency={0.5}
-				Text={PHASE_HINT[clock.phase]}
-			/>
+			{advice !== undefined ? (
+				<textlabel
+					Size={new UDim2(1, 0, 0, 26)}
+					Position={new UDim2(0, 0, 0, 52)}
+					BackgroundTransparency={1}
+					Font={Enum.Font.GothamBold}
+					TextSize={18}
+					TextColor3={new Color3(0.9, 0.9, 0.92)}
+					TextStrokeTransparency={0.5}
+					Text={advice}
+				/>
+			) : undefined}
 		</frame>
 	);
 }
@@ -199,16 +217,27 @@ export function RoundHud({ remote }: { remote: RemoteEvent }) {
 	const send = React.useMemo(() => serverSender<GameClientMessages>(remote), [remote]);
 	const { runPhase, clock, secondsLeft, nightsSurvived, reason } = useRunState();
 	const [banner, setBanner] = React.useState<Clock>();
+	const [pulse, setPulse] = React.useState(0);
 	const showCard = runPhase === "Waiting" || runPhase === "Starting";
 
-	// A banner and a sound on every phase change after the title card (Day 1 has the card).
+	// Announce every phase change.
 	const phaseKey = `${clock.night}:${clock.phase}`;
 	React.useEffect(() => {
-		if (runPhase !== "Playing" || (clock.night === 1 && clock.phase === "Day")) {
+		setBanner(undefined);
+		if (runPhase !== "Playing") {
+			return;
+		}
+		const announcement = announcementFor(clock);
+		if (announcement.chime) {
+			playSound(PHASE_SOUND);
+		}
+		if (announcement.pulse) {
+			setPulse((count) => count + 1);
+		}
+		if (!announcement.banner) {
 			return;
 		}
 		setBanner(clock);
-		playSound(PHASE_SOUND);
 		const thread = task.delay(BANNER_SECONDS, () => setBanner(undefined));
 		return () => task.cancel(thread);
 	}, [runPhase, phaseKey]);
@@ -216,7 +245,7 @@ export function RoundHud({ remote }: { remote: RemoteEvent }) {
 	return (
 		<screengui ResetOnSpawn={false} IgnoreGuiInset={showCard} DisplayOrder={5}>
 			{showCard ? <TitleCard /> : undefined}
-			{runPhase === "Playing" ? <ClockPill clock={clock} seconds={secondsLeft} /> : undefined}
+			{runPhase === "Playing" ? <ClockPill clock={clock} seconds={secondsLeft} pulse={pulse} /> : undefined}
 			{runPhase === "Playing" && banner ? <PhaseBanner clock={banner} /> : undefined}
 			{runPhase === "Ended" ? (
 				<EndScreen
