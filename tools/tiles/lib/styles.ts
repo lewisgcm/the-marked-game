@@ -37,6 +37,11 @@ export const SCREEN = style("Neon", [0.55, 0.75, 0.95], { shadow: false });
 export const CANVAS = style("Fabric", [0.4, 0.42, 0.28]);
 export const HAY = style("Fabric", [0.72, 0.6, 0.3]);
 export const STONE = style("Slate", [0.5, 0.49, 0.47]);
+export const BRICK = style("Brick", [0.6, 0.25, 0.2]);
+export const CONCRETE = style("Concrete", [0.55, 0.55, 0.55]);
+export const FIRE_RED = style("Metal", [0.75, 0.12, 0.1]);
+export const LAMP = style("Neon", [1, 0.95, 0.85]);
+export const HEDGE = style("Grass", [0.2, 0.34, 0.17]);
 
 // Plants.
 export const BARK = style("Wood", [0.33, 0.24, 0.17]);
@@ -47,3 +52,5 @@ export const REEDS = style("Grass", [0.4, 0.45, 0.22], { collide: false, shadow:
 
 /** Markers: seen in Studio, hidden by the game. */
 export const MARKER = style("Neon", [1, 0.2, 0.2], { transparency: 0.5, collide: false, shadow: false });
+/** Where something built by the game's code goes (the family house). */
+export const PLOT = style("ForceField", [0.3, 0.55, 1], { transparency: 0.6, collide: false, shadow: false });

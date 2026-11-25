@@ -158,7 +158,7 @@ for i, seed in seeds do
 	for _, placement in planned.tiles do
 		local x, z = centre(placement.column, placement.row)
 		write(folder, `{placement.row}_{placement.column}_{placement.tile}`, tiles.move(all[placement.tile], placement.turns, x, z))
-		rows[placement.row] = (rows[placement.row] or "") .. string.format("%-16s", `{placement.tile}{if placement.turns > 0 then ` ↻{placement.turns}` else ""}`)
+		rows[placement.row] = (rows[placement.row] or "") .. string.format("%-18s", `{placement.tile}{if placement.turns > 0 then ` ↻{placement.turns}` else ""}`)
 	end
 	local extras = { name = "Extras", className = "Model", children = {} }
 	local _, top = centre(0, MAP_RULES.rows - 1)

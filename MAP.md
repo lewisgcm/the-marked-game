@@ -50,11 +50,30 @@ Edges are **route/ground** (see below). Parts are a guide to the cost of a tile.
 
 | Tile | North | East | South | West | Loot | Stones | Dormant | Parts |
 |---|---|---|---|---|---|---|---|---|
+| [Home](#home) | Road/Grass | Road/Town | None/Grass | Road/Town | 12 | 4 | 4 | 255 |
+| [FireStation](#firestation) | None/Grass | Road/Town | None/Grass | Road/Town | – | – | – | 96 |
 | [Houses_A](#houses_a) | Road/Grass | Road/Town | None/Grass | Road/Town | 12 | 4 | 4 | 329 |
 | [Treehouse](#treehouse) | None/Forest | Road/Grass | None/Forest | None/Forest | – | 1 | – | 231 |
-| [Meadow_A](#meadow_a) | Road/Grass | None/Grass | None/Grass | Road/Grass | 2 | 2 | – | 125 |
+| [Meadow_A](#meadow_a) | Road/Grass | None/Grass | None/Grass | Road/Grass | 2 | 2 | – | 128 |
 | [ForestRoad_A](#forestroad_a) | None/Forest | Road/Forest | Road/Grass | None/Forest | 3 | 1 | 1 | 300 |
 | [Swamp_A](#swamp_a) | None/Swamp | None/Swamp | None/Grass | None/Forest | 3 | 1 | – | 188 |
+
+### Home
+Maple Street: the family house with a neighbour either side and two across the road, and a side road north.
+Always at the bottom middle of the map, never turned.
+- **The family house isn't in the tile.** The game builds it in code (`src/main/server/world/world.ts`),
+  because barricades, lamps, the generator and the infected depend on it. The tile has a hole in the ground
+  for its basement and a blue `HomePlot` box where it goes. The tile's middle is today's (0, -61), the middle
+  of the street, so the house sits where it always has.
+- **Neighbours:** four bungalows like Houses_A's (TV and dormant infected, drawers, cupboards, tool chest,
+  stones). The beside ones moved in from x ±95 to ±72 to fit the tile.
+- **Dad:** a `DadSpot` marker in the left neighbour's front garden, where he stands on Day 1.
+- **Street lamps:** 4. Cars are still to come (meshes).
+
+### FireStation
+The adult base: today's station (brick, an open engine bay and the trading counter in the side bay) on a
+straight street, with a car park and a training tower across the road. Safe, so nothing to loot.
+- The engine is a plain red block until meshes go in tiles; the ambulance and tank wrecks are still to come.
 
 ### Houses_A
 A residential street with a side road north (a T-junction). Four neighbours' houses, two each side, with
@@ -119,15 +138,15 @@ its neighbours, backing up when it gets stuck. A map is only accepted if every p
 road (or path) from home. Roads running off the map get a roadblock. If no map can be found, it returns
 nothing, and the game should fall back to a known-good one.
 
-The trial map is **3 × 2** with `Houses_A` standing in for home (bottom middle), the Treehouse beside it,
-and meadows, forest roads, the swamp and a second street to fill the rest. 2,000 seeds all plan (0.15 s in
-all), giving about 500 different maps. `npm test` checks 500 of them.
+The trial map is **3 × 2**: home at the bottom middle, the Treehouse beside it, the Fire Station beside it
+or in the row behind, and streets, meadows, forest roads and the swamp to fill the rest. 2,000 seeds all
+plan (0.2 s in all), giving about 960 different maps. `npm test` checks 500 of them.
 
 | Rule | Value |
 |---|---|
-| Fixed | Houses_A at the bottom middle |
-| Places | Treehouse, row 0 |
-| Fillers | Meadow_A ×2, ForestRoad_A ×2, Swamp_A ×1, Houses_A ×1 |
+| Fixed | Home at the bottom middle |
+| Places | Treehouse in row 0; FireStation in row 0 or 1 |
+| Fillers | Houses_A ×2, Meadow_A ×2, ForestRoad_A ×2, Swamp_A ×1 |
 
 ## Making a tile
 
@@ -163,4 +182,8 @@ all), giving about 500 different maps. `npm test` checks 500 of them.
   coded tile's next build would replace them anyway).
 - **The game:** building the planned map at the start of a run, with roadblocks and the map's outer edges.
   Remove the spare copies of the tiles before any system starts, or tag searches find them too.
-- **Home tile**, Fire Station and the other places in `GAMEPLAY.md` §8.
+- **The family house in the Home tile**, built from markers instead of code (with the game switch-over).
+- **Behind home:** the house's back garden is only 17 studs deep before the map's south edge, and today's
+  back infected spawn (48 behind the house) would be off the map. A strip of woods along the south edge, or
+  spawns moved, before the game uses tiles.
+- **The other places** in `GAMEPLAY.md` §8.
