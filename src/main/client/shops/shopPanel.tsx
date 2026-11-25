@@ -37,9 +37,9 @@ export interface ShopRowProps {
 }
 
 function ShopRow({ order, name, description, button, enabled, highlight, onPress }: ShopRowProps) {
-	const label = (y: number, text: string, size: number, color: Color3, bold: boolean) => (
+	const label = (y: number, text: string, size: number, height: number, color: Color3, bold: boolean) => (
 		<textlabel
-			Size={new UDim2(1, -150, 0, 22)}
+			Size={new UDim2(1, -150, 0, height)}
 			Position={new UDim2(0, 12, 0, y)}
 			BackgroundTransparency={1}
 			Font={bold ? Enum.Font.GothamBold : Enum.Font.Gotham}
@@ -54,8 +54,8 @@ function ShopRow({ order, name, description, button, enabled, highlight, onPress
 	return (
 		<frame LayoutOrder={order} Size={new UDim2(1, 0, 0, ROW_HEIGHT)} BackgroundColor3={ROW} BorderSizePixel={0}>
 			<uicorner CornerRadius={new UDim(0, 8)} />
-			{label(8, name, 16, new Color3(0.95, 0.93, 0.88), true)}
-			{label(32, description, 12, detail, false)}
+			{label(8, name, 16, 22, new Color3(0.95, 0.93, 0.88), true)}
+			{label(30, description, 12, 28, detail, false)}
 			<textbutton
 				Size={new UDim2(0, 122, 0, 40)}
 				Position={new UDim2(1, -10, 0.5, 0)}

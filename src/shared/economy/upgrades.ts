@@ -21,7 +21,7 @@ export const UPGRADES: Upgrade[] = [
 	{
 		id: "ReinforcedPlanks",
 		name: "Reinforced planks",
-		description: "Planks nailed from now on are tougher",
+		description: "Planks you nail from now on get metal strips: 50% tougher",
 		cost: 20,
 		personal: false,
 	},

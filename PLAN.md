@@ -215,6 +215,9 @@ Door and window prompts got in the way of defending, so building needs the hamme
 - [ ] **Playtest**: is fighting at a window clear of prompts, and is swapping hammer and bat under attack tense
       or just a nuisance?
 
+- [x] **Reinforced planks look reinforced**: metal strips on planks nailed after the upgrade (each plank now
+      remembers). Showing damage (cracked planks) could follow.
+
 ## Folders (25 Nov 2026) ✅
 
 No gameplay changes: `main/server`, `main/client`, `shared` and the specs are grouped by topic

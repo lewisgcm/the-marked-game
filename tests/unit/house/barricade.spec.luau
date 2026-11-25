@@ -2,23 +2,50 @@
 return function(t)
 	local b = require("../../../out/shared/house/barricade")
 
+	local function plank(health, reinforced)
+		return { health = health, reinforced = reinforced == true }
+	end
+	local function planksOf(...)
+		local planks = {}
+		for i, health in { ... } do
+			planks[i] = plank(health)
+		end
+		return planks
+	end
 	local function withPlanks(...)
-		return { planks = { ... } }
+		return { planks = planksOf(...) }
 	end
 
 	t.describe("adding and removing planks", function()
 		t.it("adds planks up to the slot count", function()
 			local bar = b.emptyBarricade()
-			t.expect(b.addPlank(bar, 3, 100)).toBe(true)
-			t.expect(b.addPlank(bar, 3, 100)).toBe(true)
-			t.expect(b.addPlank(bar, 3, 100)).toBe(true)
-			t.expect(b.addPlank(bar, 3, 100)).toBe(false)
+			t.expect(b.addPlank(bar, 3, plank(100))).toBe(true)
+			t.expect(b.addPlank(bar, 3, plank(100))).toBe(true)
+			t.expect(b.addPlank(bar, 3, plank(100))).toBe(true)
+			t.expect(b.addPlank(bar, 3, plank(100))).toBe(false)
 			t.expect(#bar.planks).toBe(3)
+		end)
+		t.it("won't add a plank with no health", function()
+			local bar = b.emptyBarricade()
+			t.expect(b.addPlank(bar, 3, plank(0))).toBe(false)
+			t.expect(#bar.planks).toBe(0)
+		end)
+		t.it("each plank stays what it was nailed as", function()
+			local bar = b.emptyBarricade()
+			b.addPlank(bar, 3, plank(100))
+			b.addPlank(bar, 3, plank(150, true))
+			t.expect(bar.planks[1].reinforced).toBe(false)
+			t.expect(bar.planks[2].reinforced).toBe(true)
+			b.damageBarricade(bar, 30, false)
+			t.expect(bar.planks[2].reinforced).toBe(true)
+			b.removePlank(bar)
+			t.expect(#bar.planks).toBe(1)
+			t.expect(bar.planks[1].reinforced).toBe(false)
 		end)
 		t.it("an opening is blocked while any plank is up", function()
 			local bar = b.emptyBarricade()
 			t.expect(b.isBlocked(bar)).toBe(false)
-			b.addPlank(bar, 3, 100)
+			b.addPlank(bar, 3, plank(100))
 			t.expect(b.isBlocked(bar)).toBe(true)
 			t.expect(b.removePlank(bar)).toBe(true)
 			t.expect(b.isBlocked(bar)).toBe(false)
@@ -26,24 +53,38 @@ return function(t)
 		end)
 	end)
 
-	t.describe("newPlankHealth", function()
-		local function health(overrides)
-			local c = { base = 100, firstNight = 1, reinforced = 1, index = 0, normalSlots = 3, doorBar = 2 }
+	t.describe("newPlank", function()
+		local function new(overrides)
+			local c = {
+				base = 100,
+				firstNight = 1,
+				reinforced = false,
+				reinforcedBy = 1.5,
+				index = 0,
+				normalSlots = 3,
+				doorBar = 2,
+			}
 			for k, v in overrides do
 				c[k] = v
 			end
-			return b.newPlankHealth(c)
+			return b.newPlank(c)
 		end
 		t.it("plain planks get the base", function()
-			t.expect(health({})).toBe(100)
-			t.expect(health({ index = 2 })).toBe(100)
+			t.expect(new({}).health).toBe(100)
+			t.expect(new({ index = 2 }).health).toBe(100)
+			t.expect(new({}).reinforced).toBe(false)
+		end)
+		t.it("reinforced ones are sturdier, and say so", function()
+			t.expect(new({ reinforced = true }).health).toBe(150)
+			t.expect(new({ reinforced = true }).reinforced).toBe(true)
 		end)
 		t.it("only a door bar's extra slot is sturdier", function()
-			t.expect(health({ index = 3 })).toBe(200)
+			t.expect(new({ index = 3 }).health).toBe(200)
+			t.expect(new({ index = 3 }).reinforced).toBe(false)
 		end)
 		t.it("bonuses multiply", function()
-			t.expect(health({ firstNight = 2, reinforced = 1.5 })).toBe(300)
-			t.expect(health({ firstNight = 2, reinforced = 1.5, index = 3 })).toBe(600)
+			t.expect(new({ firstNight = 2, reinforced = true }).health).toBe(300)
+			t.expect(new({ firstNight = 2, reinforced = true, index = 3 }).health).toBe(600)
 		end)
 	end)
 
@@ -52,8 +93,8 @@ return function(t)
 			local bar = withPlanks(100, 100)
 			local result = b.damageBarricade(bar, 30, false)
 			t.expect(result.broken).toBe(0)
-			t.expect(bar.planks[1]).toBe(100)
-			t.expect(bar.planks[2]).toBe(70)
+			t.expect(bar.planks[1].health).toBe(100)
+			t.expect(bar.planks[2].health).toBe(70)
 		end)
 		t.it("a plank at 0 falls off; the last one breaches", function()
 			local bar = withPlanks(100, 20)
@@ -72,7 +113,7 @@ return function(t)
 			local result = b.damageBarricade(bar, 500, false)
 			t.expect(result.broken).toBe(1)
 			t.expect(#bar.planks).toBe(2)
-			t.expect(bar.planks[2]).toBe(100)
+			t.expect(bar.planks[2].health).toBe(100)
 		end)
 		t.it("hitting an open gap does nothing, and says it's breached", function()
 			local result = b.damageBarricade(b.emptyBarricade(), 50, false)
@@ -84,7 +125,7 @@ return function(t)
 
 	t.describe("a shutter", function()
 		local function shuttered(...)
-			return { planks = { ... }, shutter = 50 }
+			return { planks = planksOf(...), shutter = 50 }
 		end
 		t.it("is fitted once", function()
 			local bar = b.emptyBarricade()
@@ -126,7 +167,7 @@ return function(t)
 			t.expect(bar.shutter).toBe(50)
 			local planks = withPlanks(10)
 			b.damageBarricade(planks, -5, true)
-			t.expect(planks.planks[1]).toBe(10)
+			t.expect(planks.planks[1].health).toBe(10)
 		end)
 	end)
 
@@ -137,7 +178,7 @@ return function(t)
 		end)
 		t.it("a shutter only with planks over it, or for what breaks it", function()
 			t.expect(b.isWorthAttacking({ planks = {}, shutter = 50 }, false)).toBe(false)
-			t.expect(b.isWorthAttacking({ planks = { 10 }, shutter = 50 }, false)).toBe(true)
+			t.expect(b.isWorthAttacking({ planks = planksOf(10), shutter = 50 }, false)).toBe(true)
 			t.expect(b.isWorthAttacking({ planks = {}, shutter = 50 }, true)).toBe(true)
 		end)
 	end)

@@ -9,7 +9,7 @@ import {
 	emptyBarricade,
 	isBlocked,
 	isWorthAttacking,
-	newPlankHealth,
+	newPlank,
 	planksToTake,
 	removePlank,
 } from "shared/house/barricade";
@@ -57,6 +57,7 @@ interface EntryState {
 }
 
 const PLANK_COLOR = new Color3(0.55, 0.4, 0.26);
+const STRIP_COLOR = new Color3(0.5, 0.52, 0.55);
 const SHUTTER_COLOR = new Color3(0.36, 0.38, 0.4);
 // A built-in thud as a placeholder (no uploaded audio yet).
 const NAIL_SOUND = "rbxasset://sounds/action_footsteps_plastic.mp3";
@@ -75,6 +76,29 @@ function slotsOf(entry: Entry): number {
 	return gameConfig.plankSlots.Value + extra;
 }
 
+/** One plank across an opening; a reinforced one has metal strips near its ends. */
+function drawPlank(width: number, cframe: CFrame, reinforced: boolean, parent: Instance) {
+	const plank = new Instance("Part");
+	plank.Name = "Plank";
+	plank.Size = new Vector3(width, 0.9, 0.35);
+	plank.CFrame = cframe;
+	plank.Anchored = true;
+	plank.Material = Enum.Material.WoodPlanks;
+	plank.Color = PLANK_COLOR;
+	plank.Parent = parent;
+	for (const side of reinforced ? [-1, 1] : []) {
+		const strip = new Instance("Part");
+		strip.Name = "Strip";
+		strip.Size = new Vector3(0.35, 1, 0.45);
+		strip.CFrame = cframe.mul(new CFrame(side * width * 0.3, 0, 0));
+		strip.Anchored = true;
+		strip.CanCollide = false;
+		strip.Material = Enum.Material.Metal;
+		strip.Color = STRIP_COLOR;
+		strip.Parent = parent;
+	}
+}
+
 /** Redraws an opening's planks and updates its prompts and blocker. */
 function refresh(state: EntryState) {
 	const { entry, barricade, visuals } = state;
@@ -84,14 +108,8 @@ function refresh(state: EntryState) {
 	const tilts = [0.12, -0.1, 0.07, -0.05];
 	for (let i = 0; i < count; i++) {
 		const y = ((i + 1) / (slotsOf(entry) + 1) - 0.5) * entry.height;
-		const plank = new Instance("Part");
-		plank.Name = "Plank";
-		plank.Size = new Vector3(entry.width + 1, 0.9, 0.35);
-		plank.CFrame = entry.cframe.mul(new CFrame(0, y, 0.55)).mul(CFrame.Angles(0, 0, tilts[i % tilts.size()]));
-		plank.Anchored = true;
-		plank.Material = Enum.Material.WoodPlanks;
-		plank.Color = PLANK_COLOR;
-		plank.Parent = visuals;
+		const at = entry.cframe.mul(new CFrame(0, y, 0.55)).mul(CFrame.Angles(0, 0, tilts[i % tilts.size()]));
+		drawPlank(entry.width + 1, at, barricade.planks[i].reinforced, visuals);
 	}
 	if (barricade.shutter !== undefined) {
 		const shutter = new Instance("Part");
@@ -128,15 +146,16 @@ function onBoard(player: Player, state: EntryState) {
 		return;
 	}
 	const { entry, barricade } = state;
-	const health = newPlankHealth({
+	const plank = newPlank({
 		base: gameConfig.plankHealth.Value,
 		firstNight: hooks.isFirstNight() ? gameConfig.firstNightPlankMultiplier.Value : 1,
-		reinforced: hooks.hasUpgrade("ReinforcedPlanks") ? gameConfig.reinforcedPlankMultiplier.Value : 1,
+		reinforced: hooks.hasUpgrade("ReinforcedPlanks"),
+		reinforcedBy: gameConfig.reinforcedPlankMultiplier.Value,
 		index: barricade.planks.size(),
 		normalSlots: gameConfig.plankSlots.Value,
 		doorBar: gameConfig.doorBarMultiplier.Value,
 	});
-	if (!addPlank(barricade, slotsOf(entry), health)) {
+	if (!addPlank(barricade, slotsOf(entry), plank)) {
 		return;
 	}
 	takeItem(player, "Planks", 1);

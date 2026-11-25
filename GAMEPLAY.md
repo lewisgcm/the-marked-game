@@ -378,7 +378,7 @@ A typical day earns ~15–30 coins for the party. Ammo prices go up about 15% pe
 ### Workbench upgrades (home, at dawn or day)
 | Upgrade | Cost | Effect |
 |---|---|---|
-| Reinforced planks | 20 | Planks have +50% health |
+| Reinforced planks | 20 | Planks nailed afterwards have +50% health, and metal strips to show it |
 | Door bar | 30 | Front/back door gets a 4th, sturdier slot |
 | School rucksack | 25 | 5 → 8 inventory slots |
 | Hiking rucksack | 60 | 8 → 12 inventory slots (needs the school rucksack) |

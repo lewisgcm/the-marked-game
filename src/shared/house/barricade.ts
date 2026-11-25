@@ -13,9 +13,15 @@
 /** The tool that puts planks and shutters up. */
 export const HAMMER_TOOL_NAME = "Hammer";
 
+export interface Plank {
+	health: number;
+	/** Nailed with the reinforced planks upgrade (it's drawn with metal strips). */
+	reinforced: boolean;
+}
+
 export interface Barricade {
-	/** Health of each plank, innermost first. */
-	planks: number[];
+	/** Innermost first. */
+	planks: Plank[];
 	/** Health of its shutter, if it has one. */
 	shutter?: number;
 }
@@ -24,13 +30,15 @@ export function emptyBarricade(): Barricade {
 	return { planks: [] };
 }
 
-/** What decides a new plank's health. */
+/** What decides what a new plank is like. */
 export interface PlankConditions {
 	base: number;
 	/** 1 normally; more on Night 1. */
 	firstNight: number;
-	/** 1 without reinforced planks. */
-	reinforced: number;
+	/** Whether the party has reinforced planks... */
+	reinforced: boolean;
+	/** ...and how much sturdier they are. */
+	reinforcedBy: number;
 	/** Which plank of its opening it is (0-based). */
 	index: number;
 	/** Slots every opening has; anything past them is a door bar's. */
@@ -39,8 +47,9 @@ export interface PlankConditions {
 	doorBar: number;
 }
 
-export function newPlankHealth(c: PlankConditions): number {
-	return c.base * c.firstNight * c.reinforced * (c.index >= c.normalSlots ? c.doorBar : 1);
+export function newPlank(c: PlankConditions): Plank {
+	const strength = (c.reinforced ? c.reinforcedBy : 1) * (c.index >= c.normalSlots ? c.doorBar : 1);
+	return { health: c.base * c.firstNight * strength, reinforced: c.reinforced };
 }
 
 /** Whether there's room for another plank. */
@@ -48,12 +57,12 @@ export function canAddPlank(barricade: Barricade, slots: number): boolean {
 	return barricade.planks.size() < slots;
 }
 
-/** Nails a new plank with `health`. Returns false (and changes nothing) if the slots are full. */
-export function addPlank(barricade: Barricade, slots: number, health: number): boolean {
-	if (!canAddPlank(barricade, slots) || health <= 0) {
+/** Nails `plank` up. Returns false (and changes nothing) if the slots are full. */
+export function addPlank(barricade: Barricade, slots: number, plank: Plank): boolean {
+	if (!canAddPlank(barricade, slots) || plank.health <= 0) {
 		return false;
 	}
-	barricade.planks.push(health);
+	barricade.planks.push(plank);
 	return true;
 }
 
@@ -91,8 +100,8 @@ export function damageBarricade(barricade: Barricade, amount: number, breaksShut
 	const last = barricade.planks.size() - 1;
 	let broken = 0;
 	if (amount > 0 && last >= 0) {
-		barricade.planks[last] -= amount;
-		if (barricade.planks[last] <= 0) {
+		barricade.planks[last].health -= amount;
+		if (barricade.planks[last].health <= 0) {
 			barricade.planks.pop();
 			broken = 1;
 		}

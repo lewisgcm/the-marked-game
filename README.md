@@ -472,6 +472,7 @@ apply from the next phase.
 ### Workbench
 - [ ] The garage workbench's prompt ("Upgrade") opens a list: the window shutter, then six upgrades, with costs and your coins (Studio starts you with 150).
 - [ ] You can only buy what you can afford; bought ones say "Owned"; the hiking rucksack says "Needs school rucksack" first.
+- [ ] Planks nailed after buying reinforced planks have two metal strips; ones already up don't, until they're taken down and nailed again. No description in the list is cut off.
 - [ ] Reinforced planks and the door bar are for everyone (the buyer gets a bottom line, the others news in the bar, and it shows Owned for them). Front and back doors then take 4 planks; the garage door and windows still take 3.
 - [ ] Rucksacks are yours only: 8 slots, then 12, and they stay after you're taken.
 - [ ] The list closes with X or when you walk away, and scrolls if it's taller than the screen (phone).
