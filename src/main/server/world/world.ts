@@ -497,14 +497,20 @@ function buildInfectedSpawns(parent: Instance): CFrame[] {
 	});
 }
 
-export function buildMainWorld(): MainWorld {
+/**
+ * Builds the family house. With `around` (the tiled map, which brings its own ground and spawn
+ * markers), the grounds and spawns here are left out and `around`'s spawns are used instead.
+ */
+export function buildMainWorld(around?: { infectedSpawns: CFrame[] }): MainWorld {
 	const house = folder(Workspace, "House");
 	buildShell(house);
 	furnish(house);
 	const lamps = buildLamps(house);
 	const entries = buildEntries(house);
-	buildGrounds(Workspace);
-	const infectedSpawns = buildInfectedSpawns(Workspace);
+	if (!around) {
+		buildGrounds(Workspace);
+	}
+	const infectedSpawns = around ? around.infectedSpawns : buildInfectedSpawns(Workspace);
 
 	// Kids start in the basement.
 	const basementCentre = new Vector3(-15, BASEMENT_Y, 12);

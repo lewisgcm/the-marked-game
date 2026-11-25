@@ -242,7 +242,12 @@ The map becomes 200×200-stud tiles, laid out differently each run (MAP.md). Not
 - [x] Pick a layout from a seed (`shared/world/layout.ts`, rules in `mapRules.ts`): home fixed, places in
       their rows, edges joined, every place reachable by road, roads off the map listed. Spec. The gallery
       shows the map for any seeds (`npm run tiles -- 7 42`).
-- [ ] Build the run's map from tiles and retire the code-built street and bases; update GAMEPLAY §8.
+- [x] Build the run's map from tiles in the game (`world/map.ts`, `tiledMap.ts`), behind `UseTiledMap` (Studio
+      on, live off): seed printed and settable, fallback map, roadblocks, boundary, markers for dormant
+      spots, Dad and spawns, traders at their counters. Spec for placement and the fallback.
+- [x] **Studio check** (25 Nov 2026): README → "The tiled map" looks good.
+- [ ] Cars and wrecks on the tiled map; a strip of woods behind home; then live, and retire the code-built
+      street and bases; update GAMEPLAY §8.
 
 ## M3 — Workbench, trading and the walkie-talkie
 

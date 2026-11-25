@@ -1,5 +1,5 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { bungalow, fence, oak, roadLines, streetLamp } from "../lib/build.ts";
+import { bungalow, fence, marker, oak, roadLines, streetLamp } from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -49,10 +49,14 @@ export function home(): Tile {
 	bungalow(t, new CFrame(72, 0, 55));
 	bungalow(t, new CFrame(-60, 0, -37).mul(turn(180)));
 	bungalow(t, new CFrame(60, 0, -37).mul(turn(180)));
-	t.inFolder("Markers", () =>
-		// Day 1: Dad, in the left neighbour's front garden, staring in at the living-room TV.
-		t.part("DadSpot", [2, 5, 1], left.at(-10, 2.5, -17).mul(turn(180)), S.MARKER, { tags: ["DadSpot"] }),
-	);
+	// Day 1: Dad, in the left neighbour's front garden, staring in at the living-room TV.
+	marker(t, "DadSpot", left.at(-10, 3.3, -17).mul(turn(180)));
+	// Where the night's infected appear, each facing the house: across the street, the back garden,
+	// and between the house and each neighbour (as today's map, moved in to fit).
+	marker(t, "InfectedSpawn", new CFrame(0, 3, -19).mul(turn(180)));
+	marker(t, "InfectedSpawn", new CFrame(0, 3, 94));
+	marker(t, "InfectedSpawn", new CFrame(-47, 3, 61).mul(turn(-90)));
+	marker(t, "InfectedSpawn", new CFrame(47, 3, 61).mul(turn(90)));
 
 	t.folder("Gardens");
 	// Hedges between the gardens, and fences round the ones across the street.

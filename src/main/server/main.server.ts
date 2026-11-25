@@ -1,17 +1,15 @@
-import { buildBases } from "./world/bases";
 import { gameConfig } from "./core/config";
 import { startElimination } from "./run/elimination";
 import { isRoundServer, startGatekeeper } from "./run/gatekeeper";
 import { setupLighting } from "./house/lighting";
 import { setUpAll, setUpCharacter, startLoadouts } from "./run/loadout";
-import { buildNeighbourhood } from "./world/neighbourhood";
 import { addLateJoiners, setMembers, waitForParty } from "./core/party";
 import { onPhase } from "./phaseEvents";
 import { resync } from "./run/resync";
 import { runRun } from "./core/round";
 import { onRunEnd, returnToLobby } from "./run/roundEnd";
 import { listenToClients, startSystems } from "./systems";
-import { buildMainWorld } from "./world/world";
+import { buildMap } from "./world/map";
 
 /**
  * Main game entry point. The order matters:
@@ -22,9 +20,7 @@ import { buildMainWorld } from "./world/world";
 
 startGatekeeper();
 setupLighting();
-const world = buildMainWorld();
-const street = buildNeighbourhood();
-buildBases();
+const { world, street } = buildMap();
 startElimination();
 startLoadouts(world);
 startSystems(world);

@@ -4,8 +4,8 @@ The neighbourhood is being rebuilt from **tiles**: 200×200-stud areas that alwa
 out differently each run. This file says what's in each tile and the rules for making one.
 `GAMEPLAY.md` §8 says what the places are *for*.
 
-**Status:** sample tiles and the planner that lays them out, to look at in Studio. The game doesn't use them
-yet: it still builds the house, Maple Street and the bases from code (`src/main/server/world/`).
+**Status:** in the game in Studio (`UseTiledMap` is 1 there, 0 live), being tried out. The family house is
+still built in code, on the Home tile's plot; there are no parked cars or street wrecks on the tiled map yet.
 
 ## Looking at them
 
@@ -148,6 +148,24 @@ plan (0.2 s in all), giving about 960 different maps. `npm test` checks 500 of t
 | Places | Treehouse in row 0; FireStation in row 0 or 1 |
 | Fillers | Houses_A ×2, Meadow_A ×2, ForestRoad_A ×2, Swamp_A ×1 |
 
+## In the game
+
+`src/main/server/world/map.ts` builds the old map or the tiled one, as `UseTiledMap` says. For the tiled one
+(`tiledMap.ts`):
+
+1. The tiles arrive as models in `ServerStorage.MapTiles` (Rojo syncs `build/tiles/models` there, so
+   `serve:main` and `build:main` build the tiles first). Their edge labels are the planner's catalogue.
+2. The seed is `MapSeed`, or a new one when that's 0, and it's printed: `[Map] Seed 123: Home@1,0 ...`.
+   If no map fits, the game uses `FALLBACK_TILES` (`mapRules.ts`, spec-checked) and says so.
+3. Each tile is copied into `Workspace.Map`, turned and moved into place (`tilePlacement`: Home's middle
+   is at (0, -61), so the house stays at the origin). Roads off the map get a roadblock, and invisible
+   walls go round the edge.
+4. **The templates are destroyed before any system starts**, or tag searches would find them too.
+5. Markers are read and hidden: dormant spots, Dad's spot and the night's infected spawns. The Home plot
+   box is removed. Traders stand behind their counters, and the fire engine's model replaces its block.
+
+After changing a tile, run `npm run tiles:build` (or `npm run tiles`) and Rojo syncs it; stop and Play again.
+
 ## Making a tile
 
 - **Code:** a file in `tools/tiles/tiles/` that returns a `Tile`, and a line in `TILES` in `tools/tiles/build.ts`.
@@ -168,9 +186,13 @@ plan (0.2 s in all), giving about 960 different maps. `npm test` checks 500 of t
 | `Stones` | A patch of stones | |
 | `Trader` | A trading counter; its trader stands behind it (+Z) | `Base` |
 | `StreetLight` | A lamp's SpotLight | |
-| `DormantSpot` | Where a dormant infected stands; its front (-Z) faces the screen. New: nothing reads it yet | |
+| `DormantSpot` | Where a dormant infected stands: its middle, 3 above the floor, its front (-Z) facing the screen | |
+| `DadSpot` | Where Dad waits on Day 1 (Home only, exactly one) | |
+| `InfectedSpawn` | Where the night's infected appear, facing the house (Home only) | |
+| `HomePlot` | Where the code-built house goes (Home only); removed in the game | |
 
-`DormantSpot` markers are red and see-through so they show in Studio; the game must hide them.
+Markers are red and see-through so they show in Studio; the game hides them. Use `marker()` in
+`tools/tiles/lib/build.ts`.
 
 `npm test` checks every tile for all of this (`tests/unit/world/tiles.spec.luau`). Add a new tile to this file.
 
@@ -180,10 +202,12 @@ plan (0.2 s in all), giving about 960 different maps. `npm test` checks 500 of t
   test in Studio first. NPCs and fires stay in code.
 - **Saving a Studio edit back to JSON:** needs a converter. Until then, edits in Studio are lost (and a
   coded tile's next build would replace them anyway).
-- **The game:** building the planned map at the start of a run, with roadblocks and the map's outer edges.
-  Remove the spare copies of the tiles before any system starts, or tag searches find them too.
+- **Parked cars and street wrecks** on the tiled map: markers for where they go (their models load in code,
+  as today).
+- **Live:** turn `UseTiledMap` on for live servers once it's been played, then delete the old map's code
+  (`neighbourhood.ts`, `bases.ts`'s buildings, `wrecks.ts`' positions, `world.ts`' grounds and spawns).
 - **The family house in the Home tile**, built from markers instead of code (with the game switch-over).
-- **Behind home:** the house's back garden is only 17 studs deep before the map's south edge, and today's
-  back infected spawn (48 behind the house) would be off the map. A strip of woods along the south edge, or
-  spawns moved, before the game uses tiles.
+- **Behind home:** the house's back garden is only 17 studs deep before the map's south edge, so the back
+  infected spawn is 11 behind the house (it was 48), and the side ones 17 from it (they were 32). A strip of
+  woods along the south edge would give them room.
 - **The other places** in `GAMEPLAY.md` §8.

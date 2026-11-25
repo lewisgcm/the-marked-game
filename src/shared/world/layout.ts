@@ -207,6 +207,38 @@ function openEnds(tiles: Placement[], grid: Grid, catalogue: Catalogue, rules: T
 	return ends;
 }
 
+/** A layout from a list of placements (a hand-made one, say), with its open ends worked out. */
+export function completeLayout(
+	tiles: Placement[],
+	layoutRules: LayoutRules,
+	catalogue: Catalogue,
+	rules: TileRules,
+): Layout {
+	const grid = new Grid(layoutRules.columns, layoutRules.rows);
+	tiles.forEach((p) => grid.set(p.column, p.row, p));
+	return { tiles, openEnds: openEnds(tiles, grid, catalogue, rules) };
+}
+
+/** Tiles' size, in studs. */
+export const TILE_SIZE = 200;
+
+/**
+ * Where a tile goes in the world: the middle of its cell, and how far to turn it about the vertical
+ * (radians, as `CFrame.Angles(0, yaw, 0)`). `origin` is where the middle of `anchor`'s cell is
+ * (home's); rows count north (-Z). A positive turn is clockwise from above, so yaw is negative.
+ */
+export function tilePlacement(
+	placement: Placement,
+	anchor: { column: number; row: number },
+	origin: { x: number; z: number },
+): { x: number; z: number; yaw: number } {
+	return {
+		x: origin.x + (placement.column - anchor.column) * TILE_SIZE,
+		z: origin.z - (placement.row - anchor.row) * TILE_SIZE,
+		yaw: (-placement.turns * math.pi) / 2,
+	};
+}
+
 /**
  * A map following `layoutRules`, or undefined if none could be found (the caller should have a
  * known-good one to fall back on). `random` gives 0..1.
@@ -292,7 +324,7 @@ export function planLayout(
 					if (p) tiles.push(p);
 				}
 			}
-			return { tiles, openEnds: openEnds(tiles, g, catalogue, rules) };
+			return completeLayout(tiles, layoutRules, catalogue, rules);
 		};
 		if (fill(0)) {
 			return finish(grid);

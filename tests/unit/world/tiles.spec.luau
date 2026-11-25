@@ -41,6 +41,36 @@ return function(t)
 		end
 	end)
 
+	t.describe("what the game needs from the tiles", function()
+		local all = tiles.loadAll()
+		local function tagged(tile, tag)
+			local n = 0
+			tiles.each(tile, function(instance)
+				local tags = instance.properties and instance.properties.Tags
+				if tags and table.find(tags, tag) then
+					n += 1
+				end
+			end)
+			return n
+		end
+		t.it("Home has one Dad spot, spawns for the night, and the house's plot", function()
+			t.expect(tagged(all.Home, "DadSpot")).toBe(1)
+			t.expect(tagged(all.Home, "InfectedSpawn") >= 2).toBe(true)
+			t.expect(tagged(all.Home, "HomePlot")).toBe(1)
+		end)
+		t.it("no other tile has a Dad spot, spawns or a plot", function()
+			for name, tile in all do
+				if name ~= "Home" then
+					t.expect(tagged(tile, "DadSpot") + tagged(tile, "InfectedSpawn") + tagged(tile, "HomePlot")).toBe(0)
+				end
+			end
+		end)
+		t.it("each base's tile has its trading counter", function()
+			t.expect(tagged(all.Treehouse, "Trader")).toBe(1)
+			t.expect(tagged(all.FireStation, "Trader")).toBe(1)
+		end)
+	end)
+
 	t.describe("check", function()
 		t.it("passes a good tile", function()
 			local ground = part("Ground", { 200, 2, 200 }, 0, 0)

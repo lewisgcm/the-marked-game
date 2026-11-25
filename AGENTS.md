@@ -22,6 +22,7 @@ npm run watch          # compile TS -> Luau in out/ on save
 npm run serve:lobby    # Rojo live-sync into Studio (serve / serve:main for the others)
 npm run build:lobby    # static .rbxlx into build/ (build:main, build:dev)
 npm run serve:tiles    # look at the map tiles in Studio without playing (MAP.md)
+npm run tiles:build    # rebuild the map tiles after changing one (serve:main/build:main do it first)
 npm run models         # rebuild Blender models (FBX/GLB/preview)
 npm run lint           # ESLint + Prettier (lint:fix to auto-fix); run before committing
 npm test               # compile + Lune unit tests (tests/unit); run before committing

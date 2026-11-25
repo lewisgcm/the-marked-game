@@ -514,6 +514,16 @@ apply from the next phase.
 - [ ] Popups don't show while it's open, and typing a "t" in chat doesn't open it.
 - [ ] Two players see the same messages. Someone who loads in late has the log but no old popups.
 
+### The tiled map (Studio: `UseTiledMap` is 1; MAP.md)
+- [ ] The Output says `[Map] Seed N: ...` and the map matches `npm run tiles -- N`. Setting `MapSeed` to that N in `ServerStorage.GameConfig` before Play gives the same map again; 0 gives a new one each run.
+- [ ] Home is at the bottom middle with the family house on its plot (no blue box, nothing to bump into); kids start in the basement as before. The Treehouse is beside home, the Fire Station beside it or in the row behind, and every road joins up.
+- [ ] No red marker boxes anywhere. A dormant infected stands at each neighbour's TV and in the ranger hut; on Day 1 Dad is in the left neighbour's garden.
+- [ ] The Treehouse kid and the Fire Station chief stand behind their counters (turned with their tile), and trading works at both. The fire engine's model replaces the red block.
+- [ ] Roads that run off the map end at a red and white roadblock, and you can't walk off any edge.
+- [ ] At night the infected come from across the street, the back garden and both sides, and find their way in.
+- [ ] Searching, stones and street lamps work on every tile. (No parked cars or street wrecks yet.)
+- [ ] With `UseTiledMap` 0 the old map is back, as it was.
+
 ### Maple Street
 - [ ] Two houses either side of home and two across the street, each with a front and back door, its own car (minivan, estate, hatchback; the ice-cream van is at the kerb) and garden stones. Each car's boot can be searched, and you can't walk through a car. Wrecks: a school bus on its side across the road at the Treehouse end (you can walk round it), a tank at the Fire Station end, an ambulance (search the medical bag), a crashed car at a lamp post (search its boot) and a burnt car. You can't walk through them, and infected don't get stuck on them. The burnt car and the tank are on fire and smoking, and the crashed car's bonnet steams; none of it hurts, and the fires glow at night. You can't walk off the map.
 - [ ] Searching (hold E) shows "+3 Nails" beside your coins for what you got; an empty one says "Nothing useful."; the container goes dark and is empty for everyone (a few restock each morning; see Trading). What doesn't fit is left at your feet: "No room: left on the floor."

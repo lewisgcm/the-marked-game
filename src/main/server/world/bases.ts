@@ -22,6 +22,7 @@ const BRICK: PartOptions = { material: Enum.Material.Brick, color: new Color3(0.
 const CONCRETE: PartOptions = { material: Enum.Material.Concrete, color: new Color3(0.55, 0.55, 0.55) };
 const RED: PartOptions = { material: Enum.Material.Metal, color: new Color3(0.75, 0.12, 0.1) };
 
+/** Who trades at each base. */
 const KID: NpcLook = {
 	name: findBase("Treehouse").trader,
 	skin: new Color3(0.8, 0.62, 0.5),
@@ -131,6 +132,35 @@ function buildFireStation(parent: Instance, at: CFrame) {
 		glow.Parent = light;
 	}
 	traderStall(base, "FireStation", CHIEF, spot(12, 0, -12), floorY);
+}
+
+const TRADERS: Record<BaseId, NpcLook> = { Treehouse: KID, FireStation: CHIEF };
+
+/**
+ * For the tiled map, whose tiles already have the buildings: stands each base's trader behind its
+ * counter (tagged Trader), and swaps each Fire Station's red block for the engine's model.
+ */
+export function staffTiledBases(map: Instance) {
+	for (const counter of CollectionService.GetTagged(TRADER_TAG)) {
+		const base = counter.GetAttribute("Base") as BaseId | undefined;
+		const look = base !== undefined ? TRADERS[base] : undefined; // undefined for a misspelt Base
+		if (counter.IsA("BasePart") && counter.IsDescendantOf(map) && look) {
+			// The counter's middle is 1.5 above the floor; the trader stands 3 behind it, facing out.
+			task.spawn(() => buildNpc(counter.Parent!, look, counter.CFrame.mul(new CFrame(0, -1.5, 3))));
+		}
+	}
+	for (const block of map.GetDescendants()) {
+		if (block.IsA("BasePart") && block.Name === "Engine") {
+			task.spawn(() => {
+				const model = loadModel(ENGINE_MODEL, "the fire engine, so it's a plain block");
+				// The block's middle is 4.2 above the floor.
+				if (standMesh(model, "FireEngine", block.Parent!, block.CFrame.mul(new CFrame(0, -4.2, 0)))) {
+					block.Destroy();
+				}
+				model?.Destroy();
+			});
+		}
+	}
 }
 
 export function buildBases() {

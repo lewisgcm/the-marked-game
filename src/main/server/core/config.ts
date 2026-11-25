@@ -36,6 +36,14 @@ function loadGameConfig() {
 		/** Dawn: recover and upgrade. */
 		dawnSeconds: int("DawnSeconds", 45, 15),
 
+		/**
+		 * 1: the map is built from tiles, laid out from a seed (MAP.md); 0: the old map, all in code.
+		 * On in Studio while it's tried out.
+		 */
+		useTiledMap: int("UseTiledMap", 0, 1),
+		/** The tiled map's seed: 0 picks a new one every run (it's printed, to replay a map). */
+		mapSeed: int("MapSeed", 0),
+
 		/** Seconds the end screen (scoreboard) shows before everyone goes back to the lobby. */
 		endScreenSeconds: int("EndScreenSeconds", 15),
 		/** Seconds before a kid who reset (not taken) respawns. */

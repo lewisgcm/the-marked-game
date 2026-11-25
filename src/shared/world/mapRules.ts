@@ -1,4 +1,4 @@
-import type { LayoutRules } from "./layout";
+import type { LayoutRules, Placement } from "./layout";
 
 /**
  * The run's map (MAP.md): what's fixed, which places every run has and how far out, and what fills
@@ -21,3 +21,19 @@ export const MAP_RULES: LayoutRules = {
 	],
 	start: "Home",
 };
+
+/**
+ * Where home's tile goes in the world: the middle of its street, so the family house (built in code,
+ * src/main/server/world/world.ts) stays at the world's origin, on its plot.
+ */
+export const HOME_ORIGIN = { x: 0, z: -61 };
+
+/** A map to use if the planner finds none (it never has, but a run must always start). Spec-checked. */
+export const FALLBACK_TILES: Placement[] = [
+	{ tile: "Treehouse", column: 0, row: 0, turns: 0 },
+	{ tile: "Home", column: 1, row: 0, turns: 0 },
+	{ tile: "FireStation", column: 2, row: 0, turns: 0 },
+	{ tile: "Swamp_A", column: 0, row: 1, turns: 0 },
+	{ tile: "ForestRoad_A", column: 1, row: 1, turns: 0 },
+	{ tile: "Meadow_A", column: 2, row: 1, turns: 0 },
+];

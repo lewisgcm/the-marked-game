@@ -126,9 +126,17 @@ export function stones(t: Tile, x: number, z: number, frame = new CFrame()) {
 	t.inFolder("Loot", () => t.part("Stones", [3, 0.6, 3], frame.at(x, 0.3, z), S.STONE, { tags: ["Stones"] }));
 }
 
-/** Where a dormant infected stands, its front facing its screen. */
+/**
+ * A marker the game reads, then hides: `at` is where an infected's middle goes (3 above the floor),
+ * its front (-Z) the way it faces. `tag` says what for (MAP.md).
+ */
+export function marker(t: Tile, tag: "DormantSpot" | "DadSpot" | "InfectedSpawn", at: CFrame) {
+	t.inFolder("Markers", () => t.part(tag, [2, 5, 1], at, S.MARKER, { tags: [tag] }));
+}
+
+/** Where a dormant infected stands (its middle, 3 above the floor), facing its screen. */
 export function dormant(t: Tile, at: CFrame) {
-	t.inFolder("Markers", () => t.part("DormantSpot", [2, 5, 1], at, S.MARKER, { tags: ["DormantSpot"] }));
+	marker(t, "DormantSpot", at);
 }
 
 /** A glowing screen: what a dormant infected stares at. */
@@ -175,7 +183,7 @@ export function bungalow(t: Tile, frame: CFrame) {
 
 	t.box("TVStand", -10, floor + 1, 11, 6, 2, 2, S.WOOD, frame);
 	tv(t, frame.at(-10, floor + 3.6, 11.6));
-	dormant(t, frame.at(-10, floor + 2.5, 4).mul(turn(180)));
+	dormant(t, frame.at(-10, floor + 3, 4).mul(turn(180)));
 	loot(t, "Drawers", "Drawers", [2, 3.5, 5], frame.at(-16, floor + 1.75, -5), S.WOOD);
 	loot(t, "Cupboards", "Kitchen", [2.5, 3.5, 8], frame.at(15.5, floor + 1.75, 4), S.WOOD);
 	loot(t, "Tool chest", "Garage", [4, 2.5, 2.5], frame.at(3.5, floor + 1.25, 10.5), S.METAL);

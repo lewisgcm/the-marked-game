@@ -48,6 +48,12 @@
 				}
 			}
 		},
+		"ServerStorage": {
+			"$className": "ServerStorage",
+			"MapTiles": {
+				"$path": "build/tiles/models"
+			}
+		},
 		"ServerScriptService": {
 			"$className": "ServerScriptService",
 			"Lobby": {

@@ -49,7 +49,7 @@ export function forestRoadA(): Tile {
 	for (const x of [-11, 11]) t.box("PorchPost", x, floor + 5, -13.5, 0.7, 10, 0.7, S.WOOD, hut);
 	t.box("Desk", -4, floor + 1.5, 6.8, 7, 3, 2.5, S.WOOD, hut);
 	tv(t, hut.at(-4, floor + 4.4, 7.4), [4, 2.6, 0.3]);
-	dormant(t, hut.at(-4, floor + 2.5, 0).mul(turn(180)));
+	dormant(t, hut.at(-4, floor + 3, 0).mul(turn(180)));
 	loot(t, "Supply locker", "Garage", [3, 6, 2], hut.at(6.5, floor + 3, 7), S.METAL);
 	loot(t, "Cupboards", "Kitchen", [2, 3.5, 5], hut.at(9.8, floor + 1.75, -4.5), S.WOOD);
 
