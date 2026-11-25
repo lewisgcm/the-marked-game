@@ -3,13 +3,12 @@ import { Base, BASES, BaseId, findBase } from "shared/bases";
 import { ItemId } from "shared/inventory";
 import { coinsText, Stall, startStallDay, TradeView, tradeView } from "shared/pricing";
 import { TRADER_TAG } from "shared/tags";
-import { buyLot, isTrading, parseTradeRequest, SaleStatus, sellItems, Wallet } from "shared/trade";
+import { buyLot, isTrading, parseTradeRequest, SaleStatus, sellItems } from "shared/trade";
 import { BaseReport } from "shared/walkie";
-import { addCoins, coinsOf, spendCoins } from "./coins";
 import { gameConfig } from "./config";
-import { giveItem, itemCount, itemRoom, takeItem } from "./inventory";
 import { inReach, makePrompt, promptAnchor } from "./prompts";
 import { getClock } from "./round";
+import { walletOf } from "./wallet";
 
 /**
  * Trading with the bases (who sells what: shared/bases.ts; prices and orders: shared/pricing.ts;
@@ -66,18 +65,6 @@ function viewOf(base: Base): TradeView {
 		gameConfig.scarcePriceRise.Value,
 		gameConfig.wantMultiplier.Value,
 	);
-}
-
-function walletOf(player: Player): Wallet {
-	return {
-		coins: () => coinsOf(player),
-		spend: (amount) => spendCoins(player, amount),
-		earn: (amount) => addCoins(player, amount),
-		room: (item) => itemRoom(player, item),
-		count: (item) => itemCount(player, item),
-		give: (item, count) => giveItem(player, item, count),
-		take: (item, count) => takeItem(player, item, count),
-	};
 }
 
 /** Whether `player` can trade with `base` here and now; tells them if it's closed. */

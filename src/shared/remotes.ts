@@ -3,6 +3,7 @@ import { Notice } from "shared/messages";
 import { NightSummary } from "shared/nightSummary";
 import { ScoreCard } from "shared/scoreboard";
 import { TradeView } from "shared/pricing";
+import { RecipeId } from "shared/recipes";
 import { TradeRequest } from "shared/trade";
 import { WalkieState } from "shared/walkie";
 import { UpgradeId } from "shared/upgrades";
@@ -91,6 +92,8 @@ export interface GameClientMessages {
 	UseItem: number;
 	/** Buy this workbench upgrade. */
 	BuyUpgrade: UpgradeId;
+	/** Make this at the workbench. The server knows what it costs. */
+	Craft: RecipeId;
 	/** Buy one lot of an item from a trader. The server knows the price. */
 	TradeBuy: TradeRequest;
 	/** Sell a trader one of an item. */

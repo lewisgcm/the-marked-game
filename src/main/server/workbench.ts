@@ -8,7 +8,8 @@ import { inReach, makePrompt, promptAnchor } from "./prompts";
 /**
  * The workbench in the garage: spends coins on upgrades (list and rules in shared/upgrades.ts).
  * Most are the whole party's, whoever paid; rucksacks are the buyer's own. The prompt opens the
- * list on the kid's screen; the purchase itself is checked here.
+ * list on the kid's screen; the purchase itself is checked here. The list also has things to make
+ * from scrap (crafting.ts).
  */
 
 export interface WorkbenchHooks {
@@ -36,13 +37,14 @@ export function hasUpgrade(id: UpgradeId): boolean {
 	return party.has(id);
 }
 
-function ownedBy(player: Player): UpgradeId[] {
+/** The upgrades a kid has: the party's and their own. */
+export function upgradesOf(player: Player): UpgradeId[] {
 	return [...party, ...(personal.get(player) ?? new Set<UpgradeId>())];
 }
 
 /** Re-sends `player` their upgrades (for resync). */
 export function resendUpgrades(player: Player) {
-	hooks?.sendUpgrades(player, ownedBy(player));
+	hooks?.sendUpgrades(player, upgradesOf(player));
 }
 
 function grantPersonal(player: Player, id: UpgradeId) {
@@ -52,14 +54,19 @@ function grantPersonal(player: Player, id: UpgradeId) {
 	resendUpgrades(player);
 }
 
+/** Whether `player` is at the workbench and may use it. */
+export function canUseWorkbench(player: Player): boolean {
+	return hooks !== undefined && prompt !== undefined && hooks.canAct(player) && inReach(player, prompt);
+}
+
 /** "Buy" in the list: `payload` should be an upgrade's ID (unknown — validated). */
 export function onBuyRequest(player: Player, payload: unknown) {
 	const id = parseUpgrade(payload);
-	if (!hooks || !prompt || id === undefined || !hooks.canAct(player) || !inReach(player, prompt)) {
+	if (!hooks || id === undefined || !canUseWorkbench(player)) {
 		return;
 	}
 	const upgrade = findUpgrade(id);
-	if (upgradeStatus(id, coinsOf(player), ownedBy(player)) !== "ok" || !spendCoins(player, upgrade.cost)) {
+	if (upgradeStatus(id, coinsOf(player), upgradesOf(player)) !== "ok" || !spendCoins(player, upgrade.cost)) {
 		return;
 	}
 	if (upgrade.personal) {
@@ -89,7 +96,7 @@ export function startWorkbench(workbenchHooks: WorkbenchHooks) {
 	);
 	use.ObjectText = "Workbench";
 	use.Triggered.Connect((player) => {
-		if (workbenchHooks.canAct(player) && inReach(player, use)) {
+		if (canUseWorkbench(player)) {
 			workbenchHooks.open(player);
 		}
 	});

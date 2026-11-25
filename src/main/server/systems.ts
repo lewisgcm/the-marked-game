@@ -1,18 +1,20 @@
 import { Players } from "@rbxts/services";
 import { onClientMessage } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
-import { anyBoarded, damageEntry, isEntryBlocked, startBarricades } from "./barricades";
+import { anyBoarded, damageEntry, isEntryBlocked, isEntryWorthAttacking, startBarricades } from "./barricades";
 import { startCoins } from "./coins";
 import { onSwingRequest, startCombat } from "./combat";
 import { startContainers } from "./containers";
+import { onCraftRequest, startCrafting } from "./crafting";
 import { litBy } from "./flashlight";
 import { alertAll, notify, notifyAll, remote, send } from "./gameRemote";
 import { isPowered, keepsThemWary, startGenerator } from "./generator";
-import { damageKid, healKid, startHealth } from "./health";
+import { damageKid, startHealth } from "./health";
 import { startHints } from "./hints";
 import { attackedEntry } from "./infected/behaviours";
 import { hearNoise, startInfected } from "./infected/director";
 import { itemCount, onDropRequest, onUseRequest, startInventory } from "./inventory";
+import { ITEM_USES } from "./itemUses";
 import { noteInfectedDowned, notePlankLost } from "./nightReport";
 import { resync } from "./resync";
 import { getClock } from "./round";
@@ -22,7 +24,7 @@ import { canKidAct, isPlaying, livingKids } from "./teams";
 import { baseReports, onTradeBuyRequest, onTradeSellRequest, startTrading } from "./trading";
 import { UPGRADE_EFFECTS } from "./upgradeEffects";
 import { refreshWalkie, startWalkie } from "./walkie";
-import { hasUpgrade, onBuyRequest, startWorkbench } from "./workbench";
+import { canUseWorkbench, hasUpgrade, onBuyRequest, startWorkbench, upgradesOf } from "./workbench";
 import { MainWorld } from "./world";
 
 /**
@@ -37,7 +39,7 @@ export function startSystems(world: MainWorld) {
 		canAct: canKidAct,
 		notify,
 		sendInventory: (player, inventory) => send(player, "Inventory", inventory),
-		heal: healKid,
+		use: (player, item) => ITEM_USES[item](player),
 	});
 	startCoins((player, coins) => send(player, "Coins", coins));
 	startContainers({
@@ -65,6 +67,7 @@ export function startSystems(world: MainWorld) {
 		sendUpgrades: (player, owned) => send(player, "Upgrades", owned),
 		onBought: (id, buyer) => UPGRADE_EFFECTS[id](buyer),
 	});
+	startCrafting({ canUseWorkbench, upgradesOf, notify });
 	startTrading({
 		canAct: canKidAct,
 		notify,
@@ -84,6 +87,7 @@ export function startSystems(world: MainWorld) {
 	startHealth({ sendHurt: (player) => send(player, "Hurt", undefined) });
 	startInfected(world, {
 		isEntryBlocked,
+		isEntryWorthAttacking,
 		damageEntry,
 		getKids: () => livingKids().filter((p) => p.Character !== undefined),
 		damageKid,
@@ -126,6 +130,7 @@ export function listenToClients() {
 		UseItem: onUseRequest,
 		DropItem: onDropRequest,
 		BuyUpgrade: onBuyRequest,
+		Craft: onCraftRequest,
 		TradeBuy: onTradeBuyRequest,
 		TradeSell: onTradeSellRequest,
 		LeaveRound: onLeaveRequest,

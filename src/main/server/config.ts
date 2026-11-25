@@ -49,6 +49,8 @@ function loadGameConfig() {
 		inventorySlots: int("InventorySlots", 5),
 		/** Nails each kid starts with (one per plank nailed up). */
 		nailsStart: int("NailsStart", 10),
+		/** Scrap each kid starts with (Studio: enough to try the workbench's recipes). */
+		scrapStart: int("ScrapStart", 0, 10),
 		/** Seconds to hold to search a container. */
 		searchSeconds: num("SearchSeconds", 1.2),
 		/** How far the noise of searching carries to dormant infected, in studs. */
@@ -155,6 +157,8 @@ function loadGameConfig() {
 		plankPileStart: int("PlankPileStart", 30),
 		/** Planks added to the pile at every dawn. */
 		plankPileDawnRefill: int("PlankPileDawnRefill", 10),
+		/** Health of a window shutter (only Dad can hurt it). */
+		shutterHealth: num("ShutterHealth", 300),
 		/** Seconds to hold the prompt to nail a plank up (taking one down is quicker). */
 		boardHoldSeconds: num("BoardHoldSeconds", 1.2),
 
@@ -189,6 +193,8 @@ function loadGameConfig() {
 		infectedAttackRange: num("InfectedAttackRange", 5),
 		/** An infected outside goes for a kid it can see within this distance, in studs. */
 		infectedSightRange: num("InfectedSightRange", 40),
+		/** One outside that finds no way in to a kid goes for an opening for at least this long, in seconds. */
+		infectedBlockedSeconds: num("InfectedBlockedSeconds", 6),
 		/** The power only counts once it's been on for this long, in seconds (Studio nights are shorter). */
 		powerSettleSeconds: num("PowerSettleSeconds", 20, 8),
 		/** With the generator off, waves are this many times bigger (never on Night 1). */

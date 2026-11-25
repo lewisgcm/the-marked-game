@@ -356,7 +356,7 @@ upper floor needs defending too.
 | Fuel can (1 night of generator) | 15 | Hardware, Fire Station |
 | Walkie batteries | 5 | Kids' bases |
 | Blueprint | 25 | Kids' bases |
-| Metal shutter (1 window) | 30 | Hardware |
+| Metal shutter (1 window) | 30 | Hardware (made at the workbench for now: 30 and 5 scrap) |
 | Box of nails (20) | 10, rising | Hardware |
 | Pistol ammo (12) | 20, rising | Hardware, Fire Station (rarely) |
 | Rifle ammo (5) | 30, rising | Hardware |
@@ -380,9 +380,9 @@ A typical day earns ~15–30 coins for the party. Ammo prices go up about 15% pe
 | Door bar | 30 | Front/back door gets a 4th, sturdier slot |
 | School rucksack | 25 | 5 → 8 inventory slots |
 | Hiking rucksack | 60 | 8 → 12 inventory slots (needs the school rucksack) |
-| Scrap press | 30 | Craft a little ammo (nails, stones) from scrap |
+| Scrap press | 30 | Craft a little ammo from scrap: 2 scrap makes 3 nails or 8 stones |
 | Generator tune-up | 35 | Uses half the fuel |
-| Window shutters | per shutter bought | Ground-floor window can't be fully breached by shamblers |
+| Window shutter | 30 and 5 scrap each | Shamblers can't break it and go for another opening; Dad can. Doors don't take them |
 | **Rescue radio** | the 3 parts | Lets you call for rescue from Night 10 (optional ending) |
 
 ## 8. Level guide — the neighbourhood

@@ -1,16 +1,19 @@
 import { CollectionService } from "@rbxts/services";
 import {
 	addPlank,
+	addShutter,
 	Barricade,
 	canAddPlank,
 	damageBarricade,
 	DamageResult,
 	emptyBarricade,
 	isBlocked,
+	isWorthAttacking,
 	newPlankHealth,
 	planksToTake,
 	removePlank,
 } from "shared/barricade";
+import { rootOf } from "shared/characters";
 import { PLANK_PILE_TAG } from "shared/tags";
 import { UpgradeId } from "shared/upgrades";
 import { gameConfig } from "./config";
@@ -25,6 +28,9 @@ import { Entry, MainWorld } from "./world";
  * (rules in shared/barricade.ts). All state is server-side; the planks are real parts, and an
  * opening with any plank up is blocked by its (invisible) slot part. Nailing one up costs a
  * plank and a nail from the kid's inventory; taking it down gives both back.
+ *
+ * A shutter is fitted by using one (from the inventory) next to a window. It stays for good, unless
+ * it's broken.
  *
  * Prompts: "Board up" (E, hold) and "Take down" (F, short hold) at every opening, and
  * "Take planks" on the pile. Who may use them, and whether they have planks, is checked here
@@ -50,6 +56,7 @@ interface EntryState {
 }
 
 const PLANK_COLOR = new Color3(0.55, 0.4, 0.26);
+const SHUTTER_COLOR = new Color3(0.36, 0.38, 0.4);
 // A built-in thud as a placeholder (no uploaded audio yet).
 const NAIL_SOUND = "rbxasset://sounds/action_footsteps_plastic.mp3";
 const NAIL_OPTIONS = { volume: 0.8, range: 80 };
@@ -84,6 +91,16 @@ function refresh(state: EntryState) {
 		plank.Material = Enum.Material.WoodPlanks;
 		plank.Color = PLANK_COLOR;
 		plank.Parent = visuals;
+	}
+	if (barricade.shutter !== undefined) {
+		const shutter = new Instance("Part");
+		shutter.Name = "Shutter";
+		shutter.Size = new Vector3(entry.width + 0.8, entry.height + 0.6, 0.25);
+		shutter.CFrame = entry.cframe.mul(new CFrame(0, 0, 0.95)); // behind the planks
+		shutter.Anchored = true;
+		shutter.Material = Enum.Material.DiamondPlate;
+		shutter.Color = SHUTTER_COLOR;
+		shutter.Parent = visuals;
 	}
 	entry.slot.CanCollide = isBlocked(barricade);
 	const slots = slotsOf(entry);
@@ -137,6 +154,35 @@ function onTakeDown(player: Player, state: EntryState) {
 		recordStat(player, "planksNailed", -1); // nailing and un-nailing doesn't earn Carpenter
 		refresh(state);
 	}
+}
+
+/** The closest window `player` can reach that `suits`. */
+function windowNear(player: Player, suits: (state: EntryState) => boolean): EntryState | undefined {
+	const root = rootOf(player.Character);
+	let best: EntryState | undefined;
+	let bestDistance = math.huge;
+	for (const [entry, state] of states) {
+		if (!root || entry.kind !== "Window" || !inReach(player, state.board) || !suits(state)) {
+			continue;
+		}
+		const distance = entry.cframe.Position.sub(root.Position).Magnitude;
+		if (distance < bestDistance) {
+			best = state;
+			bestDistance = distance;
+		}
+	}
+	return best;
+}
+
+/** Fits a shutter to the window `player` is next to. Returns why not, or undefined if it's fitted. */
+export function fitShutter(player: Player): string | undefined {
+	const state = windowNear(player, (s) => s.barricade.shutter === undefined);
+	if (!state || !addShutter(state.barricade, gameConfig.shutterHealth.Value)) {
+		return windowNear(player, () => true) ? "It already has a shutter." : "Stand next to a window to fit it.";
+	}
+	playSound(state.entry.slot, NAIL_SOUND, NAIL_OPTIONS);
+	refresh(state);
+	return undefined;
 }
 
 function setUpEntry(entry: Entry) {
@@ -197,7 +243,7 @@ export function refillPile() {
 	refreshPile();
 }
 
-/** Whether `entry` currently has any plank up. */
+/** Whether `entry` currently has any plank, or a shutter, up. */
 export function isEntryBlocked(entry: Entry): boolean {
 	const state = states.get(entry);
 	return state !== undefined && isBlocked(state.barricade);
@@ -210,7 +256,7 @@ export function refreshBarricades() {
 	}
 }
 
-/** Whether any door or window has a plank up. */
+/** Whether any door or window has a plank, or a shutter, up. */
 export function anyBoarded(): boolean {
 	for (const [, state] of states) {
 		if (isBlocked(state.barricade)) {
@@ -220,14 +266,20 @@ export function anyBoarded(): boolean {
 	return false;
 }
 
-/** Damage from the infected: wears down `entry`'s outermost plank. */
-export function damageEntry(entry: Entry, amount: number): DamageResult {
+/** Whether an infected gets anywhere by attacking `entry`. */
+export function isEntryWorthAttacking(entry: Entry, breaksShutters: boolean): boolean {
+	const state = states.get(entry);
+	return state === undefined || isWorthAttacking(state.barricade, breaksShutters);
+}
+
+/** Damage from the infected: wears down `entry`'s outermost plank, then (some of them) its shutter. */
+export function damageEntry(entry: Entry, amount: number, breaksShutters: boolean): DamageResult {
 	const state = states.get(entry);
 	if (!state) {
-		return { broken: 0, breached: true };
+		return { broken: 0, breached: true, opened: false };
 	}
-	const result = damageBarricade(state.barricade, amount);
-	if (result.broken > 0) {
+	const result = damageBarricade(state.barricade, amount, breaksShutters);
+	if (result.broken > 0 || result.opened) {
 		playSound(entry.slot, NAIL_SOUND, NAIL_OPTIONS);
 		refresh(state);
 	}

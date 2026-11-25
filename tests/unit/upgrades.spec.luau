@@ -36,6 +36,7 @@ return function(t)
 			t.expect(U.findUpgrade("ReinforcedPlanks").personal).toBe(false)
 			t.expect(U.findUpgrade("DoorBar").personal).toBe(false)
 			t.expect(U.findUpgrade("TuneUp").personal).toBe(false)
+			t.expect(U.findUpgrade("ScrapPress").personal).toBe(false)
 		end)
 	end)
 

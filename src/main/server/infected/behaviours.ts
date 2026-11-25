@@ -7,7 +7,15 @@ import { playSound } from "../effects";
 import { Entry, isInsideHouse } from "../world";
 import { dimEyes, fadeToStatic } from "./body";
 import { face, flat, flatDistance, pathTo, stop, walkTo } from "./movement";
-import { canSee, insidePoint, nearestEntry, nearestKid, outsidePoint } from "./senses";
+import {
+	breaksShutters,
+	canSee,
+	insidePoint,
+	isWorthAttacking,
+	nearestKid,
+	nearestTarget,
+	outsidePoint,
+} from "./senses";
 import { alive, getHooks, getWorld, setMode } from "./state";
 import { Infected, Mode } from "./types";
 
@@ -41,18 +49,26 @@ function tryHitKid(inf: Infected, kid: Player, kidRoot: BasePart) {
 
 function approach(inf: Infected) {
 	const kid = nearestKid(inf.root.Position);
-	if (kid && kid.distance <= gameConfig.infectedSightRange.Value && canSee(inf, kid.player)) {
+	// One that's just found no way in to a kid it can see gets on with breaking in, unless they're in reach.
+	const isBlocked = os.clock() < inf.blockedUntil;
+	const range = isBlocked ? gameConfig.infectedAttackRange.Value : gameConfig.infectedSightRange.Value;
+	if (kid && kid.distance <= range && canSee(inf, kid.player)) {
 		setMode(inf, "chase");
 		return;
 	}
-	const entry = inf.entry ?? nearestEntry(inf.root.Position);
+	if (!inf.entry || !isWorthAttacking(inf, inf.entry)) {
+		inf.entry = nearestTarget(inf);
+	}
+	const entry = inf.entry;
 	if (!entry) {
 		return;
 	}
-	inf.entry = entry;
 	const outside = outsidePoint(entry);
 	if (flatDistance(inf.root.Position, outside) > 4) {
-		walkTo(inf, outside);
+		// It may be round the other side of the house.
+		if (!pathTo(inf, outside)) {
+			walkTo(inf, outside);
+		}
 		return;
 	}
 	if (!getHooks().isEntryBlocked(entry)) {
@@ -66,11 +82,11 @@ function approach(inf: Infected) {
 	if (now - inf.lastHitAt >= gameConfig.infectedPlankHitSeconds.Value) {
 		inf.lastHitAt = now;
 		lastBash = { entry, at: now };
-		const result = getHooks().damageEntry(entry, gameConfig.infectedPlankDamage.Value);
+		const result = getHooks().damageEntry(entry, gameConfig.infectedPlankDamage.Value, breaksShutters(inf));
 		if (result.broken > 0) {
 			getHooks().onPlankBroken();
 		}
-		if (result.breached && result.broken > 0) {
+		if (result.opened) {
 			getHooks().alertAll(`The ${entry.name.lower()} is broken!`);
 		}
 	}
@@ -163,7 +179,8 @@ function chase(inf: Infected) {
 	if (!pathTo(inf, kid.root.Position)) {
 		if (!isInsideHouse(inf.root.Position)) {
 			// No way in: go and break one.
-			inf.entry = nearestEntry(inf.root.Position);
+			inf.entry = nearestTarget(inf);
+			inf.blockedUntil = os.clock() + gameConfig.infectedBlockedSeconds.Value;
 			setMode(inf, "approach");
 		} else {
 			walkTo(inf, kid.root.Position);

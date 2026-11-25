@@ -218,9 +218,12 @@ to buy?*
 - [x] **Generator fuel** (`shared/fuel.ts`, spec) and the tune-up (half the burn, 35 coins). Burns only
       at night, so Day 1's "Start the generator" tip isn't a trap. Starts with one night, holds three;
       cans (one per slot) are in tool chests and car boots until the Fire Station sells them.
-- [ ] **Window shutters**: shamblers can't fully break a shuttered ground-floor window. Per window, 30
-      coins, at the workbench until the Hardware Store exists (M5).
-- [ ] **Scrap press** (30 coins): crafts a few nails or stones from scrap.
+- [x] **Window shutters** (`barricades.ts`, `shared/barricade.ts`, spec): 30 coins and 5 scrap each, at the
+      workbench until the Hardware Store exists (M5). Shamblers break the planks over one, then go for an
+      opening they can break, so shutters move the fight rather than end it; Dad breaks them. Also fixed:
+      an infected outside that saw a kid it couldn't reach could stand still.
+- [x] **Scrap press** (30 coins): 2 scrap makes 3 nails or 8 stones (`shared/recipes.ts`, `crafting.ts`, spec).
+      Never better than selling the scrap and buying.
 - [x] `shared/pricing.ts` (pure): base prices, +15% per day for scarce goods, want bonus (2×). Spec.
 - [x] First two NPC bases: **Treehouse** (kids, Day 2) and **Fire Station** (adult, Day 3), at either
       end of Maple Street (`bases.ts`, `npc.ts`), each with a trader, daily stock and one daily order

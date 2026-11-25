@@ -5,7 +5,7 @@ import { flatDistance } from "./movement";
 import { getHooks, getWorld, holder } from "./state";
 import { Infected } from "./types";
 
-/** What an infected knows: the nearest opening, the nearest kid, and whether it can see them. */
+/** What an infected knows: the openings worth attacking, the nearest kid, and whether it can see them. */
 
 /** Just outside an opening, at ground level. */
 export function outsidePoint(entry: Entry): Vector3 {
@@ -19,12 +19,22 @@ export function insidePoint(entry: Entry): Vector3 {
 	return new Vector3(p.X, 3, p.Z);
 }
 
-export function nearestEntry(from: Vector3): Entry | undefined {
+/** Whether it can break window shutters: only Dad, so far. */
+export function breaksShutters(inf: Infected): boolean {
+	return inf.isDad;
+}
+
+export function isWorthAttacking(inf: Infected, entry: Entry): boolean {
+	return getHooks().isEntryWorthAttacking(entry, breaksShutters(inf));
+}
+
+/** The nearest opening that's worth attacking. (Doors don't take shutters, so there always is one.) */
+export function nearestTarget(inf: Infected): Entry | undefined {
 	let best: Entry | undefined;
 	let bestDistance = math.huge;
 	for (const entry of getWorld().entries) {
-		const d = flatDistance(from, outsidePoint(entry));
-		if (d < bestDistance) {
+		const d = flatDistance(inf.root.Position, outsidePoint(entry));
+		if (d < bestDistance && isWorthAttacking(inf, entry)) {
 			best = entry;
 			bestDistance = d;
 		}

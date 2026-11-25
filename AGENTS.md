@@ -63,6 +63,8 @@ playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
   plus one function in `behaviours.ts`.
 - **Adding a workbench upgrade:** an ID and an entry in `shared/upgrades.ts`, and its line in
   `upgradeEffects.ts` (the compiler insists). The list, checks and messages need no changes.
+- **Adding something to make at the workbench:** an ID and an entry in `shared/recipes.ts`. An item with a
+  "Use" button also goes in `UsableItem` (`shared/inventory.ts`) and `itemUses.ts`.
 - **Adding something to trade:** an entry in a base's `sells` or `buys` in `shared/bases.ts`. The spec
   fails if it makes a money loop (a base buying what's sold, or planks and stones). A new base also
   needs its `BaseId` and its building in `bases.ts`.

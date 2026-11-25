@@ -5,11 +5,16 @@
  *
  * Planks go on in order (index 0 first); the infected wear down the outermost (last) plank, and
  * a plank at 0 health falls off. The opening is blocked while at least one plank is up.
+ *
+ * A window can also have a metal shutter behind its planks. Only some infected (Dad) can break it;
+ * the rest get no further, and go and find another way in.
  */
 
 export interface Barricade {
 	/** Health of each plank, innermost first. */
 	planks: number[];
+	/** Health of its shutter, if it has one. */
+	shutter?: number;
 }
 
 export function emptyBarricade(): Barricade {
@@ -54,32 +59,56 @@ export function removePlank(barricade: Barricade): boolean {
 	return barricade.planks.pop() !== undefined;
 }
 
-/** What one hit did: how many planks broke, and whether the opening is now open. */
+/** Fits a shutter with `health`. Returns false (and changes nothing) if there already is one. */
+export function addShutter(barricade: Barricade, health: number): boolean {
+	if (barricade.shutter !== undefined || health <= 0) {
+		return false;
+	}
+	barricade.shutter = health;
+	return true;
+}
+
+/** What one hit did. */
 export interface DamageResult {
+	/** How many planks broke. */
 	broken: number;
+	/** Whether the opening is open now. */
 	breached: boolean;
+	/** Whether this hit is what opened it. */
+	opened: boolean;
 }
 
 /**
  * Deals `amount` damage to the outermost plank. A plank that drops to 0 falls off; any damage
  * left over is lost (one hit breaks at most one plank), so a big hit can't clear a whole stack.
+ * With no planks left, the hit lands on the shutter, which only `breaksShutters` can hurt.
  */
-export function damageBarricade(barricade: Barricade, amount: number): DamageResult {
+export function damageBarricade(barricade: Barricade, amount: number, breaksShutters: boolean): DamageResult {
+	const wasBlocked = isBlocked(barricade);
 	const last = barricade.planks.size() - 1;
-	if (last < 0 || amount <= 0) {
-		return { broken: 0, breached: last < 0 };
+	let broken = 0;
+	if (amount > 0 && last >= 0) {
+		barricade.planks[last] -= amount;
+		if (barricade.planks[last] <= 0) {
+			barricade.planks.pop();
+			broken = 1;
+		}
+	} else if (amount > 0 && barricade.shutter !== undefined && breaksShutters) {
+		const left = barricade.shutter - amount;
+		barricade.shutter = left > 0 ? left : undefined;
 	}
-	barricade.planks[last] -= amount;
-	if (barricade.planks[last] > 0) {
-		return { broken: 0, breached: false };
-	}
-	barricade.planks.pop();
-	return { broken: 1, breached: barricade.planks.size() === 0 };
+	const breached = !isBlocked(barricade);
+	return { broken, breached, opened: wasBlocked && breached };
 }
 
-/** The opening is blocked while any plank is up. */
+/** The opening is blocked while any plank, or a shutter, is up. */
 export function isBlocked(barricade: Barricade): boolean {
-	return barricade.planks.size() > 0;
+	return barricade.planks.size() > 0 || barricade.shutter !== undefined;
+}
+
+/** Whether an infected gets anywhere by attacking: planks to break, or no shutter it can't. */
+export function isWorthAttacking(barricade: Barricade, breaksShutters: boolean): boolean {
+	return barricade.planks.size() > 0 || barricade.shutter === undefined || breaksShutters;
 }
 
 /** How many planks a kid can pick up: limited by room in their arms and what's left in the pile. */

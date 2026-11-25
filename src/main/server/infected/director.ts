@@ -20,6 +20,9 @@ import { Infected, InfectedHooks } from "./types";
  *  - **chase** the nearest kid with pathfinding, hitting them when in reach. If there's no way
  *    in to a kid (everything boarded), it goes back to bashing the nearest opening.
  *
+ * One that comes to a window shutter gives up on that window and goes for the nearest opening it can
+ * still break. Dad breaks shutters.
+ *
  * By day, **dormant** ones stand in the neighbours' houses staring at a screen until something
  * wakes them (shared/wake.ts, noise, or being hit). A woken one chases; by day it gives up on kids
  * who get far away and goes back to its screen. Dad waits next door on Day 1, and Night 1's first
@@ -84,6 +87,7 @@ function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame) {
 		waypointIndex: 0,
 		lastPathAt: 0,
 		lastHitAt: 0,
+		blockedUntil: 0,
 		modeSince: os.clock(),
 		lastPosition: root.Position,
 		stuckSince: os.clock(),

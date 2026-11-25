@@ -4,7 +4,7 @@
  * unit-tested; main/server/inventory.ts owns the real ones.
  */
 
-export type ItemId = "Planks" | "Nails" | "Stones" | "Food" | "Batteries" | "Scrap" | "Medkit" | "Fuel";
+export type ItemId = "Planks" | "Nails" | "Stones" | "Food" | "Batteries" | "Scrap" | "Medkit" | "Fuel" | "Shutter";
 
 /** How many of each item fit in one slot. */
 export const STACK_SIZE: Record<ItemId, number> = {
@@ -16,7 +16,15 @@ export const STACK_SIZE: Record<ItemId, number> = {
 	Scrap: 10,
 	Medkit: 1,
 	Fuel: 1,
+	Shutter: 1,
 };
+
+/** Items with a "Use" button (what each does: main/server/itemUses.ts). */
+export type UsableItem = "Medkit" | "Shutter";
+
+export function isUsable(item: ItemId): item is UsableItem {
+	return item === "Medkit" || item === "Shutter";
+}
 
 export interface Stack {
 	item: ItemId;

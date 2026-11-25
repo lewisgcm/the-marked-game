@@ -109,7 +109,11 @@ still join.
      dead for 2s, eyes dimmed; then beams don't work on it for 5s.
    - **Workbench** (`workbench.ts`, list in `shared/upgrades.ts`): spend coins on tougher planks, a
      door bar (a fourth, sturdier plank on the front and back doors) and rucksacks (8 and 12
-     slots). Rucksacks are personal; the rest are for the whole party, whoever pays.
+     slots). Rucksacks are personal; the rest are for the whole party, whoever pays. It also makes things
+     from scrap (`crafting.ts`, list in `shared/recipes.ts`): **window shutters**, and with the **scrap
+     press**, nails and stones.
+   - **Window shutters** (`barricades.ts`): use one next to a window. It sits behind the planks; shamblers
+     can't hurt it and go and find another way in. Dad can break it. It can't be taken down.
    - **Bases** (`bases.ts`, `trading.ts`; who sells what in `shared/bases.ts`): the **Treehouse** (from
      Day 2) at the left end of Maple Street and the **Fire Station** (Day 3) at the right. Each restocks
      every morning, for the whole party, and buys food, batteries and scrap. Each also orders 2–3 of one
@@ -123,7 +127,7 @@ still join.
      order every morning; nails get scarcer every night.
      Gardens have stones, back every dawn. A minute before dusk: a warning, and the street lamps.
    - **Inventory** (`inventory.ts`, rules in `shared/inventory.ts`): 5 slots of stacks down the right
-     edge; tap one to Drop it (or Use a medkit: +50 health). Kids start with 20 stones and 10 nails.
+     edge; tap one to Drop it (or Use a medkit or a shutter; `itemUses.ts`). Kids start with 20 stones and 10 nails.
      Coins and the starter tools use no slots. A taken kid's slots are left where they were.
    - **Dormant infected** stand in the neighbours' houses by day, staring at the TV. Crossing in
      front, touching one, a torch beam, a nearby noise or a hit wakes it (`shared/wake.ts`); it gives
@@ -196,12 +200,12 @@ src/
                        #   gameRemote.ts, teams.ts, party.ts, gatekeeper.ts, admission.ts
                        # systems: round.ts (day/night clock), lighting.ts, streetlights.ts, life.ts,
                        #   health.ts, inventory.ts, coins.ts, containers.ts, barricades.ts,
-                       #   generator.ts, workbench.ts, upgradeEffects.ts, trading.ts, walkie.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
+                       #   generator.ts, workbench.ts, upgradeEffects.ts, crafting.ts, itemUses.ts, trading.ts, walkie.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
                        #   nightReport.ts, roundStats.ts
                        # infected/: director.ts (spawning, waves), behaviours.ts (one function per
                        #   mode), senses.ts, movement.ts, body.ts, state.ts, types.ts
                        # world: world.ts (the house), neighbourhood.ts, bases.ts, npc.ts, building.ts
-                       # helpers: effects.ts, prompts.ts, infectedDamage.ts
+                       # helpers: effects.ts, prompts.ts, wallet.ts, infectedDamage.ts
     client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
                        # endScreen, messageQueue.ts, messageBar, gainFeed.ts, device.ts, theme.ts, sound.ts, panel, inventoryHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
                        # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
@@ -452,20 +456,30 @@ apply from the next phase.
 - [ ] At dawn, for ~6s and with no DAWN banner: "NIGHT N SURVIVED" with infected downed, planks lost and who was taken. It doesn't cover the message bar.
 
 ### Inventory and coins
-- [ ] Right edge: "Coins 0" (Studio: 150) over five slots: Stones 20/20, Nails 10/20, three empty and faint (in Studio one holds Fuel 1/1).
+- [ ] Right edge: "Coins 0" (Studio: 150) over five slots: Stones 20/20, Nails 10/20, three empty and faint (in Studio two hold Fuel 1/1 and Scrap 10/10).
 - [ ] Phone (device emulator, landscape): the slots start at the top and use more columns instead of reaching the jump button, with 5, 8 and 12 slots. Drop and Use work in every column.
 - [ ] Anything gained (searching, picking up, taking planks, buying, coins at dawn) shows "+N Item" left of the coins for 2.5s; more of the same adds to its line. Not for your starting kit, nor for losing things.
-- [ ] Tapping a filled slot shows Drop (and Use for a medkit); tapping again hides it.
+- [ ] Tapping a filled slot shows Drop (and Use for a medkit or a shutter); tapping again hides it.
 - [ ] Drop leaves a box on the floor; anyone can pick it up. With no room: "Your pockets are full."
 - [ ] A medkit heals 50; at full health it says "You're not hurt." and isn't used.
 - [ ] Every kid still in at dawn gets 5 coins.
 
 ### Workbench
-- [ ] The garage workbench's prompt ("Upgrade") opens a list of five upgrades with costs and your coins (Studio starts you with 150).
+- [ ] The garage workbench's prompt ("Upgrade") opens a list: the window shutter, then six upgrades, with costs and your coins (Studio starts you with 150).
 - [ ] You can only buy what you can afford; bought ones say "Owned"; the hiking rucksack says "Needs school rucksack" first.
 - [ ] Reinforced planks and the door bar are for everyone (the buyer gets a bottom line, the others news in the bar, and it shows Owned for them). Front and back doors then take 4 planks; the garage door and windows still take 3.
 - [ ] Rucksacks are yours only: 8 slots, then 12, and they stay after you're taken.
 - [ ] The list closes with X or when you walk away, and scrolls if it's taller than the screen (phone).
+- [ ] A window shutter takes 30 coins and 5 scrap, and says how much scrap you have; "Needs scrap" without enough, "No room" with no free slot.
+- [ ] Press nails (2 scrap: 3) and Press stones (2 scrap: 8) join everyone's list once the party has the scrap press, not before.
+
+### Window shutters
+- [ ] Using one next to a window fits a metal shutter on the house side, behind any planks, and uses it up. You can't get through the window, with or without planks, and can still board it up over the shutter.
+- [ ] Away from a window (or at a door): "Stand next to a window to fit it." At a window that has one: "It already has a shutter." Neither uses it up.
+- [ ] Shamblers break planks over a shutter, then leave that window for the nearest opening they can break, walking round the house to it. They ignore a shuttered window with no planks.
+- [ ] With every window shuttered they all come to the doors.
+- [ ] Dad breaks a shutter (about 30s on his own) and everyone's told the window is broken.
+- [ ] An infected outside that can see a kid through gaps in the planks still bashes (it doesn't freeze), and hits a kid in reach.
 
 ### Trading
 - [ ] The Treehouse (big tree, left end of the street) has a kid behind a counter; the Fire Station (right end) has an adult behind one, inside, and a fire engine in its bay you can't walk through. Both stand still, idling, with a name and no health bar.

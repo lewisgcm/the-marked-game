@@ -4,12 +4,14 @@ import {
 	countOf,
 	emptyInventory,
 	Inventory,
+	isUsable,
 	ItemId,
 	parseSlot,
 	removeItem,
 	roomFor,
 	Stack,
 	takeStack,
+	UsableItem,
 } from "shared/inventory";
 import { rootOf } from "shared/characters";
 import { gameConfig } from "./config";
@@ -25,8 +27,8 @@ export interface InventoryHooks {
 	canAct: (player: Player) => boolean;
 	notify: (player: Player, text: string) => void;
 	sendInventory: (player: Player, inventory: Inventory) => void;
-	/** Heals a kid; false if they didn't need it. */
-	heal: (player: Player, amount: number) => boolean;
+	/** Uses an item (itemUses.ts): undefined if it worked, or why it didn't. */
+	use: (player: Player, item: UsableItem) => string | undefined;
 }
 
 let hooks: InventoryHooks | undefined;
@@ -45,6 +47,7 @@ function inventoryOf(player: Player): Inventory {
 		addItem(inv, "Stones", gameConfig.stonesStart.Value);
 		addItem(inv, "Nails", gameConfig.nailsStart.Value);
 		addItem(inv, "Fuel", gameConfig.fuelCansStart.Value);
+		addItem(inv, "Scrap", gameConfig.scrapStart.Value);
 		inventories.set(player, inv);
 	}
 	return inv;
@@ -175,21 +178,23 @@ export function onDropRequest(player: Player, payload: unknown) {
 	}
 }
 
-/** "Use" on a slot. Only medkits do anything yet; food and the rest are for trading (M3). */
+/** "Use" on a slot: `payload` should be its index (unknown — validated). */
 export function onUseRequest(player: Player, payload: unknown) {
 	if (!hooks || !hooks.canAct(player)) {
 		return;
 	}
 	const inv = inventoryOf(player);
 	const slot = parseSlot(payload, inv);
-	if (slot === undefined || inv.stacks[slot].item !== "Medkit") {
+	const item = slot !== undefined ? inv.stacks[slot].item : undefined;
+	if (item === undefined || !isUsable(item)) {
 		return;
 	}
-	if (!hooks.heal(player, gameConfig.medkitHeal.Value)) {
-		hooks.notify(player, "You're not hurt.");
+	const refusal = hooks.use(player, item);
+	if (refusal !== undefined) {
+		hooks.notify(player, refusal);
 		return;
 	}
-	takeItem(player, "Medkit", 1);
+	takeItem(player, item, 1);
 }
 
 export function startInventory(inventoryHooks: InventoryHooks) {

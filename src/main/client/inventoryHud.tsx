@@ -1,6 +1,6 @@
 import React from "@rbxts/react";
 import { GuiService } from "@rbxts/services";
-import { STACK_SIZE } from "shared/inventory";
+import { isUsable, STACK_SIZE } from "shared/inventory";
 import { serverSender } from "shared/net";
 import { GameClientMessages } from "shared/remotes";
 import { inventorySpace, slotGrid } from "shared/slotLayout";
@@ -14,7 +14,7 @@ import { BUTTON, CREAM, GOLD, PANEL, WHITE } from "./theme";
 /**
  * Your slots and coins, down the right edge, in as many columns as it takes to stay clear of the
  * jump button (shared/slotLayout.ts). Tap a
- * slot for Use (medkits) and Drop. The server checks both. What you gain shows beside them for a
+ * slot for Use (medkits, shutters) and Drop. The server checks both. What you gain shows beside them for a
  * moment ("+3 Nails").
  */
 
@@ -113,7 +113,7 @@ export function InventoryHud({ remote }: { remote: RemoteEvent }) {
 			>
 				<uicorner CornerRadius={new UDim(0, 8)} />
 				{isSelected ? <SmallButton text="Drop" x={-8} onClick={() => send("DropItem", i)} /> : undefined}
-				{isSelected && stack.item === "Medkit" ? (
+				{isSelected && isUsable(stack.item) ? (
 					<SmallButton text="Use" x={-76} onClick={() => send("UseItem", i)} />
 				) : undefined}
 			</textbutton>,
