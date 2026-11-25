@@ -12,8 +12,8 @@ scavenge and trade by day, and survive as many nights as you can.
 - **[PLAN.md](PLAN.md)**: the build plan, milestone by milestone.
 
 > **Current state: M1 and M2 built, awaiting playtests.** Kids hold the family house through an
-> endless day/night clock (barricades, generator, waves of infected) and search Maple Street by day
-> for supplies. Trading comes next (M3), and the lobby still looks like the ghost-hunt prototype's
+> endless day/night clock (barricades, generator, waves of infected) and search the neighbourhood by day
+> for supplies (a different map every run, built from tiles: MAP.md). Trading comes next (M3), and the lobby still looks like the ghost-hunt prototype's
 > churchyard until M6 (that prototype: git tag `ghost-prototype`, design in
 > [docs/archive/GAMEPLAY-ghost-prototype.md](docs/archive/GAMEPLAY-ghost-prototype.md)). This README
 > describes **what the code does today**, and is updated as each milestone in [PLAN.md](PLAN.md)
@@ -90,8 +90,9 @@ still join.
      a **baseball bat**, a **slingshot** and a **hammer**. Ground floor: living room, dining room, kitchen, garage (workbench,
      generator, plank pile), hall with stairs up and down. Upstairs: two bedrooms, the parents'
      room, a bathroom. Front, back and garage doors and six ground-floor windows are open gaps,
-     each with an invisible tagged `BarricadeSlot` for the barricades to come. Outside: garden,
-     a street out front, a driveway, and invisible `InfectedSpawn` markers on all four sides.
+     each with an invisible tagged `BarricadeSlot` for the barricades to come. Outside is the map's
+     Home tile (MAP.md): garden, the street, the driveway; the night's infected come from across the
+     street and from the woods behind.
    - **Flashlight:** a hotbar tool with a visible light cone (an uploaded cone mesh, nested ×3 for
      a fade), pointing the way the character faces. The server can tell what a beam is on
      (`litBy`), for the M1 stun.
@@ -114,8 +115,9 @@ still join.
      press**, nails and stones.
    - **Window shutters** (`barricades.ts`): use one next to a window, hammer in hand. It sits behind the planks; shamblers
      can't hurt it and go and find another way in. Dad can break it. It can't be taken down.
-   - **Bases** (`bases.ts`, `trading.ts`; who sells what in `shared/economy/bases.ts`): the **Treehouse** (from
-     Day 2) at the left end of Maple Street and the **Fire Station** (Day 3) at the right. Each restocks
+   - **Bases** (`trading.ts`, traders in `world/bases.ts`; who sells what in `shared/economy/bases.ts`): the
+     **Treehouse** (from Day 2), always beside home, and the **Fire Station** (Day 3), beside it or a row
+     further out; each is its own map tile, with its trader behind the counter. Each restocks
      every morning, for the whole party, and buys food, batteries and scrap. Each also orders 2–3 of one
      of them every morning (no two bases the same), paying double until the order's filled. Nails cost 15% more every day. Closed at night.
    - **Walkie-talkie** (`walkie.ts`, what's said in `shared/economy/walkie.ts`): a few seconds into each day Mum
@@ -235,6 +237,8 @@ assets/
 ```
 
 The pipeline is: `.ts` in `src/` → `rbxtsc` → `.luau` in `out/` → `rojo build/serve` → Roblox.
+Map tiles go: `.ts` in `tools/tiles/` → Node → `.model.json` in `build/tiles/models` → Rojo →
+`ServerStorage.MapTiles` → laid out by the server each run (MAP.md).
 
 ## 3D models
 

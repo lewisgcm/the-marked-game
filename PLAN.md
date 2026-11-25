@@ -41,7 +41,8 @@ Milestones stay grouped by theme, but we don't build them all before anyone play
 | 5 | **First public test**, Nights 1–5 only | — |
 | 6 | The rest of **M5** (very big), then **M8** and **M9** (big), guided by what players say | Very big |
 
-Art runs alongside, on the same branch: the infected, cars, wrecks, fire engine and torch are in.
+Art runs alongside, on the same branch: the infected, cars, wrecks, fire engine and torch are in. The map's
+tiles are next (**Map art**, below the map tiles).
 
 ### Still open — decide by the milestone shown
 
@@ -254,6 +255,31 @@ The map is 200×200-stud tiles, laid out differently each run (MAP.md): the game
 - [x] The tiled map is the only map: the switch, `neighbourhood.ts`, the old base buildings, wreck positions
       and the house's own grounds and spawns are gone. GAMEPLAY §8 updated.
 - [ ] **Studio check** (you): README → "The map", especially the night's spawns from the woods.
+- [x] Docs brought up to date with the tiled map: AGENTS.md (adding to the map, gotchas), MAP.md, README.
+
+### Map art: models for the tiles
+
+The tiles are blockouts of plain parts. Make them look like the game, the way the cars and the infected
+were made: Blender models from Python (`tools/blender`, MODELLING.md for anything rigged), low-poly from the
+shared palette, uploaded once, then wired in. Keep every tag, marker and collider working: art changes how
+the map looks, not how it plays.
+
+- [ ] **Decide how tiles hold models.** Test one MeshPart straight in a tile file in Studio: does its size
+      survive JSON (`InitialSize`), does it cull and collide properly, does it live-sync? If yes, models go
+      in the tiles and show in `serve:tiles` too. If not, tiles mark where they go and the server places
+      them, as it does the cars (the gallery then shows blockouts).
+- [ ] **A map kit** (`tools/blender/assets/map_kit.py`, one FBX and one upload, like the lobby kit): pine,
+      oak and dead trees, hedges, fences, rocks, hay bales, reeds, street lamps, the roadblock, a tent and
+      a campfire. Swap them into `tools/tiles/lib/build.ts`, so every tile gets them at once.
+- [ ] **Buildings:** the bungalow, barn, ranger hut, swamp shack, Fire Station and treehouse. Doors and
+      windows where the blockouts have them (kids and the infected go in and out), loot containers and TVs
+      where they are; invisible plain-part colliders where a mesh is hollow or ragged, as the wrecks have.
+- [ ] **Ground and roads:** kerbs, road markings, and grass, forest floor and mud that blend at the seams.
+- [ ] **The family house** (was in M9): a model over the code-built house, keeping its barricade slots,
+      lamps, stairs and basement; later, built from the Home tile's markers instead of code.
+- [ ] **Budget:** parts and triangles per tile, checked on a phone with a full map, before streaming is
+      considered (AGENTS.md → Gotchas).
+- [ ] **Studio check** after each set: README → "The map" plays the same, and it looks better.
 
 ## M3 — Workbench, trading and the walkie-talkie
 
@@ -355,8 +381,8 @@ Goal: the endless game.
 
 ## M9 — Polish and launch
 
-- [ ] Blender models: the house, infected (adult rigs with red eyes), weapons, the gym hall props,
-      Mum's car.
+- [ ] Blender models: more infected (adult rigs with red eyes), weapons, the gym hall props, Mum's car. (The
+      family house and the map's tiles: **Map art**.)
 - [ ] Audio: the Signal tone, radio bulletin voice-over, infected sounds, gunshots, ambience.
 - [ ] Mobile / tablet / console UI pass (touch buttons for every action). Known: on the smallest phones
       the 12-slot rucksack overlaps the message bar a little.

@@ -7,7 +7,7 @@
 ## Design and plan
 
 - **`GAMEPLAY.md`** is the design and the source of truth for how the game should play.
-- **`MAP.md`** is the map's tiles: what's in each, and how to make one.
+- **`MAP.md`** is the map: how a run's map is built from tiles, what's in each tile, and how to make one.
 - **`MODELLING.md`** is how to model, rig and import characters.
 - **`PLAN.md`** is the build plan. Work through it in milestone order, tick tasks off as they
   land, and note anything that changed.
@@ -30,7 +30,9 @@ npm test               # compile + Lune unit tests (tests/unit); run before comm
 
 **Fast loop:** `npm run watch` (terminal 1) + `npm run serve:<place>` (terminal 2), then connect
 the Rojo plugin in Studio. No rebuild + reopen. The lobby world (floor, zones, pads, beams) is
-built at *runtime* by `buildLobbyWorld()`, so it only exists while the server is running.
+built at *runtime* by `buildLobbyWorld()`, so it only exists while the server is running. So is the
+main game's map (`world/map.ts`, from the tiles in `ServerStorage.MapTiles`): inspect it during a
+playtest. To see the tiles without playing, `npm run serve:tiles` (MAP.md).
 
 ## Roblox Studio MCP
 
@@ -75,7 +77,13 @@ playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
   "Use" button also goes in `UsableItem` (`shared/items/inventory.ts`) and `itemUses.ts`.
 - **Adding something to trade:** an entry in a base's `sells` or `buys` in `shared/economy/bases.ts`. The spec
   fails if it makes a money loop (a base buying what's sold, or planks and stones). A new base also
-  needs its `BaseId` and its building in `bases.ts`.
+  needs its `BaseId`, its trader's look in `TRADERS` (`world/bases.ts`), and a map tile with a counter
+  tagged `Trader` (attribute `Base`).
+- **Adding to the map:** a tile is a TypeScript file in `tools/tiles/tiles/` plus its line in `TILES`
+  (`tools/tiles/build.ts`), then a place or filler in `shared/world/mapRules.ts`. Build it from the
+  shared pieces in `tools/tiles/lib/build.ts`. Tiles hold no code: tags, attributes and markers say what
+  things do, and the server reads them (`world/map.ts`). The rules for making one, and every tag, are in
+  MAP.md; `npm test` checks every tile.
 - **Shared modules with specs import only types** from other shared modules (Lune can't load
   roblox-ts runtime imports): pass data in as arguments instead.
 - **Exchanges** (coins for items) are pure functions taking a `Wallet` (`shared/economy/trade.ts`), so the whole
@@ -107,7 +115,7 @@ config. Concretely:
 ## Tests
 
 Pure rules and validation get unit tests in `tests/unit/<topic>/*.spec.luau` (run with `npm test`, Lune,
-against compiled `out/`). When you add logic that can be a pure function — rates, thresholds,
+against compiled `out/`; it builds the map tiles first, so the specs check every tile and the map's rules). When you add logic that can be a pure function — rates, thresholds,
 geometry, validating client input — write it as one (no Roblox services) and add a spec. Check a
 new test can fail (break the code briefly) before trusting it.
 
@@ -141,8 +149,17 @@ When you add or change player-facing behaviour, update **README.md → Regressio
   re-sends their state (`resync` in main.server.ts). New per-player messages need a store and a
   line in `resync`.
 - **Content streaming is off** (`Workspace.StreamingEnabled: false` in every project file). The
-  maps are small, and client code assumes other players' tools, lamps etc. exist; keep it off
-  unless a map gets big.
+  maps are small (the main game's trial map is 600 × 500 studs), and client code assumes other players'
+  tools, lamps etc. exist; keep it off unless a map gets big (the full 3 × 4 map will be 600 × 900:
+  measure then).
+- **Tag searches find the map's tile templates too.** `CollectionService.GetTagged` covers
+  ServerStorage, where the tiles arrive. `buildMap` destroys the templates before any system starts;
+  don't look for tagged things before it has run, and check `IsDescendantOf(map)` in map code.
+- **The tile tools read the game's compiled code** (`out/shared/world/`: the edge rules, planner and
+  map rules), so `npm run tiles` needs `npm run watch` going or `npm run build` first. The tile
+  *watcher* doesn't type-check (Node strips the types): `npm run tiles:build` and `npm test` do.
+- **If Studio stops picking up changes that Rojo is serving** (new tiles, markers, code), the Rojo
+  plugin has gone stale: reconnect it, or reopen the place. Seen 25 Nov 2026.
 - **Blender -Y (front) imports as Roblox -Z (a part's LookVector).** A model facing Blender's
   front faces the way its MeshPart's CFrame looks — no 180° turn needed (verified with the skull).
 - **`MeshPart.MeshId` is read-only at runtime.** The asset ID lives in `assets/rojo/*.model.json`

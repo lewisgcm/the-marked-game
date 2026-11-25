@@ -4,8 +4,9 @@ The neighbourhood is built from **tiles**: 200×200-stud areas that always look 
 differently each run. This file says what's in each tile and the rules for making one. `GAMEPLAY.md` §8
 says what the places are *for*.
 
-**Status:** the game's map (a 3 × 2 trial). The family house is still built in code, on the Home tile's
-plot.
+**Status:** the game's only map: a 3 × 2 trial, with woods behind home's row (600 × 500 studs). The tiles
+are blockouts of plain parts, apart from cars, wrecks and the fire engine (models placed at markers); the
+family house is still built in code, on the Home tile's plot. Models for the rest: PLAN.md → Map art.
 
 ## Looking at them
 
@@ -18,9 +19,12 @@ npm run tiles -- 7 42 300    # the same, showing the run's map for seeds 7, 42 a
 Connect the Rojo plugin to port **34873** (so it can run beside `serve:main`); there's no need to press Play. `Workspace.Tiles` has:
 
 - **Gallery**: every tile on its own in a row (to the south), with its name and edge labels.
-- **Layouts**: the run's map for each seed, side by side, planned exactly as the game will plan it (below).
-  Each seed's tiles are listed in the terminal too. `npm run tiles` fails if a seed can't be planned or its
-  map breaks a rule.
+- **Layouts**: the run's map for each seed, side by side, planned and placed exactly as the game does it
+  (below), with the woods behind home's row and a roadblock where a road runs off the map. Each seed's
+  tiles are listed in the terminal too. `npm run tiles` fails if a seed can't be planned or its map breaks
+  a rule.
+
+Cars, wrecks and the fire engine show as red marker boxes here: their models are loaded in the game.
 
 The tile tools read the game's compiled rules from `out/`, so keep `npm run watch` going (or run
 `npm run build` once).
@@ -35,7 +39,8 @@ A tile is **either coded or hand-edited**, never both (the build stops if a name
 | **Hand-edited** in Studio | `assets/tiles/<Name>.model.json` | (used as it is) |
 
 `npm run tiles` type-checks the code, builds the coded tiles, then lays every tile out for viewing in
-`build/tiles/view`. `npm test` runs it too, so the checks see every tile.
+`build/tiles/view`. `npm test` runs it too, so the checks see every tile. `npm run watch` rebuilds them on
+every save (without the type check).
 
 The shared pieces (walls, trees, fences, the bungalow, loot, markers) are in `tools/tiles/lib/build.ts`,
 and the materials in `lib/styles.ts`: change one there and every tile that uses it changes. Random
@@ -220,9 +225,9 @@ Markers are red and see-through so they show in Studio; the game hides them. Use
 
 ## Not done yet
 
-- **Meshes in the tile files themselves:** not needed so far. Cars, wrecks and the fire engine are placed in
-  code at the tiles' markers, from their uploaded models. A MeshPart's size may not survive JSON, so test it
-  in Studio before putting one straight into a tile.
+- **Models for the tiles** (PLAN.md → Map art): trees, fences, buildings and ground made in Blender like
+  the cars and the infected. First, test whether a MeshPart can go straight into a tile file (its size
+  may not survive JSON); if not, they're placed in code at markers, as the cars are.
 - **Saving a Studio edit back to JSON:** needs a converter. Until then, edits in Studio are lost (and a
   coded tile's next build would replace them anyway).
 - **The family house in the Home tile**, built from markers instead of code.
