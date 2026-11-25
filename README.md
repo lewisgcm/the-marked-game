@@ -189,7 +189,7 @@ src/
     infected/          # waves, wake, stun
     items/             # inventory, loot, gains, slotLayout
     economy/           # bases, pricing, trade, upgrades, recipes, walkie
-    world/             # parts, walls, flicker, assets (mesh lookup)
+    world/             # parts, walls, flicker, assets (mesh lookup), tiles + layout + mapRules (the map, MAP.md)
     lobby/             # partyHandoff (lobby -> main), lastTitle, stats, kitManifest, ritualItems (until M6)
   lobby/
     server/            # world.ts, decor.ts (churchyard), queue.ts (parties), zoneDisplay.tsx, config.ts

@@ -1,5 +1,7 @@
--- The map's tiles (assets/tiles) and the rules for joining them (tools/tiles/tiles.luau, MAP.md).
+-- The rules for joining map tiles (src/shared/world/tiles.ts), and the checks every tile must pass
+-- (tools/tiles/tiles.luau, MAP.md). Needs the tiles built: `npm test` does that first.
 return function(t)
+	local edges = require("../../../out/shared/world/tiles")
 	local tiles = require("../../../tools/tiles/tiles")
 	local kinds = require("../../../out/shared/items/loot").LOOT_TABLES
 
@@ -75,34 +77,54 @@ return function(t)
 		end)
 	end)
 
+	t.describe("parseEdge", function()
+		t.it("reads a route and a ground", function()
+			local edge = edges.parseEdge("Road/Forest")
+			t.expect(edge.route).toBe("Road")
+			t.expect(edge.ground).toBe("Forest")
+		end)
+		t.it("refuses anything else", function()
+			for _, label in { "Motorway/Grass", "Road/Lava", "Road", "Road/Grass/Town", "", 5 } do
+				t.expect(edges.parseEdge(label)).toBe(nil)
+			end
+		end)
+	end)
+
 	t.describe("edgesJoin", function()
 		t.it("needs the same route", function()
-			t.expect(tiles.edgesJoin("Road/Grass", "Road/Grass")).toBe(true)
-			t.expect(tiles.edgesJoin("Road/Grass", "None/Grass")).toBe(false)
+			t.expect(edges.edgesJoin("Road/Grass", "Road/Grass")).toBe(true)
+			t.expect(edges.edgesJoin("Road/Grass", "None/Grass")).toBe(false)
 		end)
 		t.it("needs grounds that can meet", function()
-			t.expect(tiles.edgesJoin("Road/Town", "Road/Grass")).toBe(true)
-			t.expect(tiles.edgesJoin("Road/Town", "Road/Forest")).toBe(false)
+			t.expect(edges.edgesJoin("Road/Town", "Road/Grass")).toBe(true)
+			t.expect(edges.edgesJoin("Road/Town", "Road/Forest")).toBe(false)
+		end)
+		t.it("refuses a label that isn't one", function()
+			t.expect(edges.edgesJoin("Road/Grass", "Road/Lava")).toBe(false)
 		end)
 		t.it("works the same both ways round", function()
-			for a, joins in tiles.GROUND_JOINS do
-				for b in tiles.GROUND_JOINS do
-					t.expect(joins[b] == true).toBe(tiles.GROUND_JOINS[b][a] == true)
+			for a in edges.GROUND_JOINS do
+				for b in edges.GROUND_JOINS do
+					t.expect(edges.edgesJoin("None/" .. a, "None/" .. b)).toBe(edges.edgesJoin("None/" .. b, "None/" .. a))
 				end
 			end
 		end)
 	end)
 
 	t.describe("turning", function()
-		local edges = { North = "n", East = "e", South = "s", West = "w" }
+		local labels = { North = "n", East = "e", South = "s", West = "w" }
 		t.it("one turn moves the north edge to the east", function()
-			local turned = tiles.turnEdges(edges, 1)
+			local turned = edges.turnEdges(labels, 1)
 			t.expect(turned.East).toBe("n")
 			t.expect(turned.North).toBe("w")
+			t.expect(turned.South).toBe("e")
 		end)
-		t.it("four turns change nothing", function()
-			for side, label in tiles.turnEdges(edges, 4) do
-				t.expect(label).toBe(edges[side])
+		t.it("four turns change nothing, and three undo one", function()
+			for side, label in edges.turnEdges(labels, 4) do
+				t.expect(label).toBe(labels[side])
+			end
+			for side, label in edges.turnEdges(edges.turnEdges(labels, 1), 3) do
+				t.expect(label).toBe(labels[side])
 			end
 		end)
 		t.it("parts turn the same way as the edges, and face round too", function()

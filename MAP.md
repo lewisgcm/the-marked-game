@@ -4,21 +4,26 @@ The neighbourhood is being rebuilt from **tiles**: 200×200-stud areas that alwa
 out differently each run. This file says what's in each tile and the rules for making one.
 `GAMEPLAY.md` §8 says what the places are *for*.
 
-**Status:** sample tiles, to look at in Studio. The game doesn't use them yet: it still builds the house,
-Maple Street and the bases from code (`src/main/server/world/`).
+**Status:** sample tiles and the planner that lays them out, to look at in Studio. The game doesn't use them
+yet: it still builds the house, Maple Street and the bases from code (`src/main/server/world/`).
 
 ## Looking at them
 
 ```sh
-npm run serve:tiles    # build the tiles, lay them out and live-sync them into Studio (an empty Baseplate)
-npm run tiles          # build and lay them out again after changing one (while serve:tiles is going)
+npm run serve:tiles          # build the tiles, lay them out and live-sync them into Studio (an empty Baseplate)
+npm run tiles                # build and lay them out again after changing one (while serve:tiles is going)
+npm run tiles -- 7 42 300    # the same, showing the run's map for seeds 7, 42 and 300 (default: 1, 2, 3)
 ```
 
 Connect the Rojo plugin to port **34873** (so it can run beside `serve:main`); there's no need to press Play. `Workspace.Tiles` has:
 
 - **Gallery**: every tile on its own in a row (to the south), with its name and edge labels.
-- **Sample**: six tiles joined up (around the origin), to check the seams. Its layout is at the top of
-  `tools/tiles/gallery.luau`; `npm run tiles` fails if two edges in it don't join.
+- **Layouts**: the run's map for each seed, side by side, planned exactly as the game will plan it (below).
+  Each seed's tiles are listed in the terminal too. `npm run tiles` fails if a seed can't be planned or its
+  map breaks a rule.
+
+The tile tools read the game's compiled rules from `out/`, so keep `npm run watch` going (or run
+`npm run build` once).
 
 ## Where tiles live
 
@@ -95,8 +100,34 @@ North is -Z, east is +X. Each tile has four attributes, `North`, `East`, `South`
 | **Forest** | – | ✓ | ✓ | ✓ |
 | **Swamp** | – | ✓ | ✓ | ✓ |
 
-A tile can be turned by quarter turns, and its edges turn with it. The rules are in
-`tools/tiles/tiles.luau`, and will move to `src/shared/world/` when the game picks layouts.
+A tile can be turned by quarter turns, and its edges turn with it. All of a tile's roads and paths must
+join up inside it: the planner assumes that when it checks places can be reached. The rules are in
+`src/shared/world/tiles.ts`, used by the game, the planner and the tile checks alike.
+
+## The run's map
+
+Each run gets a new seed, and the seed decides the map (`src/shared/world/layout.ts`), so the same seed
+always gives the same map. The rules are in `src/shared/world/mapRules.ts`:
+
+- **Size:** columns and rows of tiles. Row 0 is home's row, at the south; rows count north.
+- **Fixed:** tiles always in the same place and turned the same way (home).
+- **Places:** tiles every run has exactly once, somewhere between a nearest and furthest row.
+- **Fillers:** tiles for the rest, each used at most so many times.
+
+Any tile may be turned. The planner places the places, then fills the grid row by row with whatever joins
+its neighbours, backing up when it gets stuck. A map is only accepted if every place can be reached by
+road (or path) from home. Roads running off the map get a roadblock. If no map can be found, it returns
+nothing, and the game should fall back to a known-good one.
+
+The trial map is **3 × 2** with `Houses_A` standing in for home (bottom middle), the Treehouse beside it,
+and meadows, forest roads, the swamp and a second street to fill the rest. 2,000 seeds all plan (0.15 s in
+all), giving about 500 different maps. `npm test` checks 500 of them.
+
+| Rule | Value |
+|---|---|
+| Fixed | Houses_A at the bottom middle |
+| Places | Treehouse, row 0 |
+| Fillers | Meadow_A ×2, ForestRoad_A ×2, Swamp_A ×1, Houses_A ×1 |
 
 ## Making a tile
 
@@ -130,6 +161,6 @@ A tile can be turned by quarter turns, and its edges turn with it. The rules are
   test in Studio first. NPCs and fires stay in code.
 - **Saving a Studio edit back to JSON:** needs a converter. Until then, edits in Studio are lost (and a
   coded tile's next build would replace them anyway).
-- **The game:** choosing a layout from a seed, checking every place can be reached, and capping the map's
-  outer edges. Remove the spare copies of the tiles before any system starts, or tag searches find them too.
+- **The game:** building the planned map at the start of a run, with roadblocks and the map's outer edges.
+  Remove the spare copies of the tiles before any system starts, or tag searches find them too.
 - **Home tile**, Fire Station and the other places in `GAMEPLAY.md` §8.

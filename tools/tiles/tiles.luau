@@ -4,29 +4,54 @@
 	(gallery.luau) and tests/unit/world/tiles.spec.luau.
 
 	A tile is 200x200 studs around the origin, its ground at y = 0. North is -Z, east is +X.
+	The edge rules are the game's own (src/shared/world/tiles.ts, compiled to out/ by rbxtsc).
 ]]
 
 local fs = require("@lune/fs")
 local serde = require("@lune/serde")
+
+local function compiled(path: string)
+	local ok, result = pcall(require, path)
+	if not ok then
+		error(`Couldn't load {path} ({result}): compile the game first (npm run build, or npm run watch)`, 0)
+	end
+	return result
+end
+local edges = compiled("../../out/shared/world/tiles")
 
 local tiles = {}
 
 tiles.SIZE = 200
 --- Built from tools/tiles/tiles/*.ts, and edited by hand.
 tiles.FOLDERS = { "build/tiles/models", "assets/tiles" }
---- Clockwise from above, so turning a tile moves each edge along this list.
-tiles.SIDES = { "North", "East", "South", "West" }
-tiles.ROUTES = { Road = true, Path = true, None = true }
---- Which grounds may meet at a seam.
-tiles.GROUND_JOINS = {
-	Town = { Town = true, Grass = true },
-	Grass = { Town = true, Grass = true, Forest = true, Swamp = true },
-	Forest = { Grass = true, Forest = true, Swamp = true },
-	Swamp = { Grass = true, Forest = true, Swamp = true },
+tiles.SIDES = edges.SIDES
+tiles.parseEdge = edges.parseEdge
+tiles.edgesJoin = edges.edgesJoin
+tiles.turnEdges = edges.turnEdges
+
+--- The edge rules in the form the layout planner takes (src/shared/world/layout.ts).
+tiles.RULES = {
+	sides = edges.SIDES,
+	opposite = edges.OPPOSITE,
+	edgesJoin = edges.edgesJoin,
+	turnEdges = edges.turnEdges,
+	hasRoute = function(edge: string): boolean
+		local parsed = edges.parseEdge(edge)
+		return parsed ~= nil and parsed.route ~= "None"
+	end,
 }
 
 local EDGE = tiles.SIZE / 2
 local OUTWARD = { North = { 0, -1 }, East = { 1, 0 }, South = { 0, 1 }, West = { -1, 0 } }
+
+--- Each tile's edge labels, by name: the planner's catalogue.
+function tiles.catalogue(all: { [string]: any }): { [string]: { [string]: string } }
+	local catalogue = {}
+	for name, tile in all do
+		catalogue[name] = tile.attributes
+	end
+	return catalogue
+end
 
 --- Every tile, by name, as decoded JSON. Run `npm run tiles` first, to build the coded ones.
 function tiles.loadAll(): { [string]: any }
@@ -46,37 +71,6 @@ function tiles.loadAll(): { [string]: any }
 		error("No tiles: run `npm run tiles` to build them", 0)
 	end
 	return found
-end
-
---- "Road/Forest" -> "Road", "Forest"; nil if it isn't a valid edge label.
-function tiles.parseEdge(label: any): (string?, string?)
-	if type(label) ~= "string" then
-		return nil
-	end
-	local route, ground = string.match(label, "^(%a+)/(%a+)$")
-	if route and tiles.ROUTES[route] and tiles.GROUND_JOINS[ground] then
-		return route, ground
-	end
-	return nil
-end
-
---- Whether two edges may touch: the same route, and grounds that can meet.
-function tiles.edgesJoin(a: any, b: any): boolean
-	local routeA, groundA = tiles.parseEdge(a)
-	local routeB, groundB = tiles.parseEdge(b)
-	if not routeA or not routeB then
-		return false
-	end
-	return routeA == routeB and tiles.GROUND_JOINS[groundA][groundB] == true
-end
-
---- A tile's edge labels after `turns` clockwise quarter turns.
-function tiles.turnEdges(edges: { [string]: string }, turns: number): { [string]: string }
-	local turned = {}
-	for i, side in tiles.SIDES do
-		turned[side] = edges[tiles.SIDES[(i - 1 - turns) % 4 + 1]]
-	end
-	return turned
 end
 
 local function round(value: number): number
@@ -153,7 +147,7 @@ function tiles.check(name: string, tile: any, containerKinds: { [string]: any })
 	if tile.className ~= "Model" then
 		problem("should be a Model")
 	end
-	local edges = tile.attributes or {}
+	local labels = tile.attributes or {}
 	local roadReaches = {}
 
 	tiles.each(tile, function(instance)
@@ -198,11 +192,11 @@ function tiles.check(name: string, tile: any, containerKinds: { [string]: any })
 	end)
 
 	for _, side in tiles.SIDES do
-		local route = tiles.parseEdge(edges[side])
-		if not route then
-			problem(`{side} edge "{edges[side]}" isn't a Route/Ground label`)
-		elseif (route == "Road") ~= (roadReaches[side] == true) then
-			problem(`{side} edge is "{edges[side]}" but a road {if roadReaches[side] then "reaches" else "doesn't reach"} it`)
+		local parsed = tiles.parseEdge(labels[side])
+		if not parsed then
+			problem(`{side} edge "{labels[side]}" isn't a Route/Ground label`)
+		elseif (parsed.route == "Road") ~= (roadReaches[side] == true) then
+			problem(`{side} edge is "{labels[side]}" but a road {if roadReaches[side] then "reaches" else "doesn't reach"} it`)
 		end
 	end
 	return problems

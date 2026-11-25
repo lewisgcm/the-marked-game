@@ -1,11 +1,13 @@
 --[[
 	Lays the map tiles out to look at in Studio, without playing (see MAP.md):
 
-		npm run tiles         # builds the tiles, then writes build/tiles/view
-		npm run serve:tiles   # the same, then live-syncs it into Studio
+		npm run tiles               # builds the tiles, then writes build/tiles/view
+		npm run tiles -- 7 42 300   # the same, showing the maps for seeds 7, 42 and 300
+		npm run serve:tiles         # builds, then live-syncs it into Studio
 
 	- Gallery: every tile on its own, in a row, with its edge labels.
-	- Sample: tiles joined up as they could be in a run, to check the seams.
+	- Layouts: the run's map (src/shared/world/mapRules.ts) for each seed, planned the way the game will
+	  (src/shared/world/layout.ts), with a roadblock wherever a road runs off the map.
 
 	build/tiles/view is thrown away and rebuilt: edit the tiles (tools/tiles/tiles) instead.
 ]]
@@ -14,56 +16,82 @@ local fs = require("@lune/fs")
 local process = require("@lune/process")
 local serde = require("@lune/serde")
 local tiles = require("./tiles")
+local layout = require("../../out/shared/world/layout")
+local MAP_RULES = require("../../out/shared/world/mapRules").MAP_RULES
 
 local OUT = "build/tiles/view"
 local GAP = 60
---- The gallery's row, south of the sample map.
+--- The gallery's row, south of the layouts.
 local GALLERY_Z = 460
-
---- Rows from north to south; `turns` is clockwise quarter turns.
-local SAMPLE = {
-	{ { tile = "Swamp_A", turns = 0 }, { tile = "ForestRoad_A", turns = 0 }, { tile = "Meadow_A", turns = 3 } },
-	{ { tile = "Treehouse", turns = 0 }, { tile = "Houses_A", turns = 0 }, { tile = "Meadow_A", turns = 0 } },
-}
+--- Seeds to show when none are given.
+local DEFAULT_SEEDS = { 1, 2, 3 }
 
 local IDENTITY = { 1, 0, 0, 0, 1, 0, 0, 0, 1 }
+local OUTWARD = { North = { 0, -1 }, East = { 1, 0 }, South = { 0, 1 }, West = { -1, 0 } }
+
+--- A plain part (no material: SmoothPlastic).
+local function block(name: string, size: { number }, cf: { number }, color: { number }): any
+	return {
+		name = name,
+		className = "Part",
+		properties = { Anchored = true, Size = size, CFrame = cf, Color = color },
+	}
+end
 
 --- Text floating in the air.
 local function label(text: string, x: number, y: number, z: number, height: number): any
 	local cf = { x, y, z }
 	table.move(IDENTITY, 1, 9, 4, cf)
-	return {
-		name = "Label",
-		className = "Part",
-		properties = {
-			Anchored = true,
-			CanCollide = false,
-			Transparency = 1,
-			Size = { 1, 1, 1 },
-			CFrame = cf,
-		},
-		children = {
-			{
-				name = "Text",
-				className = "BillboardGui",
-				properties = { Size = { UDim2 = { { height * 8, 0 }, { height, 0 } } }, AlwaysOnTop = true },
-				children = {
-					{
-						name = "Label",
-						className = "TextLabel",
-						properties = {
-							Size = { UDim2 = { { 1, 0 }, { 1, 0 } } },
-							BackgroundTransparency = 1,
-							TextScaled = true,
-							TextColor3 = { 1, 1, 1 },
-							TextStrokeTransparency = 0,
-							Text = text,
-						},
+	local part = block("Label", { 1, 1, 1 }, cf, { 1, 1, 1 })
+	part.properties.CanCollide = false
+	part.properties.Transparency = 1
+	part.children = {
+		{
+			name = "Text",
+			className = "BillboardGui",
+			properties = { Size = { UDim2 = { { height * 8, 0 }, { height, 0 } } }, AlwaysOnTop = true },
+			children = {
+				{
+					name = "Label",
+					className = "TextLabel",
+					properties = {
+						Size = { UDim2 = { { 1, 0 }, { 1, 0 } } },
+						BackgroundTransparency = 1,
+						TextScaled = true,
+						TextColor3 = { 1, 1, 1 },
+						TextStrokeTransparency = 0,
+						Text = text,
 					},
 				},
 			},
 		},
 	}
+	return part
+end
+
+--- A red and white barrier across a road where it leaves the map, `x, z` the edge's middle.
+local function roadblock(side: string, x: number, z: number): any
+	local alongX = side == "North" or side == "South"
+	local cf = { x, 0, z }
+	table.move(if alongX then IDENTITY else { 0, 0, 1, 0, 1, 0, -1, 0, 0 }, 1, 9, 4, cf)
+	local function at(dx: number, y: number): { number }
+		local moved = table.clone(cf)
+		moved[2] = y
+		if alongX then
+			moved[1] += dx
+		else
+			moved[3] += dx
+		end
+		return moved
+	end
+	local parts = {}
+	for i = 0, 3 do
+		table.insert(parts, block("Board", { 6.5, 1, 0.4 }, at(-10.5 + 7 * i, 2.4), if i % 2 == 0 then { 0.8, 0.12, 0.1 } else { 0.95, 0.95, 0.95 }))
+	end
+	for _, dx in { -10.5, -3.5, 3.5, 10.5 } do
+		table.insert(parts, block("Leg", { 0.4, 2.4, 0.4 }, at(dx, 1.2), { 0.3, 0.3, 0.3 }))
+	end
+	return { name = "Roadblock", className = "Model", children = parts }
 end
 
 local all = tiles.loadAll()
@@ -72,10 +100,6 @@ for name in all do
 	table.insert(names, name)
 end
 table.sort(names)
-
-local function tileNamed(name: string): any
-	return all[name] or error(`The sample map needs {name}, which isn't a tile`, 0)
-end
 
 local written = {}
 local function write(folder: string, name: string, model: any)
@@ -101,41 +125,79 @@ for i, name in names do
 	write("Gallery", name, model)
 end
 
--- The sample map, checking each seam.
-local badSeams = 0
-for row, slots in SAMPLE do
-	for column, slot in slots do
-		local x = (column - (#slots + 1) / 2) * tiles.SIZE
-		local z = (row - (#SAMPLE + 1) / 2) * tiles.SIZE
-		write("Sample", `{row}_{column}_{slot.tile}`, tiles.move(tileNamed(slot.tile), slot.turns, x, z))
+-- The run's map, for each seed.
+local seeds = {}
+for _, arg in process.args do
+	table.insert(seeds, tonumber(arg) or error(`"{arg}" isn't a seed (a number)`, 0))
+end
+if #seeds == 0 then
+	seeds = DEFAULT_SEEDS
+end
+local catalogue = tiles.catalogue(all)
+local failed = 0
+local width = MAP_RULES.columns * tiles.SIZE + 120
+for i, seed in seeds do
+	local folder = `Layouts/Seed_{seed}`
+	local offset = (i - (#seeds + 1) / 2) * width
+	local planned = layout.planLayout(MAP_RULES, catalogue, tiles.RULES, layout.seededRandom(seed))
+	if not planned then
+		failed += 1
+		print(`  Seed {seed}: no layout fits the rules`)
+		continue
+	end
+	local problems = layout.checkLayout(planned, MAP_RULES, catalogue, tiles.RULES)
+	for _, problem in problems do
+		failed += 1
+		print(`  Seed {seed}: {problem}`)
+	end
+	-- Row 0 (home's) is at z = 0; rows count north (-Z).
+	local function centre(column: number, row: number): (number, number)
+		return offset + (column - (MAP_RULES.columns - 1) / 2) * tiles.SIZE, -row * tiles.SIZE
+	end
+	local rows = {}
+	for _, placement in planned.tiles do
+		local x, z = centre(placement.column, placement.row)
+		write(folder, `{placement.row}_{placement.column}_{placement.tile}`, tiles.move(all[placement.tile], placement.turns, x, z))
+		rows[placement.row] = (rows[placement.row] or "") .. string.format("%-16s", `{placement.tile}{if placement.turns > 0 then ` ↻{placement.turns}` else ""}`)
+	end
+	local extras = { name = "Extras", className = "Model", children = {} }
+	local _, top = centre(0, MAP_RULES.rows - 1)
+	table.insert(extras.children, label(`Seed {seed}`, offset, 70, top - tiles.SIZE / 2 - 20, 20))
+	for _, open in planned.openEnds do
+		local x, z = centre(open.column, open.row)
+		local out = OUTWARD[open.side]
+		table.insert(extras.children, roadblock(open.side, x + out[1] * (tiles.SIZE / 2 - 2), z + out[2] * (tiles.SIZE / 2 - 2)))
+	end
+	write(folder, "Extras", extras)
+	print(`Seed {seed}:`)
+	for row = MAP_RULES.rows - 1, 0, -1 do
+		print(`  {rows[row]}`)
+	end
+end
 
-		local edges = tiles.turnEdges(tileNamed(slot.tile).attributes, slot.turns)
-		local function seam(other: any, mine: string, theirs: string)
-			if other then
-				local joined = tiles.turnEdges(tileNamed(other.tile).attributes, other.turns)
-				if not tiles.edgesJoin(edges[mine], joined[theirs]) then
-					badSeams += 1
-					print(`  {slot.tile} {mine} ({edges[mine]}) doesn't join {other.tile} {theirs} ({joined[theirs]})`)
-				end
+-- Clear out what's gone (file by file, not the whole folder: Rojo may be watching it).
+local function prune(path: string): boolean
+	local empty = true
+	for _, entry in fs.readDir(path) do
+		local full = `{path}/{entry}`
+		if fs.isDir(full) then
+			if prune(full) then
+				fs.removeDir(full)
+			else
+				empty = false
 			end
-		end
-		seam(slots[column + 1], "East", "West")
-		seam(SAMPLE[row + 1] and SAMPLE[row + 1][column], "South", "North")
-	end
-end
-
--- Clear out tiles that have gone (not the whole folder: Rojo may be watching it).
-for _, folder in { "Gallery", "Sample" } do
-	for _, file in fs.readDir(`{OUT}/{folder}`) do
-		local path = `{OUT}/{folder}/{file}`
-		if not written[path] then
-			fs.removeFile(path)
+		elseif written[full] then
+			empty = false
+		else
+			fs.removeFile(full)
 		end
 	end
+	return empty
 end
+prune(OUT)
 
-print(`{#names} tiles laid out in {OUT}`)
-if badSeams > 0 then
-	print(`{badSeams} seams in the sample map don't join`)
+print(`{#names} tiles and {#seeds} layouts in {OUT}`)
+if failed > 0 then
+	print(`{failed} problems with the layouts`)
 	process.exit(1)
 end

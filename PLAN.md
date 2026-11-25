@@ -237,7 +237,9 @@ The map becomes 200×200-stud tiles, laid out differently each run (MAP.md). Not
 - [ ] Studio check: editing a tile and re-running `npm run tiles` updates Studio live.
 - [ ] Meshes in tiles (cars, wrecks), tested in Studio; a converter for edits made in Studio.
 - [ ] Home tile and Fire Station; more filler tiles.
-- [ ] Pick a layout from a seed (home fixed, places in distance bands, all reachable). Spec.
+- [x] Pick a layout from a seed (`shared/world/layout.ts`, rules in `mapRules.ts`): home fixed, places in
+      their rows, edges joined, every place reachable by road, roads off the map listed. Spec. The gallery
+      shows the map for any seeds (`npm run tiles -- 7 42`).
 - [ ] Build the run's map from tiles and retire the code-built street and bases; update GAMEPLAY §8.
 
 ## M3 — Workbench, trading and the walkie-talkie
