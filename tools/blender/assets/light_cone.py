@@ -3,10 +3,10 @@
 An open-ended cone (a thin frustum, so the tip isn't a needle point) with faces on both the
 outside and the inside: Roblox culls back faces, so without the inner shell you'd only see
 the half of the cone nearest the camera. Rendered in-game as translucent Neon, nested three
-times at different lengths for a fade (see src/main/client/flashlight.ts).
+times at different lengths for a fade (see src/main/client/combat/flashlight.ts).
 
 Dimensions must match the beam: LENGTH is BEAM_VISUAL_LENGTH and the opening follows
-FLASHLIGHT_HALF_ANGLE (src/shared/flashlight.ts). The cone opens toward Blender -Y, which
+FLASHLIGHT_HALF_ANGLE (src/shared/combat/flashlight.ts). The cone opens toward Blender -Y, which
 imports as Roblox -Z (a part's LookVector), and its origin is its bounds centre: the tip sits
 LENGTH/2 behind the part's position.
 """

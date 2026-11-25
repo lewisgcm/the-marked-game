@@ -1,7 +1,7 @@
 """The Fire Station's engine: an original low-poly pumper, one static mesh (FireEngine).
 
 Crew cab, locker shutters, a pump panel, hose reel and a roof ladder. Faces -Y, stands on Z = 0.
-Sized for the station's bay (16 wide, 12 high; src/main/server/bases.ts).
+Sized for the station's bay (16 wide, 12 high; src/main/server/world/bases.ts).
 """
 
 from lib import lowpoly, mesh

@@ -97,7 +97,7 @@ sync by server time. The car is a separate set away from the playable map.
   - Skipping is **per player**: you skip your own screen, not the party's. Skipped players see the
     **"DAY 1"** card with "Waiting for 2 others…" until everyone has finished or skipped and the
     whole party has arrived. Then Day 1 starts for everyone at once.
-  - The client tells the server it's done (`IntroDone` in `shared/remotes.ts`). The server only
+  - The client tells the server it's done (`IntroDone` in `shared/core/remotes.ts`). The server only
     uses it to start Day 1, and it ignores repeats and players outside the party. If a client
     never sends it, the server treats the cutscene as finished when its own clock runs out.
 - Built on the camera rig from the banishing cutscene (`banishCamera.ts`).
@@ -229,7 +229,7 @@ resource**: easy early, harder every night.
 | Flare gun | 40 + burn in an area, lights the area up | Flares | Fire Station, Gas station; very rare |
 
 Damage and health are first guesses. Weapon damage and infected health go in
-`src/main/server/config.ts`.
+`src/main/server/core/config.ts`.
 
 **Guns are loud.** A gunshot wakes dormant infected within about 40 studs by day, and at night it
 draws the wave to that side of the house. Strong but risky, so the quiet weapons (bat, slingshot,

@@ -1,5 +1,5 @@
 import { ReplicatedStorage } from "@rbxts/services";
-import { QUEUE_REMOTE_NAME } from "shared/remotes";
+import { QUEUE_REMOTE_NAME } from "shared/core/remotes";
 import { startLeaderboard } from "./leaderboard";
 import { QueueManager } from "./queue";
 import { startTitles } from "./titles";

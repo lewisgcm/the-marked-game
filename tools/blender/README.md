@@ -22,7 +22,7 @@ Override with `BLENDER=/path/to/blender npm run models`.
    This step can't be automated from the repo: mesh data lives on Roblox's servers, and
    `MeshPart.MeshId` is read-only from scripts.
 4. **Wire it up** — paste the *mesh* ID (not the model ID) into `assets/rojo/<asset>.model.json`
-   as `"MeshId"`, then clone that model from code (`findMeshAsset` in `src/shared/assets.ts`).
+   as `"MeshId"`, then clone that model from code (`findMeshAsset` in `src/shared/world/assets.ts`).
 
 Until step 4 happens the model file has no `MeshId` and `findMeshAsset` returns `undefined`,
 so the game falls back to plain parts. A fresh clone always runs.
@@ -33,7 +33,7 @@ The lobby's props (graves, trees, fence, gate, chapel, bell tower, crypts, lante
 pedestal, candles) and the three ritual items are one asset, `lobby_kit`, in the Synty-style
 low-poly look: faceted shapes coloured from one shared palette image (`lib/palette.py`,
 `lib/lowpoly.py`). `npm run models -- lobby_kit` writes the FBX, the palette PNG and
-`src/shared/kitManifest.ts` (each prop's size and centre, so code can stand it on the ground).
+`src/shared/lobby/kitManifest.ts` (each prop's size and centre, so code can stand it on the ground).
 
 To upload it (once, and again only if the kit changes):
 
@@ -217,11 +217,11 @@ the centre, so a centred mesh lands exactly where the code puts it.
 | `teleport_pad` | 10 × 0.786 × 10 | 312 | lobby queue platforms (`src/lobby/server/world.ts`) |
 | `skull` | 0.77 × 1.05 × 1.1 | ~4000 | ritual item: lobby pedestal (`src/lobby/server/decor.ts`), main-game pickup |
 | `book` | 1.88 × 0.52 × 1.11 | ~1600 | ritual item: covers, spine and clasp only — the pages are a Part filled in at runtime (`BOOK_PAGES_SIZE` in `decor.ts` mirrors `PAGES` in `book.py`) |
-| `light_cone` | 36.95 × 36.95 × 32 | 128 | flashlight beam: open, double-sided cone; nested ×3 at runtime as translucent Neon for a fade (`src/main/client/flashlight.ts`). Length/angle mirror `BEAM_VISUAL_LENGTH` / `FLASHLIGHT_HALF_ANGLE` |
-| `torch` | 0.63 × 0.75 × 1.74 | 588 | the kids' flashlight; the game's Lens part sits in its open front (`src/main/server/torch.ts`) |
-| `fire_engine` | 8.4 × 9.43 × 21.1 | 2760 | the Fire Station's engine (`lib/vehicle.py`); `src/main/server/bases.ts` loads it |
-| `street_wrecks` | five meshes, up to 11.4 × 8.9 × 22.7 | 4084 | wrecks: CrashedCar, BurntCar, SchoolBus, Ambulance, Tank (one import, Merge Meshes off); `src/main/server/wrecks.ts` places them |
-| `street_cars` | four meshes, up to 7.25 × 9.3 × 14.6 | 3712 | Maple Street: Minivan, Hatchback, Estate, IceCreamVan (`lib/vehicle.py`); `src/main/server/cars.ts` loads them as one model |
+| `light_cone` | 36.95 × 36.95 × 32 | 128 | flashlight beam: open, double-sided cone; nested ×3 at runtime as translucent Neon for a fade (`src/main/client/combat/flashlight.ts`). Length/angle mirror `BEAM_VISUAL_LENGTH` / `FLASHLIGHT_HALF_ANGLE` |
+| `torch` | 0.63 × 0.75 × 1.74 | 588 | the kids' flashlight; the game's Lens part sits in its open front (`src/main/server/combat/torch.ts`) |
+| `fire_engine` | 8.4 × 9.43 × 21.1 | 2760 | the Fire Station's engine (`lib/vehicle.py`); `src/main/server/world/bases.ts` loads it |
+| `street_wrecks` | five meshes, up to 11.4 × 8.9 × 22.7 | 4084 | wrecks: CrashedCar, BurntCar, SchoolBus, Ambulance, Tank (one import, Merge Meshes off); `src/main/server/world/wrecks.ts` places them |
+| `street_cars` | four meshes, up to 7.25 × 9.3 × 14.6 | 3712 | Maple Street: Minivan, Hatchback, Estate, IceCreamVan (`lib/vehicle.py`); `src/main/server/world/cars.ts` loads them as one model |
 | `infected_dad` | 2.64 × 5.26 × 1.28 | 1264 | Dad, the first infected, on an R15 rig (`infected/body.ts` loads it) |
 | `infected_neighbour` | 2.62 × 5.28 × 1.38 | 1292 | the ordinary shambler, on an R15 rig (`infected/body.ts` loads it) |
 | `candles` | 1.48 × 1.22 × 1.28 | 1500 | ritual item: melted candle cluster; flames are added at runtime at each wick (`CANDLE_WICKS` in `decor.ts` mirrors `CANDLES` in `candles.py`) |

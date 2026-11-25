@@ -1,0 +1,101 @@
+-- Base prices (src/shared/economy/pricing.ts).
+return function(t)
+	local P = require("../../../out/shared/economy/pricing")
+
+	t.describe("coinsText", function()
+		t.it("one coin, more coins, and none", function()
+			t.expect(P.coinsText(1)).toBe("1 coin")
+			t.expect(P.coinsText(6)).toBe("6 coins")
+			t.expect(P.coinsText(0)).toBe("0 coins")
+		end)
+	end)
+
+	t.describe("salePrice", function()
+		t.it("scarce goods rise 15% of the Day 1 price a day", function()
+			t.expect(P.salePrice(20, 1, true, 0.15)).toBe(20)
+			t.expect(P.salePrice(20, 2, true, 0.15)).toBe(23)
+			t.expect(P.salePrice(20, 11, true, 0.15)).toBe(50)
+		end)
+		t.it("always whole coins", function()
+			t.expect(P.salePrice(6, 2, true, 0.15)).toBe(7)
+		end)
+		t.it("everything else keeps its price", function()
+			t.expect(P.salePrice(15, 20, false, 0.15)).toBe(15)
+		end)
+	end)
+
+	t.describe("orderPrice", function()
+		t.it("pays more for what's on order", function()
+			t.expect(P.orderPrice(3, 2)).toBe(6)
+		end)
+		t.it("whole coins, and never less than usual", function()
+			t.expect(P.orderPrice(3, 1.5)).toBe(5)
+			t.expect(P.orderPrice(3, 0.5)).toBe(3)
+		end)
+	end)
+
+	t.describe("pickWanted", function()
+		local items = { "Food", "Batteries", "Scrap" }
+		t.it("covers the whole list", function()
+			t.expect(P.pickWanted(items, nil, {}, 0)).toBe("Food")
+			t.expect(P.pickWanted(items, nil, {}, 0.5)).toBe("Batteries")
+			t.expect(P.pickWanted(items, nil, {}, 0.99)).toBe("Scrap")
+			t.expect(P.pickWanted(items, nil, {}, 1)).toBe("Scrap")
+		end)
+		t.it("never yesterday's", function()
+			t.expect(P.pickWanted(items, "Food", {}, 0)).toBe("Batteries")
+			t.expect(P.pickWanted(items, "Scrap", {}, 0.99)).toBe("Batteries")
+		end)
+		t.it("nor what another base wants", function()
+			t.expect(P.pickWanted(items, nil, { "Food", "Batteries" }, 0)).toBe("Scrap")
+			t.expect(P.pickWanted(items, "Batteries", { "Food" }, 0)).toBe("Scrap")
+		end)
+		t.it("yesterday's again rather than another base's", function()
+			t.expect(P.pickWanted(items, "Scrap", { "Food", "Batteries" }, 0)).toBe("Scrap")
+		end)
+		t.it("anything rather than nothing", function()
+			t.expect(P.pickWanted(items, "Food", items, 0)).toBe("Batteries")
+			t.expect(P.pickWanted({ "Food" }, "Food", {}, 0.5)).toBe("Food")
+		end)
+	end)
+
+	t.describe("rollCount", function()
+		t.it("covers the whole range, and never passes it", function()
+			t.expect(P.rollCount(2, 3, 0)).toBe(2)
+			t.expect(P.rollCount(2, 3, 0.49)).toBe(2)
+			t.expect(P.rollCount(2, 3, 0.5)).toBe(3)
+			t.expect(P.rollCount(2, 3, 1)).toBe(3)
+		end)
+	end)
+
+	t.describe("startStallDay", function()
+		local base = {
+			sells = { { item = "Fuel", stock = 2 }, { item = "Medkit", stock = 3 } },
+			buys = { { item = "Food", price = 1 }, { item = "Scrap", price = 2 } },
+		}
+		local function zero()
+			return 0
+		end
+		t.it("restocks and places an order", function()
+			local stall = { stock = { Fuel = 0 } }
+			P.startStallDay(stall, base, {}, 2, 3, zero)
+			t.expect(stall.stock.Fuel).toBe(2)
+			t.expect(stall.stock.Medkit).toBe(3)
+			t.expect(stall.order.item).toBe("Food")
+			t.expect(stall.order.left).toBe(2)
+		end)
+		t.it("replaces yesterday's order, filled or not", function()
+			local stall = { stock = {}, order = { item = "Food", left = 1 } }
+			P.startStallDay(stall, base, {}, 2, 3, function()
+				return 0.99
+			end)
+			t.expect(stall.order.item).toBe("Scrap")
+			t.expect(stall.order.left).toBe(3)
+		end)
+		t.it("avoids what other bases want", function()
+			local stall = { stock = {} }
+			P.startStallDay(stall, base, { "Food" }, 2, 3, zero)
+			t.expect(stall.order.item).toBe("Scrap")
+		end)
+	end)
+end

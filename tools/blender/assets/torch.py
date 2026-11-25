@@ -1,7 +1,7 @@
 """The kids' flashlight: an original camping torch, one static mesh (Torch).
 
 Ribbed rubber grip, a taped repair and a wrist strap. It points along -Y with its axis on the origin,
-sized to replace the grey-box handle in src/main/server/flashlight.ts. The front is open: the game's
+sized to replace the grey-box handle in src/main/server/combat/flashlight.ts. The front is open: the game's
 Lens part sits in it, so it can glow when the light is on.
 """
 

@@ -1,10 +1,10 @@
 import { Players, TeleportService } from "@rbxts/services";
 import { Zone } from "@rbxts/zone-plus";
-import { clientSender, onClientMessage } from "shared/net";
-import { savePartyAsync } from "shared/partyHandoff";
-import { MAIN_GAME_PLACE_ID } from "shared/placeIds";
-import { LobbyClientMessages, LobbyServerMessages } from "shared/remotes";
-import { safeTeleport } from "shared/safeTeleport";
+import { clientSender, onClientMessage } from "shared/core/net";
+import { savePartyAsync } from "shared/lobby/partyHandoff";
+import { MAIN_GAME_PLACE_ID } from "shared/core/placeIds";
+import { LobbyClientMessages, LobbyServerMessages } from "shared/core/remotes";
+import { safeTeleport } from "shared/core/safeTeleport";
 import { parsePartySize } from "./partySize";
 import { LobbyWorld, LobbyZone } from "./world";
 

@@ -1,3 +1,3 @@
-import { startFlicker } from "shared/flicker";
+import { startFlicker } from "shared/world/flicker";
 
 startFlicker();

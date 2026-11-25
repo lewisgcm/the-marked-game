@@ -1,6 +1,6 @@
 import { Players, Workspace } from "@rbxts/services";
-import { part } from "shared/parts";
-import { LeaderboardEntry, loadTopWins, loadWins } from "shared/stats";
+import { part } from "shared/world/parts";
+import { LeaderboardEntry, loadTopWins, loadWins } from "shared/lobby/stats";
 
 /**
  * Lobby scoreboard:
@@ -10,7 +10,7 @@ import { LeaderboardEntry, loadTopWins, loadWins } from "shared/stats";
  * - **Top-10 board:** a wooden noticeboard beside the path, listing the most wins of all time
  *   across every server, refreshed every REFRESH_SECONDS.
  *
- * Wins are recorded by the main game at the end of each round (shared/stats.ts). If the
+ * Wins are recorded by the main game at the end of each round (shared/lobby/stats.ts). If the
  * DataStore can't be reached (e.g. Studio without API access), the board says so.
  */
 

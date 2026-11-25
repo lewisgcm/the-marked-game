@@ -1,8 +1,8 @@
 import { CollectionService, Workspace } from "@rbxts/services";
-import { findMeshAsset } from "shared/assets";
-import { folder, limb, model, part, place } from "shared/parts";
-import { PAGE_COLOR, RITUAL_ITEM_HEIGHT } from "shared/ritualItems";
-import { FLICKER_LIGHT_TAG } from "shared/tags";
+import { findMeshAsset } from "shared/world/assets";
+import { folder, limb, model, part, place } from "shared/world/parts";
+import { PAGE_COLOR, RITUAL_ITEM_HEIGHT } from "shared/lobby/ritualItems";
+import { FLICKER_LIGHT_TAG } from "shared/core/tags";
 import { LOBBY_FLOOR_SIZE, LOBBY_ZONE_COUNT, zoneX } from "./config";
 import { kitReady, placeKit } from "./kit";
 import { buildKitDecor } from "./kitDecor";

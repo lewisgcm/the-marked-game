@@ -1,9 +1,9 @@
 import { CollectionService, ReplicatedStorage, Workspace } from "@rbxts/services";
-import { sized } from "shared/assets";
-import { folder, part } from "shared/parts";
-import { FLICKER_LIGHT_TAG } from "shared/tags";
+import { sized } from "shared/world/assets";
+import { folder, part } from "shared/world/parts";
+import { FLICKER_LIGHT_TAG } from "shared/core/tags";
 import { LOBBY_FLOOR_SIZE } from "./config";
-import { KitPropName } from "shared/kitManifest";
+import { KitPropName } from "shared/lobby/kitManifest";
 import { placeKit } from "./kit";
 
 /**

@@ -5,7 +5,7 @@ MeshPart named after it), then run tools/blender/print_mesh_ids.lua in the comma
 paste the output back so the IDs can be written into assets/rojo/kit/*.model.json.
 
 Every prop is modelled standing on z = 0 at its own origin, front facing -Y (Roblox -Z). Roblox
-centres a mesh on its bounding box, so this build also writes src/shared/kitManifest.ts: each
+centres a mesh on its bounding box, so this build also writes src/shared/lobby/kitManifest.ts: each
 prop's size and where its bounding-box centre sits relative to its base, which code uses to
 stand props on the ground exactly.
 """
@@ -45,7 +45,7 @@ def props():
 		("Rock_B", lambda n: lowpoly.rock(n, (1.1, 1.0, 0.8), seed=14)),
 		("Pedestal", lambda n: lowpoly.pedestal(n)),
 		("RitualCandle", lambda n: lowpoly.ritual_candle(n)),
-		# The ritual items keep the exact heights the game code expects (shared/ritualItems.ts).
+		# The ritual items keep the exact heights the game code expects (shared/lobby/ritualItems.ts).
 		("Skull", lambda n: lowpoly.fit_height(lowpoly.skull(n, 1.0), 1.1)),
 		("Book", lambda n: lowpoly.book(n)),
 		("Candles", lambda n: lowpoly.candle_cluster(n)),
@@ -82,7 +82,7 @@ def _write_manifest(entries):
 			f"centre: new Vector3({centre[0]:.3f}, {centre[2]:.3f}, {centre[1]:.3f}) }},"
 		)
 	lines += ["};", ""]
-	path = os.path.join(REPO, "src", "shared", "kitManifest.ts")
+	path = os.path.join(REPO, "src", "shared", "lobby", "kitManifest.ts")
 	with open(path, "w") as handle:
 		handle.write("\n".join(lines))
 	with open(os.path.join(REPO, "assets", "models", "lobby_kit", "manifest.json"), "w") as handle:

@@ -1,6 +1,6 @@
 import { Workspace } from "@rbxts/services";
-import { rootOf } from "shared/characters";
-import { Entry } from "../world";
+import { rootOf } from "shared/core/characters";
+import { Entry } from "../world/world";
 import { flatDistance } from "./movement";
 import { getHooks, getWorld, holder } from "./state";
 import { Infected } from "./types";

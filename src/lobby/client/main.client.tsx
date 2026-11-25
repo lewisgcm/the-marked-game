@@ -1,8 +1,8 @@
 import React from "@rbxts/react";
 import { createPortal, createRoot } from "@rbxts/react-roblox";
 import { Players, ReplicatedStorage } from "@rbxts/services";
-import { onServerMessage, serverSender } from "shared/net";
-import { LobbyClientMessages, LobbyServerMessages, QUEUE_REMOTE_NAME } from "shared/remotes";
+import { onServerMessage, serverSender } from "shared/core/net";
+import { LobbyClientMessages, LobbyServerMessages, QUEUE_REMOTE_NAME } from "shared/core/remotes";
 import { PartyUi, PartyUiMode } from "./partyUi";
 
 const player = Players.LocalPlayer;

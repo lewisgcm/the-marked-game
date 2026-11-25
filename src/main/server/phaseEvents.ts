@@ -1,22 +1,22 @@
 import { Players } from "@rbxts/services";
-import { Clock, DayPhase } from "shared/phases";
-import { MUM, SUNDOWN } from "shared/walkie";
-import { refillPile } from "./barricades";
-import { addCoins } from "./coins";
-import { gameConfig } from "./config";
-import { refillGardens, restockContainers } from "./containers";
-import { returnAllTaken } from "./elimination";
-import { send } from "./gameRemote";
-import { healAll } from "./health";
+import { Clock, DayPhase } from "shared/run/phases";
+import { MUM, SUNDOWN } from "shared/economy/walkie";
+import { refillPile } from "./house/barricades";
+import { addCoins } from "./economy/coins";
+import { gameConfig } from "./core/config";
+import { refillGardens, restockContainers } from "./items/containers";
+import { returnAllTaken } from "./run/elimination";
+import { send } from "./core/gameRemote";
+import { healAll } from "./combat/health";
 import { retreatAll, spawnDormant, startNight } from "./infected/director";
-import { setPhaseLighting } from "./lighting";
-import { Neighbourhood } from "./neighbourhood";
-import { beginNight, clearSummary, endNight } from "./nightReport";
-import { getClock } from "./round";
-import { setStreetLights } from "./streetlights";
-import { isPlaying, livingKids } from "./teams";
-import { itemsOnOrder, refreshTrading, startTradingDay } from "./trading";
-import { refreshWalkie, say, sayMorningReport } from "./walkie";
+import { setPhaseLighting } from "./house/lighting";
+import { Neighbourhood } from "./world/neighbourhood";
+import { beginNight, clearSummary, endNight } from "./run/nightReport";
+import { getClock } from "./core/round";
+import { setStreetLights } from "./house/streetlights";
+import { isPlaying, livingKids } from "./core/teams";
+import { itemsOnOrder, refreshTrading, startTradingDay } from "./economy/trading";
+import { refreshWalkie, say, sayMorningReport } from "./economy/walkie";
 
 /** What happens as each phase of the day/night clock begins. */
 

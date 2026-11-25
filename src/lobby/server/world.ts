@@ -1,6 +1,6 @@
 import { Lighting, Workspace } from "@rbxts/services";
-import { findMeshAsset } from "shared/assets";
-import { configInt, getServerConfig } from "shared/serverConfig";
+import { findMeshAsset } from "shared/world/assets";
+import { configInt, getServerConfig } from "shared/core/serverConfig";
 import {
 	DEFAULT_COUNTDOWN,
 	DEFAULT_HIGHEST_PLAYERS,

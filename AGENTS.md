@@ -51,32 +51,37 @@ playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
 
 ## Code structure (main-game server)
 
+- **Folders are topics**, with the same names in `main/server`, `main/client`, `shared` and `tests/unit`:
+  `core`, `run`, `house`, `combat`, `infected`, `items`, `economy`, `world` (plus `hud` and `shops` for
+  UI, and `shared/lobby` for what the lobby uses). README → Structure lists them. Put a new file in the topic it's about; only the
+  entry points, `systems.ts` and `phaseEvents.ts` sit at the top level. A new topic needs a few files.
+- **Server `core/` never imports another server folder.** If it needs to, it isn't core.
 - **One system per file**, started by a `start…(hooks)` function. `systems.ts` starts them all and
   connects them; `phaseEvents.ts` says what happens as each phase begins; `main.server.ts` is only
   the start-up order. Keep game logic out of `main.server.ts`.
 - **Direct imports** for foundations any system may use: config, party, life, round, inventory,
   coins, prompts, effects, round stats, night report, world. **Hooks** for anything one system
   needs to know about or do to another (e.g. the infected damaging barricades). No import cycles.
-- Reuse the helpers: `shared/characters.ts` (root part, living Humanoid), `effects.ts` (sounds, hit
+- Reuse the helpers: `shared/core/characters.ts` (root part, living Humanoid), `effects.ts` (sounds, hit
   flash), `prompts.ts`, `infectedDamage.ts` (every weapon's hit goes through it).
 - A system that outgrows one file becomes a folder, like `infected/`: a new behaviour is a `Mode`
   plus one function in `behaviours.ts`.
-- **Adding a workbench upgrade:** an ID and an entry in `shared/upgrades.ts`, and its line in
+- **Adding a workbench upgrade:** an ID and an entry in `shared/economy/upgrades.ts`, and its line in
   `upgradeEffects.ts` (the compiler insists). The list, checks and messages need no changes.
-- **Adding something to make at the workbench:** an ID and an entry in `shared/recipes.ts`. An item with a
-  "Use" button also goes in `UsableItem` (`shared/inventory.ts`) and `itemUses.ts`.
-- **Adding something to trade:** an entry in a base's `sells` or `buys` in `shared/bases.ts`. The spec
+- **Adding something to make at the workbench:** an ID and an entry in `shared/economy/recipes.ts`. An item with a
+  "Use" button also goes in `UsableItem` (`shared/items/inventory.ts`) and `itemUses.ts`.
+- **Adding something to trade:** an entry in a base's `sells` or `buys` in `shared/economy/bases.ts`. The spec
   fails if it makes a money loop (a base buying what's sold, or planks and stones). A new base also
   needs its `BaseId` and its building in `bases.ts`.
 - **Shared modules with specs import only types** from other shared modules (Lune can't load
   roblox-ts runtime imports): pass data in as arguments instead.
-- **Exchanges** (coins for items) are pure functions taking a `Wallet` (`shared/trade.ts`), so the whole
+- **Exchanges** (coins for items) are pure functions taking a `Wallet` (`shared/economy/trade.ts`), so the whole
   swap is tested; the server passes in the kid's real coins and inventory.
-- **Text on screen** goes through the one message bar (`shared/messages.ts`): `notify` replies to what
+- **Text on screen** goes through the one message bar (`shared/core/messages.ts`): `notify` replies to what
   a kid just did (bottom line), `notifyAll` is news, `alertAll`/`alertPlayer` is danger, `say` is the
   walkie. Don't add other popups, and don't say what the world or the HUD already shows.
-- **Lists to buy from** use `client/shopPanel.tsx`; any other window uses `client/panel.tsx`. Shared
-  colours are in `client/theme.ts`, sounds go through `client/sound.ts`.
+- **Lists to buy from** use `client/shops/shopPanel.tsx`; any other window uses `client/core/panel.tsx`. Shared
+  colours are in `client/core/theme.ts`, sounds go through `client/core/sound.ts`.
 - **Numbers:** balance values that make sense alone go in `config.ts` (editable live in Studio).
   Tables and formulas (waves, loot, stack sizes) live in `src/shared/` so they can be unit-tested.
 
@@ -85,20 +90,20 @@ playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
 Anything that decides the game stays **server-side**: party lists, who's in the run, damage, and
 config. Concretely:
 
-- Config goes in `Configuration` instances in **ServerStorage** (`shared/serverConfig.ts`), not
+- Config goes in `Configuration` instances in **ServerStorage** (`shared/core/serverConfig.ts`), not
   Workspace/ReplicatedStorage. Values come from code and overwrite the place file at startup;
   test-only values use `configInt`'s Studio override, never a value saved in the place.
-- Lobby → main-game data goes through **MemoryStore** (`shared/partyHandoff.ts`), never
+- Lobby → main-game data goes through **MemoryStore** (`shared/lobby/partyHandoff.ts`), never
   `TeleportData` — it passes through the client and can be forged.
-- Party membership lives in a server-side set (`src/main/server/party.ts`), not on replicated
+- Party membership lives in a server-side set (`src/main/server/core/party.ts`), not on replicated
   attributes. The same goes for health, inventory and coins as they arrive.
 - Treat every `RemoteEvent` argument as hostile: type-check and validate it against server state.
-- Send and receive remote messages only through `shared/net.ts`, with the message maps in
-  `shared/remotes.ts`. Client -> server payloads arrive as `unknown` by design: validate them.
+- Send and receive remote messages only through `shared/core/net.ts`, with the message maps in
+  `shared/core/remotes.ts`. Client -> server payloads arrive as `unknown` by design: validate them.
 
 ## Tests
 
-Pure rules and validation get unit tests in `tests/unit/*.spec.luau` (run with `npm test`, Lune,
+Pure rules and validation get unit tests in `tests/unit/<topic>/*.spec.luau` (run with `npm test`, Lune,
 against compiled `out/`). When you add logic that can be a pure function — rates, thresholds,
 geometry, validating client input — write it as one (no Roblox services) and add a spec. Check a
 new test can fail (break the code briefly) before trusting it.
@@ -106,7 +111,7 @@ new test can fail (break the code briefly) before trusting it.
 ## Keep the docs current
 
 When you add or change player-facing behaviour, update **README.md → Regression test checklist**
-(and GAMEPLAY.md if the design changed). Tick off finished tasks in **PLAN.md**. New gameplay numbers go in `src/main/server/config.ts`
+(and GAMEPLAY.md if the design changed). Tick off finished tasks in **PLAN.md**. New gameplay numbers go in `src/main/server/core/config.ts`
 (or `src/lobby/server/config.ts`), not as constants scattered through the code.
 
 ## Gotchas
@@ -125,7 +130,7 @@ When you add or change player-facing behaviour, update **README.md → Regressio
   rewrote a helper named `spawn` into `task.spawn(player)`, and `return $tuple(x)` (needed by
   e.g. `DataStore:UpdateAsync`) into `return [x]`. Don't name things after Roblox globals; for
   `$tuple`, disable `roblox-ts/no-user-defined-lua-tuple` on that line.
-- **Main-game clients: read server state from `src/main/client/gameState.ts` stores — don't add
+- **Main-game clients: read server state from `src/main/client/core/gameState.ts` stores — don't add
   more `onServerMessage` listeners in UI components.** Roblox queues remote events until a
   listener connects but hands them only to the *first* one, so UI that subscribes later (after
   React mounts) missed messages — on a slow tablet the ghost never learned its role and had no
@@ -138,5 +143,5 @@ When you add or change player-facing behaviour, update **README.md → Regressio
 - **Blender -Y (front) imports as Roblox -Z (a part's LookVector).** A model facing Blender's
   front faces the way its MeshPart's CFrame looks — no 180° turn needed (verified with the skull).
 - **`MeshPart.MeshId` is read-only at runtime.** The asset ID lives in `assets/rojo/*.model.json`
-  and is synced by Rojo — never set it from code. `findMeshAsset` in `src/shared/assets.ts` looks
+  and is synced by Rojo — never set it from code. `findMeshAsset` in `src/shared/world/assets.ts` looks
   it up at runtime.

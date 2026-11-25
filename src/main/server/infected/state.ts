@@ -1,5 +1,5 @@
 import { Workspace } from "@rbxts/services";
-import { MainWorld } from "../world";
+import { MainWorld } from "../world/world";
 import { Infected, InfectedHooks, Mode } from "./types";
 
 /** Who's around, and what the rest of the game told us at start. Used by the other infected modules. */

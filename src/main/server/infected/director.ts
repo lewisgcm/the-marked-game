@@ -1,16 +1,16 @@
 import { CollectionService } from "@rbxts/services";
-import { INFECTED_TAG } from "shared/combat";
-import { newStun } from "shared/stun";
-import { infectedHealth, planNight, Wave, waveSize } from "shared/waves";
-import { gameConfig } from "../config";
-import { MainWorld } from "../world";
+import { INFECTED_TAG } from "shared/combat/combat";
+import { newStun } from "shared/infected/stun";
+import { infectedHealth, planNight, Wave, waveSize } from "shared/infected/waves";
+import { gameConfig } from "../core/config";
+import { MainWorld } from "../world/world";
 import { dissolve, think, wake } from "./behaviours";
 import { buildDadTemplate, buildTemplate, eyesOf, startWalkAnimation } from "./body";
 import { activeCount, alive, getHooks, getWorld, holder, isDadAround, setMode, setUpState } from "./state";
 import { Infected, InfectedHooks } from "./types";
 
 /**
- * The infected (shamblers for now), server-controlled. Waves come at night (shared/waves.ts),
+ * The infected (shamblers for now), server-controlled. Waves come at night (shared/infected/waves.ts),
  * from the spawn markers on all four sides, and retreat at dawn.
  *
  * Each one runs a small loop a few times a second:
@@ -24,11 +24,11 @@ import { Infected, InfectedHooks } from "./types";
  * still break. Dad breaks shutters.
  *
  * By day, **dormant** ones stand in the neighbours' houses staring at a screen until something
- * wakes them (shared/wake.ts, noise, or being hit). A woken one chases; by day it gives up on kids
+ * wakes them (shared/infected/wake.ts, noise, or being hit). A woken one chases; by day it gives up on kids
  * who get far away and goes back to its screen. Dad waits next door on Day 1, and Night 1's first
  * wave wakes him.
  *
- * A flashlight held on one for a moment **stuns** it for a couple of seconds (shared/stun.ts):
+ * A flashlight held on one for a moment **stuns** it for a couple of seconds (shared/infected/stun.ts):
  * it stops dead, its eyes dim, then it shrugs off beams for a while.
  *
  * Split up: types.ts, state.ts (who's around), body.ts (looks), movement.ts, senses.ts, behaviours.ts

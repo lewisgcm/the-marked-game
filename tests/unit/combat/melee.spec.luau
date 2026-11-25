@@ -1,0 +1,75 @@
+-- Melee reach and swing payload parsing (src/shared/combat/melee.ts).
+return function(t)
+	local melee = require("../../../out/shared/combat/melee")
+	local V = require("@lune/roblox").Vector3
+	local origin = V.new(0, 3, 0)
+	local look = V.new(0, 0, -1) -- facing -Z
+	local function at(degrees, distance, height)
+		local r = math.rad(degrees)
+		return V.new(math.sin(r) * distance, 3 + (height or 0), -math.cos(r) * distance)
+	end
+	local function check(point, reach, halfArc)
+		return melee.checkMeleeReach(origin, look, point, reach or 6, halfArc or 60)
+	end
+
+	t.describe("checkMeleeReach (6 studs, 120 degree arc)", function()
+		t.it("straight ahead in reach", function()
+			t.expect(check(at(0, 4))).toBe("ok")
+		end)
+		t.it("just inside the arc", function()
+			t.expect(check(at(55, 4))).toBe("ok")
+		end)
+		t.it("just outside the arc", function()
+			t.expect(check(at(65, 4))).toBe("outsideArc")
+		end)
+		t.it("behind the attacker", function()
+			t.expect(check(at(180, 3))).toBe("outsideArc")
+		end)
+		t.it("too far", function()
+			t.expect(check(at(0, 6.5))).toBe("tooFar")
+		end)
+		t.it("height counts toward reach", function()
+			t.expect(check(at(0, 4, 5))).toBe("tooFar")
+		end)
+		t.it("only the horizontal facing matters (looking down still hits ahead)", function()
+			t.expect(melee.checkMeleeReach(origin, V.new(0, -0.9, -0.1), at(0, 4), 6, 60)).toBe("ok")
+		end)
+		t.it("a target right on top of the attacker counts", function()
+			t.expect(check(origin + V.new(0.1, 0, 0))).toBe("ok")
+		end)
+		t.it("server tolerance lets a lagged target through", function()
+			-- On the server the target appears 8 studs away and 75 degrees off; with +3 studs
+			-- and +30 degrees of tolerance the client's hit stands.
+			t.expect(check(at(75, 8), 6 + 3, 60 + 30)).toBe("ok")
+			t.expect(check(at(75, 8))).toBe("tooFar")
+		end)
+	end)
+
+	t.describe("parseSwingCandidates", function()
+		-- The server passes "is a tagged Infected model"; numbers stand in for that here.
+		local function isNumber(v)
+			return type(v) == "number" and v == v
+		end
+		local function parse(payload)
+			return melee.parseSwingCandidates(payload, isNumber)
+		end
+		t.it("keeps the accepted values, in order", function()
+			local kept = parse({ 1, 2, 3 })
+			t.expect(#kept).toBe(3)
+			t.expect(kept[2]).toBe(2)
+		end)
+		t.it("returns nothing for a non-table", function()
+			t.expect(#parse("1,2")).toBe(0)
+			t.expect(#parse(nil)).toBe(0)
+		end)
+		t.it("drops values the check rejects", function()
+			local kept = parse({ "x", 5, 0 / 0, true, 7 })
+			t.expect(#kept).toBe(2)
+			t.expect(kept[1]).toBe(5)
+			t.expect(kept[2]).toBe(7)
+		end)
+		t.it("caps the list length", function()
+			t.expect(#parse({ 1, 2, 3, 4, 5, 6, 7, 8, 9 })).toBe(melee.MAX_SWING_CANDIDATES)
+		end)
+	end)
+end

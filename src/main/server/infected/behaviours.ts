@@ -1,10 +1,10 @@
 import { CollectionService } from "@rbxts/services";
-import { INFECTED_TAG } from "shared/combat";
-import { isStunned, stepStun } from "shared/stun";
-import { shouldWake } from "shared/wake";
-import { gameConfig } from "../config";
-import { playSound } from "../effects";
-import { Entry, isInsideHouse } from "../world";
+import { INFECTED_TAG } from "shared/combat/combat";
+import { isStunned, stepStun } from "shared/infected/stun";
+import { shouldWake } from "shared/infected/wake";
+import { gameConfig } from "../core/config";
+import { playSound } from "../core/effects";
+import { Entry, isInsideHouse } from "../world/world";
 import { dimEyes, fadeToStatic } from "./body";
 import { face, flat, flatDistance, pathTo, stop, walkTo } from "./movement";
 import {

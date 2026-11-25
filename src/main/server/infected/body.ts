@@ -1,5 +1,5 @@
 import { InsertService, Players, ServerStorage } from "@rbxts/services";
-import { gameConfig } from "../config";
+import { gameConfig } from "../core/config";
 import { Infected } from "./types";
 
 /** What the infected look like: the bodies they're cloned from, eyes, walking, and the static. */

@@ -1,9 +1,9 @@
 import { Players } from "@rbxts/services";
-import { LastTitle, loadLastTitleAsync } from "shared/lastTitle";
+import { LastTitle, loadLastTitleAsync } from "shared/lobby/lastTitle";
 
 /**
  * Shows each player's title from their last run (e.g. "Slugger") floating above their
- * head in the lobby, until they play again. The main game saves it (shared/lastTitle.ts) at the
+ * head in the lobby, until they play again. The main game saves it (shared/lobby/lastTitle.ts) at the
  * end of each run; it expires after an hour.
  */
 

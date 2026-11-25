@@ -1,6 +1,6 @@
-import { DamageResult } from "shared/barricade";
-import { StunState } from "shared/stun";
-import { Entry } from "../world";
+import { DamageResult } from "shared/house/barricade";
+import { StunState } from "shared/infected/stun";
+import { Entry } from "../world/world";
 
 /** The infected's shared types. */
 

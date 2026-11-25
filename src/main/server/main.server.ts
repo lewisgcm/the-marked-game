@@ -1,17 +1,17 @@
-import { buildBases } from "./bases";
-import { gameConfig } from "./config";
-import { startElimination } from "./elimination";
-import { isRoundServer, startGatekeeper } from "./gatekeeper";
-import { setupLighting } from "./lighting";
-import { setUpAll, setUpCharacter, startLoadouts } from "./loadout";
-import { buildNeighbourhood } from "./neighbourhood";
-import { addLateJoiners, setMembers, waitForParty } from "./party";
+import { buildBases } from "./world/bases";
+import { gameConfig } from "./core/config";
+import { startElimination } from "./run/elimination";
+import { isRoundServer, startGatekeeper } from "./run/gatekeeper";
+import { setupLighting } from "./house/lighting";
+import { setUpAll, setUpCharacter, startLoadouts } from "./run/loadout";
+import { buildNeighbourhood } from "./world/neighbourhood";
+import { addLateJoiners, setMembers, waitForParty } from "./core/party";
 import { onPhase } from "./phaseEvents";
-import { resync } from "./resync";
-import { runRun } from "./round";
-import { onRunEnd, returnToLobby } from "./roundEnd";
+import { resync } from "./run/resync";
+import { runRun } from "./core/round";
+import { onRunEnd, returnToLobby } from "./run/roundEnd";
 import { listenToClients, startSystems } from "./systems";
-import { buildMainWorld } from "./world";
+import { buildMainWorld } from "./world/world";
 
 /**
  * Main game entry point. The order matters:

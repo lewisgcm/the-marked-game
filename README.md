@@ -58,12 +58,12 @@ ground.
 - **Scoreboard:** a noticeboard beside the path shows the **top 10 players by total wins**, all-time
   across every server, and each player's **Wins** appear in the Roblox player list. Wins are
   recorded by the main game when a round ends (everyone on the winning side; not in Studio) and
-  saved with DataStore (`src/shared/stats.ts`, `src/lobby/server/leaderboard.ts`).
+  saved with DataStore (`src/shared/lobby/stats.ts`, `src/lobby/server/leaderboard.ts`).
 - Lighting (night, crimson haze, bloom) lives in `setupLighting()` in `src/lobby/server/world.ts`.
 - All set dressing is built at runtime in `src/lobby/server/decor.ts` from plain parts with a fixed
   random seed, so the layout is the same every run. It's a blockout: the chapel, gate, trees and
   ritual items are meant to become Blender models later.
-- Candle flicker runs on each client (`src/shared/flicker.ts`, started from
+- Candle flicker runs on each client (`src/shared/world/flicker.ts`, started from
   `src/lobby/client/candleFlicker.client.ts`), driven by the `FlickerLight` CollectionService tag, so it costs no network traffic.
 
 ## The main game
@@ -79,14 +79,14 @@ still join.
    there are no roles.
 2. **"DAY 1" title card.** 4 seconds over a dark screen with everyone frozen (the server anchors
    each character).
-3. **The day/night clock** (`shared/phases.ts`, driven by `round.ts`): Day (3:00) → Dusk (0:45)
+3. **The day/night clock** (`shared/run/phases.ts`, driven by `round.ts`): Day (3:00) → Dusk (0:45)
    → Night (2:30) → Dawn (0:45), then the next day, with no last night. In Studio the phases are
    90/20/60/15 seconds. The top of the screen shows e.g. "NIGHT 2 · 1:12" in the phase's colour
    (red in the last 10s of day or dusk); how each phase is announced is in
-   `shared/announce.ts` (a banner for days and nights, a pulse of the clock at dusk, the dawn card at
+   `shared/run/announce.ts` (a banner for days and nights, a pulse of the clock at dusk, the dawn card at
    dawn, always with a chime); the sky and indoor light blend to the phase over ~6s (`lighting.ts`).
    - Kids start in the **basement** of the family house (a blockout built at runtime by
-     `src/main/server/world.ts`; layout diagram at the top of that file) with a **flashlight**,
+     `src/main/server/world/world.ts`; layout diagram at the top of that file) with a **flashlight**,
      a **baseball bat** and a **slingshot**. Ground floor: living room, dining room, kitchen, garage (workbench,
      generator, plank pile), hall with stairs up and down. Upstairs: two bedrooms, the parents'
      room, a bathroom. Front, back and garage doors and six ground-floor windows are open gaps,
@@ -101,55 +101,55 @@ still join.
      positions (reach and arc plus lag tolerance, a wall raycast, the tag, a cooldown) before
      taking 20 off their Humanoid's health. Feedback: a hit marker (red on a kill) and a red flash
      on the target.
-   - **Slingshot** (`slingshot.ts`, rules in `shared/ranged.ts`): click to fire a stone where you
+   - **Slingshot** (`slingshot.ts`, rules in `shared/combat/ranged.ts`): click to fire a stone where you
      aim (the mouse on PC, the screen centre on touch). The client only sends the direction; the
      server checks it and casts the shot itself from the kid's head: 10 damage, 80 studs, one
      shot every 0.6s. Stones come from the inventory.
-   - **Flashlight stun** (`shared/stun.ts`): hold a beam on an infected for 0.6s and it stops
+   - **Flashlight stun** (`shared/infected/stun.ts`): hold a beam on an infected for 0.6s and it stops
      dead for 2s, eyes dimmed; then beams don't work on it for 5s.
-   - **Workbench** (`workbench.ts`, list in `shared/upgrades.ts`): spend coins on tougher planks, a
+   - **Workbench** (`workbench.ts`, list in `shared/economy/upgrades.ts`): spend coins on tougher planks, a
      door bar (a fourth, sturdier plank on the front and back doors) and rucksacks (8 and 12
      slots). Rucksacks are personal; the rest are for the whole party, whoever pays. It also makes things
-     from scrap (`crafting.ts`, list in `shared/recipes.ts`): **window shutters**, and with the **scrap
+     from scrap (`crafting.ts`, list in `shared/economy/recipes.ts`): **window shutters**, and with the **scrap
      press**, nails and stones.
    - **Window shutters** (`barricades.ts`): use one next to a window. It sits behind the planks; shamblers
      can't hurt it and go and find another way in. Dad can break it. It can't be taken down.
-   - **Bases** (`bases.ts`, `trading.ts`; who sells what in `shared/bases.ts`): the **Treehouse** (from
+   - **Bases** (`bases.ts`, `trading.ts`; who sells what in `shared/economy/bases.ts`): the **Treehouse** (from
      Day 2) at the left end of Maple Street and the **Fire Station** (Day 3) at the right. Each restocks
      every morning, for the whole party, and buys food, batteries and scrap. Each also orders 2–3 of one
      of them every morning (no two bases the same), paying double until the order's filled. Nails cost 15% more every day. Closed at night.
-   - **Walkie-talkie** (`walkie.ts`, what's said in `shared/walkie.ts`): a few seconds into each day Mum
+   - **Walkie-talkie** (`walkie.ts`, what's said in `shared/economy/walkie.ts`): a few seconds into each day Mum
      and every base in contact report in (what they want, and what they pay). The first new message
      pops up in the message bar; the button on the left (or T) opens the bases and the log. Mum
      gives the sundown warning. Any system can speak with `say(from, text)`.
    - **Maple Street** (`neighbourhood.ts`): four houses to search (`containers.ts`, tables in
-     `shared/loot.ts`). A searched container stays empty for the run, except that 3 get something the bases have on
+     `shared/items/loot.ts`). A searched container stays empty for the run, except that 3 get something the bases have on
      order every morning; nails get scarcer every night.
      Gardens have stones, back every dawn. A minute before dusk: a warning, and the street lamps.
-   - **Inventory** (`inventory.ts`, rules in `shared/inventory.ts`): 5 slots of stacks down the right
+   - **Inventory** (`inventory.ts`, rules in `shared/items/inventory.ts`): 5 slots of stacks down the right
      edge; tap one to Drop it (or Use a medkit or a shutter; `itemUses.ts`). Kids start with 20 stones and 10 nails.
      Coins and the starter tools use no slots. A taken kid's slots are left where they were.
    - **Dormant infected** stand in the neighbours' houses by day, staring at the TV. Crossing in
-     front, touching one, a torch beam, a nearby noise or a hit wakes it (`shared/wake.ts`); it gives
+     front, touching one, a torch beam, a nearby noise or a hit wakes it (`shared/infected/wake.ts`); it gives
      up 70 studs away. They're extra to the night's waves and stay put at night. Dad waits in the
      left neighbour's garden on Day 1 and joins Night 1's first wave.
    - **Generator** (`generator.ts`): a switch in the garage for every house light; it starts off.
      With it off, waves are 1.4× bigger (never on Night 1); it only counts once it's been on for 20s
      (8s in Studio), so flicking it on as a wave arrives doesn't help. Running it **at night** burns fuel (rules
-     in `shared/fuel.ts`): it starts with one night's worth, a can adds one, and the tank holds three.
+     in `shared/house/fuel.ts`): it starts with one night's worth, a can adds one, and the tank holds three.
      Cans take a whole slot each and turn up in tool chests and car boots. The tune-up halves the burn.
-   - **Messages** (`shared/messages.ts`): one at a time in the bar under the clock, danger first (it
+   - **Messages** (`shared/core/messages.ts`): one at a time in the bar under the clock, danger first (it
      interrupts), then the walkie, then news, with Night 1 tips when it's free; and a short line near
      the bottom replying to what you just did.
-   - **Tips** on Day 1 / Night 1 in that bar (`shared/hints.ts`), and a **dawn card** with what
-     the night cost (`shared/nightSummary.ts`, counted in `nightReport.ts`).
-   - **Barricades** (`barricades.ts`, rules in `shared/barricade.ts`): a **Take planks** prompt on
+   - **Tips** on Day 1 / Night 1 in that bar (`shared/run/hints.ts`), and a **dawn card** with what
+     the night cost (`shared/run/nightSummary.ts`, counted in `nightReport.ts`).
+   - **Barricades** (`barricades.ts`, rules in `shared/house/barricade.ts`): a **Take planks** prompt on
      the garage pile gives up to 5 (the pile starts at 30, +10 every dawn). Every door and
      window takes 3 planks: hold **Board up** (E) to nail one (a
      plank and a nail), **Take down** (F) to pull one off
      and get both back. While any plank is up the opening is blocked for everyone. Planks have 100
      health (double if nailed on Day/Night 1); the infected will wear down the outermost one.
-   - **The infected** (`infected/`, waves in `shared/waves.ts`): at night they come in waves
+   - **The infected** (`infected/`, waves in `shared/infected/waves.ts`): at night they come in waves
      from all four sides (Night 1: Dad + 1, then 2 more; from Night 2, three growing waves scaled
      by party size). Rigged models with glowing red eyes (MODELLING.md): hooded shamblers, and **Dad**, who comes
      every night. Each walks to the nearest door or window, bashes the planks (15 a hit every
@@ -162,9 +162,9 @@ still join.
      (resetting, falling) counts as taken. The run ends when every kid is taken at once, never on
      Night 1.
 4. **End.** The run ends when every kid is taken at once (never on Night 1). The **end screen** (15s) shows "SURVIVED N NIGHTS" and a card per kid: avatar, a fun **title** (Slugger, Carpenter, First Taken, Survivor)
-   and a few stats, counted on the server (`src/main/server/roundStats.ts`, rules in
-   `src/shared/scoreboard.ts`). **Back to lobby** leaves early; the title then floats over the
-   player's head in the lobby for an hour (`src/shared/lastTitle.ts`, MemoryStore). Then everyone
+   and a few stats, counted on the server (`src/main/server/core/roundStats.ts`, rules in
+   `src/shared/run/scoreboard.ts`). **Back to lobby** leaves early; the title then floats over the
+   player's head in the lobby for an hour (`src/shared/lobby/lastTitle.ts`, MemoryStore). Then everyone
    is teleported back to the lobby they came from; anyone the teleport can't move is kicked with a
    "rejoin" message rather than left stuck. Nothing is recorded on the lobby's Wins board any more
    (it becomes best run + total nights in M6).
@@ -173,42 +173,46 @@ still join.
 
 Everything that decides the game runs on the server: who's in the party, the clock, every hit and
 how much damage it does. Clients only send button presses — tool clicks and the lobby's *Create* —
-and the server validates each one. Remote messages are typed (`src/shared/remotes.ts` +
-`src/shared/net.ts`), so a misspelt message is a compile error. Public state (run phase and clock)
+and the server validates each one. Remote messages are typed (`src/shared/core/remotes.ts` +
+`src/shared/core/net.ts`), so a misspelt message is a compile error. Public state (run phase and clock)
 is published as attributes for the HUD. See [AGENTS.md](AGENTS.md#server-authority-anti-exploit).
 
 ## Structure
 
 ```
 src/
-  shared/              # compiled to ReplicatedStorage.Shared (both places)
-    characters.ts      # root part / living Humanoid lookups
-    remotes.ts, net.ts # typed remote message maps + send/receive helpers
-    serverConfig.ts    # ServerStorage config written from code
-    parts.ts, flicker.ts, tags.ts      # world-building helpers, client light flicker
-    ritualItems.ts, assets.ts          # book/candles/skull models (lobby pedestals, until M6), mesh lookup
-    round.ts, combat.ts, melee.ts, flashlight.ts, scoreboard.ts  # shared rules/state (one spec each in tests/unit)
-    partyHandoff.ts, safeTeleport.ts, placeIds.ts   # lobby -> main game handoff
+  shared/              # rules and data for both sides (both places); pure ones have a spec in tests/unit
+    core/              # remotes + net (typed messages), tags, serverConfig, characters, messages, placeIds, safeTeleport
+    run/               # phases, round, announce, scoreboard, nightSummary, hints
+    house/             # barricade, fuel
+    combat/            # combat, melee, ranged, flashlight
+    infected/          # waves, wake, stun
+    items/             # inventory, loot, gains, slotLayout
+    economy/           # bases, pricing, trade, upgrades, recipes, walkie
+    world/             # parts, walls, flicker, assets (mesh lookup)
+    lobby/             # partyHandoff (lobby -> main), lastTitle, stats, kitManifest, ritualItems (until M6)
   lobby/
     server/            # world.ts, decor.ts (churchyard), queue.ts (parties), zoneDisplay.tsx, config.ts
     client/            # main.client.tsx, partyUi.tsx, candleFlicker.client.ts
   main/
-    server/            # main.server.ts (entry: the start-up order), config.ts (tuning)
-                       # wiring: systems.ts (starts and connects everything), phaseEvents.ts (what
-                       #   each phase does), loadout.ts (setup on spawn), elimination.ts (taken,
-                       #   spectating), roundEnd.ts, resync.ts (re-send state on "Ready"),
-                       #   gameRemote.ts, teams.ts, party.ts, gatekeeper.ts, admission.ts
-                       # systems: round.ts (day/night clock), lighting.ts, streetlights.ts, life.ts,
-                       #   health.ts, inventory.ts, coins.ts, containers.ts, barricades.ts,
-                       #   generator.ts, workbench.ts, upgradeEffects.ts, crafting.ts, itemUses.ts, trading.ts, walkie.ts, flashlight.ts, combat.ts, slingshot.ts, hints.ts,
-                       #   nightReport.ts, roundStats.ts
-                       # infected/: director.ts (spawning, waves), behaviours.ts (one function per
-                       #   mode), senses.ts, movement.ts, body.ts, state.ts, types.ts
-                       # world: world.ts (the house), neighbourhood.ts, bases.ts, npc.ts, building.ts
-                       # helpers: effects.ts, prompts.ts, wallet.ts, infectedDamage.ts
-    client/            # main.client.tsx (entry), gameState.ts (stores for server messages), roundHud,
-                       # endScreen, messageQueue.ts, messageBar, gainFeed.ts, device.ts, theme.ts, sound.ts, panel, inventoryHud, dawnCard, shopPanel, workbenchUi, tradeUi, walkieUi, spectate, combatFeedback, melee.ts,
-                       # slingshot.ts, faceCamera.ts, flashlight.ts (beam visuals)
+    server/            # main.server.ts (entry: the start-up order), systems.ts (starts and connects
+                       #   everything), phaseEvents.ts (what each phase does), and:
+      core/            # config (tuning), party, life, teams, round (day/night clock), roundStats, gameRemote, prompts, effects
+      run/             # gatekeeper, admission, loadout (setup on spawn), elimination (taken, spectating),
+                       #   roundEnd, resync (re-send state on "Ready"), nightReport, hints
+      house/           # barricades, generator, lighting, streetlights
+      combat/          # combat (bat), slingshot, flashlight, torch, health, infectedDamage
+      infected/        # director (spawning, waves), behaviours (one function per mode), senses,
+                       #   movement, body, state, types
+      items/           # inventory, itemUses, containers
+      economy/         # coins, wallet, workbench, upgradeEffects, crafting, trading, walkie
+      world/           # world (the house), building, neighbourhood, bases, npc, cars, wrecks, fire, models
+    client/            # main.client.tsx (entry), and:
+      core/            # gameState (stores for server messages), theme, sound, device, panel, useViewport
+      hud/             # roundHud, messageBar, messageQueue, inventoryHud, gainFeed, walkieUi, dawnCard
+      shops/           # shopPanel, workbenchUi, tradeUi
+      combat/          # melee, slingshot, flashlight (beam visuals), faceCamera, combatFeedback
+      run/             # spectate, endScreen
 
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
 lobby.project.json     # lobby place only
@@ -216,7 +220,7 @@ main.project.json      # main game place only
 
 tests/                 # unit tests run with Lune against the compiled out/ modules
   run.luau             #   tiny runner (describe / it / expect); `npm test`
-  unit/*.spec.luau     #   flashlight cone, generator fuel, party size, admission, melee reach + swing parsing, scoreboard titles
+  unit/<topic>/        #   one spec per module, in the same topic folders as src/
 tools/blender/         # 3D models, built from Python with headless Blender (lib/sdf.py for organic shapes)
 assets/
   models/              # generated FBX / GLB / preview PNG (committed)
@@ -314,7 +318,7 @@ npm run build:dev     # → build/dev.rbxlx  (both places together)
 
 1. Create two places (lobby + main game) in one universe via the
    [Creator Dashboard](https://create.roblox.com).
-2. Copy both place IDs into `src/shared/placeIds.ts`: `MAIN_GAME_PLACE_ID` (lobby → game) and
+2. Copy both place IDs into `src/shared/core/placeIds.ts`: `MAIN_GAME_PLACE_ID` (lobby → game) and
    `LOBBY_PLACE_ID` (back to the lobby after a round). Until they're set, the lobby countdown logs
    "place ID not configured" instead of teleporting, and the main game stays put after the end screen.
    The MemoryStore party handoff also needs the places published (and, to test it from Studio,
@@ -336,7 +340,7 @@ npm run build:dev     # → build/dev.rbxlx  (both places together)
 **All gameplay numbers live in code**, in two files:
 
 - `src/lobby/server/config.ts` — zone count, floor size, countdown, party size.
-- `src/main/server/config.ts` — **the main game's tuning numbers**: run timings (arrival timeout,
+- `src/main/server/core/config.ts` — **the main game's tuning numbers**: run timings (arrival timeout,
   countdown, run length, end screen, respawn delay), how dark unlit rooms are (DarkRoomLight,
   applied live), and melee (bat damage/range/cooldown, swing arc and lag tolerances). Each value
   has a comment saying what it does.
@@ -349,12 +353,12 @@ as they go); the change doesn't stick, so copy a good value back into the config
 Some settings have a **Studio-only value** in code (a 3-minute run instead of 8, a party minimum
 of 1 so the lobby pads can be tested solo), applied only when running in Studio.
 
-The one exception: the flashlight's range and cone angle live in `src/shared/flashlight.ts`,
+The one exception: the flashlight's range and cone angle live in `src/shared/combat/flashlight.ts`,
 because every client also needs them to draw the beam, and clients can't read ServerStorage.
 
 ## Automated tests
 
-`npm test` compiles the TypeScript and runs `tests/unit/*.spec.luau` with
+`npm test` compiles the TypeScript and runs `tests/unit/<topic>/*.spec.luau` with
 [Lune](https://lune-org.github.io/docs) (a standalone Luau runtime, pinned in `rokit.toml`). The
 tests load the **compiled** modules from `out/`, so they check exactly what ships.
 

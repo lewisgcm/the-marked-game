@@ -1,7 +1,7 @@
 --[[
 	Unit-test runner for pure game logic, run with Lune (a standalone Luau runtime):
 
-		npm test          # compiles TypeScript, then runs every tests/unit/*.spec.luau
+		npm test          # compiles TypeScript, then runs every tests/unit/<topic>/*.spec.luau
 
 	Tests load the *compiled* modules from out/, so they test exactly what ships. Only code that
 	doesn't touch the Roblox engine can be tested here (rules, maths, validation). Tests can build
@@ -63,9 +63,16 @@ end
 local t = { describe = describe, it = it, expect = expect }
 
 local specs = {}
-for _, file in fs.readDir("tests/unit") do
-	if string.match(file, "%.spec%.luau$") then
-		table.insert(specs, file)
+for _, folder in fs.readDir("tests/unit") do
+	if fs.isDir("tests/unit/" .. folder) then
+		for _, file in fs.readDir("tests/unit/" .. folder) do
+			if string.match(file, "%.spec%.luau$") then
+				table.insert(specs, folder .. "/" .. file)
+			end
+		end
+	elseif string.match(folder, "%.spec%.luau$") then
+		-- It would never run: specs live in topic folders.
+		error(`tests/unit/{folder} should be in a folder`)
 	end
 end
 table.sort(specs)

@@ -1,6 +1,6 @@
 import { ReplicatedStorage } from "@rbxts/services";
-import { sized } from "shared/assets";
-import { KIT_PROPS, KitPropName } from "shared/kitManifest";
+import { sized } from "shared/world/assets";
+import { KIT_PROPS, KitPropName } from "shared/lobby/kitManifest";
 
 /**
  * The low-poly lobby kit (tools/blender/assets/lobby_kit.py): MeshParts in
@@ -8,7 +8,7 @@ import { KIT_PROPS, KitPropName } from "shared/kitManifest";
  * rather than their centre.
  *
  * Roblox centres each mesh on its bounding box, so the generated manifest
- * (shared/kitManifest.ts) says where that centre sits relative to the base. Meshes never
+ * (shared/lobby/kitManifest.ts) says where that centre sits relative to the base. Meshes never
  * collide (Rojo can't bake mesh collision data); `collide` adds an invisible Part instead.
  */
 
@@ -87,7 +87,7 @@ export function placeKit(
 	const raw = options.scale ?? 1;
 	const scale = typeIs(raw, "number") ? new Vector3(raw, raw, raw) : raw;
 	const mesh = source.Clone();
-	mesh.Size = source.Size.mul(scale); // real-size template (shared/assets.ts sized)
+	mesh.Size = source.Size.mul(scale); // real-size template (shared/world/assets.ts sized)
 	mesh.CFrame = base.mul(new CFrame(centreOffset(name, scale)));
 	mesh.Parent = parent;
 
