@@ -21,10 +21,12 @@ export function housesA(): Tile {
 	roadLines(t, -98, 0, 98, 0);
 	roadLines(t, 0, -98, 0, -12);
 
-	for (const x of [-50, 50]) {
-		bungalow(t, new CFrame(x, 0, 45));
-		bungalow(t, new CFrame(x, 0, -45).mul(turn(180)));
-	}
+	// The front gardens are short, so the cars are parked along the kerb.
+	const kerb = new CFrame(13, 0.1, -37.5).mul(turn(90));
+	bungalow(t, new CFrame(-50, 0, 45), { car: "Estate", at: kerb });
+	bungalow(t, new CFrame(50, 0, 45), { car: "Hatchback", at: kerb });
+	bungalow(t, new CFrame(-50, 0, -45).mul(turn(180)), { car: "Minivan", at: kerb });
+	bungalow(t, new CFrame(50, 0, -45).mul(turn(180)));
 
 	t.folder("Gardens");
 	for (const x of [-78, -22, 22, 78]) {

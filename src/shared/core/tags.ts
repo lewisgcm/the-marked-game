@@ -40,3 +40,6 @@ export const DORMANT_SPOT_TAG = "DormantSpot";
 export const DAD_SPOT_TAG = "DadSpot";
 /** The Home tile's box showing where the family house goes (removed in the game). */
 export const HOME_PLOT_TAG = "HomePlot";
+/** Map tiles' spots for a parked car or a street wreck: the "Car" or "Wreck" attribute says which. */
+export const CAR_SPOT_TAG = "CarSpot";
+export const WRECK_SPOT_TAG = "WreckSpot";

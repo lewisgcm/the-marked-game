@@ -1,5 +1,5 @@
-import { CFrame } from "../lib/cframe.ts";
-import { fence, oak, pointLight, post, roadLines, signText, streetLamp, wall } from "../lib/build.ts";
+import { CFrame, turn } from "../lib/cframe.ts";
+import { fence, oak, pointLight, post, roadLines, signText, streetLamp, wall, wreck } from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -63,6 +63,9 @@ export function fireStation(): Tile {
 		attributes: { Base: "FireStation" },
 	});
 	t.box("HoseRack", -20, floor + 3, 10, 1, 6, 8, S.FIRE_RED, station);
+	// An ambulance by the kerb, clear of the engine bay (search its medical bag), and a burning tank up the road.
+	wreck(t, "Ambulance", new CFrame(-30, 0.1, 4).mul(turn(90)));
+	wreck(t, "Tank", new CFrame(72, 0.1, -2).mul(turn(82)));
 
 	t.folder("Yard");
 	// Across the road: the car park and the training tower.

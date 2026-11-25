@@ -272,7 +272,7 @@ rokit install            # installs Rojo (pinned in rokit.toml)
 rojo plugin install      # installs the Rojo Studio plugin
 npm install              # installs roblox-ts + TypeScript packages
 
-# 2. Compile TypeScript and watch for changes (terminal 1)
+# 2. Compile TypeScript and rebuild the map tiles on every save (terminal 1)
 npm run watch
 
 # 3. Start a live sync server for one place (terminal 2)
@@ -521,7 +521,8 @@ apply from the next phase.
 - [ ] The Treehouse kid and the Fire Station chief stand behind their counters (turned with their tile), and trading works at both. The fire engine's model replaces the red block.
 - [ ] Roads that run off the map end at a red and white roadblock, and you can't walk off any edge.
 - [ ] At night the infected come from across the street, the back garden and both sides, and find their way in.
-- [ ] Searching, stones and street lamps work on every tile. (No parked cars or street wrecks yet.)
+- [ ] Searching, stones and street lamps work on every tile.
+- [ ] Parked cars (with a boot to search) outside the Home neighbours and along the kerb in other streets; the crashed and burnt cars in Home's street (fire, smoke, steam), the ambulance (medical bag) and burning tank by the Fire Station, the school bus in the trees by the Treehouse. You can't walk through them, they turn with their tile, and a car or wreck whose model can't load is a plain block.
 - [ ] With `UseTiledMap` 0 the old map is back, as it was.
 
 ### Maple Street

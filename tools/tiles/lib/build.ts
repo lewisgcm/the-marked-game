@@ -134,6 +134,47 @@ export function marker(t: Tile, tag: "DormantSpot" | "DadSpot" | "InfectedSpawn"
 	t.inFolder("Markers", () => t.part(tag, [2, 5, 1], at, S.MARKER, { tags: [tag] }));
 }
 
+/** The parked cars' models (src/main/server/world/cars.ts), and their sizes for the markers. */
+export const CARS = {
+	Minivan: [6.21, 6.46, 13.6],
+	Hatchback: [5.61, 4.71, 11.4],
+	Estate: [5.81, 6.3, 14.6],
+	IceCreamVan: [7.25, 9.3, 13.4],
+} satisfies Record<string, [number, number, number]>;
+export type CarName = keyof typeof CARS;
+
+/** The street wrecks (src/main/server/world/wrecks.ts, which has their colliders, loot and fires). */
+export const WRECKS = {
+	SchoolBus: [8.4, 7.8, 22.2],
+	Tank: [9, 5.8, 14],
+	Ambulance: [5.8, 8, 13.4],
+	CrashedCar: [5.2, 4.3, 11],
+	BurntCar: [5, 4.1, 10.8],
+} satisfies Record<string, [number, number, number]>;
+export type WreckName = keyof typeof WRECKS;
+
+/**
+ * Where the game parks a car (its model, loaded in code, with a boot to search). `at` is on the
+ * ground under its middle, its front (-Z) the way it faces; the marker is the car's size.
+ */
+export function car(t: Tile, name: CarName, at: CFrame) {
+	const size = CARS[name];
+	t.inFolder("Markers", () =>
+		t.part("CarSpot", size, at.at(0, size[1] / 2, 0), S.MARKER, { tags: ["CarSpot"], attributes: { Car: name } }),
+	);
+}
+
+/** Where the game puts a wreck (its model, colliders, loot and fires). Like `car`. */
+export function wreck(t: Tile, name: WreckName, at: CFrame) {
+	const size = WRECKS[name];
+	t.inFolder("Markers", () =>
+		t.part("WreckSpot", size, at.at(0, size[1] / 2, 0), S.MARKER, {
+			tags: ["WreckSpot"],
+			attributes: { Wreck: name },
+		}),
+	);
+}
+
 /** Where a dormant infected stands (its middle, 3 above the floor), facing its screen. */
 export function dormant(t: Tile, at: CFrame) {
 	marker(t, "DormantSpot", at);
@@ -169,7 +210,7 @@ export function streetLamp(t: Tile, frame: CFrame) {
  * A neighbour's bungalow, 36 x 26, its front (-Z) to the street: living room (TV, someone watching it,
  * drawers) on the left, kitchen (cupboards, tool chest) on the right, a path and stones out front.
  */
-export function bungalow(t: Tile, frame: CFrame) {
+export function bungalow(t: Tile, frame: CFrame, parked?: { car: CarName; at: CFrame }) {
 	const [floor, halfW, halfD, height] = [0.3, 18, 13, 11];
 	t.folder("Houses");
 	t.slab("Floor", -halfW, halfW, -halfD, halfD, floor, S.FLOORBOARDS, frame);
@@ -191,6 +232,7 @@ export function bungalow(t: Tile, frame: CFrame) {
 	t.folder("Gardens");
 	t.slab("Path", 4, 8, -28, -halfD - 0.5, 0.12, S.PAVING, frame);
 	stones(t, -3, -21, frame);
+	if (parked) car(t, parked.car, frame.mul(parked.at));
 }
 
 // --- Nature ------------------------------------------------------------------------------------------

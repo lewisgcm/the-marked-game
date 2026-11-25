@@ -21,10 +21,12 @@ interface Box {
 	at: Vector3;
 }
 
+export type WreckName = "SchoolBus" | "Tank" | "Ambulance" | "CrashedCar" | "BurntCar";
+
 interface Wreck {
 	/** The mesh's name. */
-	name: string;
-	/** On the ground under its middle; it faces the LookVector. */
+	name: WreckName;
+	/** On the old map: on the ground under its middle; it faces the LookVector. (Tiles have their own spots.) */
 	at: CFrame;
 	/** What it collides as, in its own space (y up from the ground). */
 	boxes: Box[];
@@ -87,9 +89,24 @@ const WRECKS: Wreck[] = [
 	},
 ];
 
-export function buildWrecks() {
+/** Whether `name` is a wreck there's a model for. */
+export function isWreckName(name: unknown): name is WreckName {
+	return WRECKS.some((w) => w.name === name);
+}
+
+/**
+ * Puts the wrecks in: each at its spot on the old map, or at `spots` (the tiled map's, each on the
+ * ground under its middle, facing its LookVector). Their models load in the background.
+ */
+export function buildWrecks(spots?: Array<{ name: WreckName; at: CFrame }>) {
 	const wrecks = folder(Workspace, "Wrecks");
-	const built = WRECKS.map((wreck) => {
+	const placed = spots
+		? spots.mapFiltered((spot) => {
+				const wreck = WRECKS.find((w) => w.name === spot.name);
+				return wreck ? { ...wreck, at: spot.at } : undefined;
+			})
+		: WRECKS;
+	const built = placed.map((wreck) => {
 		const holder = folder(wrecks, wreck.name);
 		const blocks = wreck.boxes.map(({ size, at }) =>
 			part(holder, "Collider", size, wreck.at.mul(new CFrame(at)), { ...METAL, transparency: 1, shadow: false }),

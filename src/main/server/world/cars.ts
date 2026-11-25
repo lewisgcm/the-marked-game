@@ -20,6 +20,11 @@ const CAR_SIZES = {
 };
 export type CarName = keyof typeof CAR_SIZES;
 
+/** Whether `name` is a car there's a model for. */
+export function isCarName(name: unknown): name is CarName {
+	return typeIs(name, "string") && name in CAR_SIZES;
+}
+
 const METAL: PartOptions = { material: Enum.Material.Metal, color: new Color3(0.5, 0.52, 0.56) };
 /** The boot panel: between the tail lights and above the bumper of every car. */
 const BOOT_SIZE = new Vector3(2.4, 0.7, 0.3);

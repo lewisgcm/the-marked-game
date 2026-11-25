@@ -1,5 +1,5 @@
 import { CFrame, turn, UPRIGHT } from "../lib/cframe.ts";
-import { campfire, logSeat, oak, pine, post, roadLines, scatter, signText, stones, wall } from "../lib/build.ts";
+import { campfire, logSeat, oak, pine, post, roadLines, scatter, signText, stones, wall, wreck } from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -49,6 +49,9 @@ export function treehouse(): Tile {
 	logSeat(t, 23, 24, 90);
 	stones(t, 18, -28);
 
+	// The school bus, on its side in the trees beside the road: how the gang got here, maybe.
+	wreck(t, "SchoolBus", new CFrame(52, 0, -30).mul(turn(80)));
+
 	t.folder("Trees");
 	scatter(
 		t,
@@ -58,6 +61,7 @@ export function treehouse(): Tile {
 			[-44, 44, -44, 44],
 			[30, 100, -16, 16],
 			[74, 100, -100, 100],
+			[38, 66, -40, -20], // the bus
 		],
 		new Random(11),
 		pine,
@@ -70,6 +74,7 @@ export function treehouse(): Tile {
 		[
 			[-100, 78, -100, 100],
 			[0, 100, -18, 18],
+			[38, 66, -40, -20],
 		],
 		new Random(5),
 		oak,

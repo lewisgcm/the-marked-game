@@ -5,7 +5,7 @@ out differently each run. This file says what's in each tile and the rules for m
 `GAMEPLAY.md` §8 says what the places are *for*.
 
 **Status:** in the game in Studio (`UseTiledMap` is 1 there, 0 live), being tried out. The family house is
-still built in code, on the Home tile's plot; there are no parked cars or street wrecks on the tiled map yet.
+still built in code, on the Home tile's plot.
 
 ## Looking at them
 
@@ -68,23 +68,27 @@ Always at the bottom middle of the map, never turned.
 - **Neighbours:** four bungalows like Houses_A's (TV and dormant infected, drawers, cupboards, tool chest,
   stones). The beside ones moved in from x ±95 to ±72 to fit the tile.
 - **Dad:** a `DadSpot` marker in the left neighbour's front garden, where he stands on Day 1.
-- **Street lamps:** 4. Cars are still to come (meshes).
+- **Street lamps:** 4.
+- **Cars:** today's four (minivan and estate in the front gardens beside, the hatchback and ice-cream van at
+  the kerb across the road). **Wrecks:** the crashed car at a lamp post and the burnt car.
 
 ### FireStation
 The adult base: today's station (brick, an open engine bay and the trading counter in the side bay) on a
 straight street, with a car park and a training tower across the road. Safe, so nothing to loot.
-- The engine is a plain red block until meshes go in tiles; the ambulance and tank wrecks are still to come.
+- The engine's red block is swapped for its model in the game. The ambulance (search its medical bag) is by
+  the kerb, and the burning tank up the road.
 
 ### Houses_A
 A residential street with a side road north (a T-junction). Four neighbours' houses, two each side, with
 fenced gardens; a small green with a bench between the southern two.
 - **Each house:** living room with a TV and a dormant infected watching it, drawers (Drawers), kitchen
   cupboards (Kitchen), tool chest (Garage), stones in the front garden.
-- **Street lamps:** 4, off until evening.
+- **Street lamps:** 4, off until evening. **Cars:** three, along the kerb (the front gardens are short).
 
 ### Treehouse
 The kids' base: a clearing in a pine forest at the end of the road. A safe place, so there's nothing to loot.
 - **The tree:** house up in the branches (for show), sign, and the trading counter at its foot.
+- **The school bus**, on its side in the trees beside the road.
 - **Camp:** a cold campfire with log seats; stones nearby.
 
 ### Meadow_A
@@ -163,8 +167,12 @@ plan (0.2 s in all), giving about 960 different maps. `npm test` checks 500 of t
 4. **The templates are destroyed before any system starts**, or tag searches would find them too.
 5. Markers are read and hidden: dormant spots, Dad's spot and the night's infected spawns. The Home plot
    box is removed. Traders stand behind their counters, and the fire engine's model replaces its block.
+6. Cars and wrecks are put at their spots by the same code as the old map (`cars.ts`, `wrecks.ts`, which
+   have their models, colliders, boots, loot and fires), and the spot markers removed.
 
-After changing a tile, run `npm run tiles:build` (or `npm run tiles`) and Rojo syncs it; stop and Play again.
+`npm run watch` rebuilds the tiles (and the gallery) whenever a tile's file is saved, beside compiling the
+game, and Rojo syncs them; stop and Play again. (`npm run tiles:watch` does just the tiles. The watcher
+doesn't type-check: `npm run tiles:build` and `npm test` do.)
 
 ## Making a tile
 
@@ -190,6 +198,8 @@ After changing a tile, run `npm run tiles:build` (or `npm run tiles`) and Rojo s
 | `DadSpot` | Where Dad waits on Day 1 (Home only, exactly one) | |
 | `InfectedSpawn` | Where the night's infected appear, facing the house (Home only) | |
 | `HomePlot` | Where the code-built house goes (Home only); removed in the game | |
+| `CarSpot` | A parked car: a box the car's size, sitting on the ground, its front (-Z) the way it faces. Use `car()` | `Car`: Minivan, Hatchback, Estate or IceCreamVan |
+| `WreckSpot` | A street wreck, like a car. Use `wreck()` | `Wreck`: SchoolBus, Tank, Ambulance, CrashedCar or BurntCar |
 
 Markers are red and see-through so they show in Studio; the game hides them. Use `marker()` in
 `tools/tiles/lib/build.ts`.
@@ -198,12 +208,11 @@ Markers are red and see-through so they show in Studio; the game hides them. Use
 
 ## Not done yet
 
-- **Meshes** (cars, wrecks, the fire engine): a MeshPart's size doesn't survive JSON reliably, so this needs a
-  test in Studio first. NPCs and fires stay in code.
+- **Meshes in the tile files themselves:** not needed so far. Cars, wrecks and the fire engine are placed in
+  code at the tiles' markers, from their uploaded models. A MeshPart's size may not survive JSON, so test it
+  in Studio before putting one straight into a tile.
 - **Saving a Studio edit back to JSON:** needs a converter. Until then, edits in Studio are lost (and a
   coded tile's next build would replace them anyway).
-- **Parked cars and street wrecks** on the tiled map: markers for where they go (their models load in code,
-  as today).
 - **Live:** turn `UseTiledMap` on for live servers once it's been played, then delete the old map's code
   (`neighbourhood.ts`, `bases.ts`'s buildings, `wrecks.ts`' positions, `world.ts`' grounds and spawns).
 - **The family house in the Home tile**, built from markers instead of code (with the game switch-over).

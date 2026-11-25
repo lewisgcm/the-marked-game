@@ -1,5 +1,5 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { bungalow, fence, marker, oak, roadLines, streetLamp } from "../lib/build.ts";
+import { bungalow, fence, marker, oak, roadLines, streetLamp, wreck } from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -44,11 +44,22 @@ export function home(): Tile {
 	t.slab("Path", 4, 8, 17, plotZ0, 0.15, S.PAVING);
 
 	// Next door either side, and two across the street.
+	// Each with its car: in the front garden beside the house; along the kerb across the road, where the
+	// gardens are shorter.
 	const left = new CFrame(-72, 0, 55);
-	bungalow(t, left);
-	bungalow(t, new CFrame(72, 0, 55));
-	bungalow(t, new CFrame(-60, 0, -37).mul(turn(180)));
-	bungalow(t, new CFrame(60, 0, -37).mul(turn(180)));
+	bungalow(t, left, { car: "Minivan", at: new CFrame(13, 0, -23.3) });
+	bungalow(t, new CFrame(72, 0, 55), { car: "Estate", at: new CFrame(13, 0, -23.8) });
+	bungalow(t, new CFrame(-60, 0, -37).mul(turn(180)), {
+		car: "Hatchback",
+		at: new CFrame(13, 0.1, -29.5).mul(turn(90)),
+	});
+	bungalow(t, new CFrame(60, 0, -37).mul(turn(180)), {
+		car: "IceCreamVan",
+		at: new CFrame(13, 0.1, -30.5).mul(turn(90)),
+	});
+	// Crashes in the street: a car into the lamp post, and a burnt-out one.
+	wreck(t, "CrashedCar", new CFrame(-82, 0.1, 8.5).mul(turn(188)));
+	wreck(t, "BurntCar", new CFrame(78, 0.1, -1).mul(turn(110)));
 	// Day 1: Dad, in the left neighbour's front garden, staring in at the living-room TV.
 	marker(t, "DadSpot", left.at(-10, 3.3, -17).mul(turn(180)));
 	// Where the night's infected appear, each facing the house: across the street, the back garden,

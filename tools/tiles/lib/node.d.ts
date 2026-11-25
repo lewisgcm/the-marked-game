@@ -6,5 +6,12 @@ declare module "node:fs" {
 	export function existsSync(path: string): boolean;
 	export function rmSync(path: string): void;
 }
+declare module "node:child_process" {
+	export function spawnSync(
+		command: string,
+		args: string[],
+		options: { stdio: "inherit" },
+	): { status: number | null };
+}
 declare const process: { argv: string[]; exitCode: number | undefined };
 declare const console: { log(...values: unknown[]): void };

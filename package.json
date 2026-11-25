@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rbxtsc",
-    "watch": "rbxtsc -w",
+    "watch": "npm run -s tiles:watch & rbxtsc -w",
     "serve": "npm run -s tiles:build && rojo serve",
     "serve:lobby": "rojo serve lobby.project.json",
     "serve:main": "npm run -s tiles:build && rojo serve main.project.json",
@@ -14,6 +14,7 @@
     "build:main": "npm run -s tiles:build && rojo build main.project.json -o build/main.rbxlx",
     "build:dev": "npm run -s tiles:build && rojo build default.project.json -o build/dev.rbxlx",
     "tiles:build": "tsc -p tools/tiles && node tools/tiles/build.ts",
+    "tiles:watch": "node --watch --watch-preserve-output tools/tiles/build.ts --gallery",
     "tiles": "npm run -s tiles:build && lune run tools/tiles/gallery",
     "models": "bash tools/blender/build.sh",
     "lint": "eslint src",

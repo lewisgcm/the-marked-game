@@ -1,9 +1,11 @@
 /**
  * Builds the map tiles from tools/tiles/tiles/*.ts into Rojo model files (build/tiles/models), which
- * the gallery and, later, the game read. Run by `npm run tiles`. See MAP.md.
+ * the game and the gallery read. Run by `npm run tiles:build`, `npm run tiles`, and `npm run tiles:watch`
+ * (again on every save; with --gallery, it lays the gallery out too). See MAP.md.
  *
  * Hand-edited tiles (assets/tiles) aren't built here: a tile is either coded here or hand-edited there.
  */
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import type { Tile } from "./lib/tile.ts";
 import { fireStation } from "./tiles/FireStation.ts";
@@ -37,3 +39,6 @@ for (const make of TILES) {
 // Tiles whose code has gone. (Not the whole folder: Rojo may be watching it.)
 for (const file of readdirSync(OUT)) if (!written.has(file)) rmSync(`${OUT}/${file}`);
 console.log(`Built ${written.size} tiles into ${OUT}`);
+if (process.argv.includes("--gallery")) {
+	spawnSync("lune", ["run", "tools/tiles/gallery"], { stdio: "inherit" });
+}

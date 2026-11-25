@@ -1,5 +1,12 @@
 import { CollectionService, ServerStorage, Workspace } from "@rbxts/services";
-import { DAD_SPOT_TAG, DORMANT_SPOT_TAG, HOME_PLOT_TAG, INFECTED_SPAWN_TAG } from "shared/core/tags";
+import {
+	CAR_SPOT_TAG,
+	DAD_SPOT_TAG,
+	DORMANT_SPOT_TAG,
+	HOME_PLOT_TAG,
+	INFECTED_SPAWN_TAG,
+	WRECK_SPOT_TAG,
+} from "shared/core/tags";
 import {
 	completeLayout,
 	Layout,
@@ -12,7 +19,9 @@ import {
 import { FALLBACK_TILES, HOME_ORIGIN, MAP_RULES } from "shared/world/mapRules";
 import { folder, part, place } from "shared/world/parts";
 import { edgesJoin, Edges, OPPOSITE, parseEdge, SIDES, turnEdges } from "shared/world/tiles";
+import { isCarName, loadCars, parkCar } from "./cars";
 import type { Neighbourhood } from "./neighbourhood";
+import { buildWrecks, isWreckName, WreckName } from "./wrecks";
 
 /**
  * The map built from tiles (MAP.md): plans it from a seed, places the tiles, and reads their markers.
@@ -66,6 +75,41 @@ function takeMarkers(map: Instance, tag: string): CFrame[] {
 		}
 	}
 	return found;
+}
+
+/**
+ * Spot markers tagged `tag` in the map (a car's or a wreck's box, sitting on the ground): calls `use`
+ * with each one's `attribute` and the ground under its middle, then removes it.
+ */
+function takeSpots(map: Instance, tag: string, attribute: string, use: (name: unknown, at: CFrame) => void) {
+	for (const spot of CollectionService.GetTagged(tag)) {
+		if (spot.IsA("BasePart") && spot.IsDescendantOf(map)) {
+			use(spot.GetAttribute(attribute), spot.CFrame.mul(new CFrame(0, -spot.Size.Y / 2, 0)));
+			spot.Destroy();
+		}
+	}
+}
+
+/** Parks the cars and puts the wrecks where the tiles' markers say. */
+function placeCarsAndWrecks(map: Folder) {
+	const cars = folder(map, "Cars");
+	takeSpots(map, CAR_SPOT_TAG, "Car", (name, at) => {
+		if (isCarName(name)) {
+			parkCar(cars, name, at);
+		} else {
+			warn(`[Map] A CarSpot says Car = ${name}, which isn't a car.`);
+		}
+	});
+	loadCars();
+	const wrecks: Array<{ name: WreckName; at: CFrame }> = [];
+	takeSpots(map, WRECK_SPOT_TAG, "Wreck", (name, at) => {
+		if (isWreckName(name)) {
+			wrecks.push({ name, at });
+		} else {
+			warn(`[Map] A WreckSpot says Wreck = ${name}, which isn't a wreck.`);
+		}
+	});
+	buildWrecks(wrecks);
 }
 
 /** A red and white barrier across a road where it runs off the map. */
@@ -163,6 +207,7 @@ export function buildTiledMap(seed: number): TiledMap {
 			plot.Destroy(); // only there to show where the house goes
 		}
 	}
+	placeCarsAndWrecks(map);
 	const dad = takeMarkers(map, DAD_SPOT_TAG);
 	if (dad.size() !== 1) {
 		warn(`[Map] Expected one Dad spot, found ${dad.size()}.`);

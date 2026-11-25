@@ -246,8 +246,9 @@ The map becomes 200×200-stud tiles, laid out differently each run (MAP.md). Not
       on, live off): seed printed and settable, fallback map, roadblocks, boundary, markers for dormant
       spots, Dad and spawns, traders at their counters. Spec for placement and the fallback.
 - [x] **Studio check** (25 Nov 2026): README → "The tiled map" looks good.
-- [ ] Cars and wrecks on the tiled map; a strip of woods behind home; then live, and retire the code-built
-      street and bases; update GAMEPLAY §8.
+- [x] Cars and wrecks on the tiled map: `CarSpot` / `WreckSpot` markers, placed by the old map's code. Studio check ✓.
+- [x] `npm run watch` rebuilds the map tiles (and the gallery) on save too (`tiles:watch`).
+- [ ] A strip of woods behind home; then live, and retire the code-built street and bases; update GAMEPLAY §8.
 
 ## M3 — Workbench, trading and the walkie-talkie
 
