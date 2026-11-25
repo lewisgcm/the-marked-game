@@ -9,7 +9,7 @@ export const BARRICADE_SLOT_TAG = "BarricadeSlot";
 /** Door and window prompts: clients show them only while the hammer is held. */
 export const BUILD_PROMPT_TAG = "BuildPrompt";
 
-/** Invisible markers outside the house where infected appear (built by world.ts, or in the Home tile). */
+/** Map tiles' markers where the night's infected appear (MAP.md); an "Order" attribute sorts them. */
 export const INFECTED_SPAWN_TAG = "InfectedSpawn";
 
 /** The house's own ceiling lights (they'll follow the generator). */

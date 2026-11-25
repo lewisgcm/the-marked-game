@@ -60,3 +60,23 @@ export function turnEdges(edges: Edges, turns: number): Edges {
 	const at = (i: number) => edges[SIDES[(((i - turns) % 4) + 4) % 4]];
 	return { North: at(0), East: at(1), South: at(2), West: at(3) };
 }
+
+/** Whether an edge carries a road or path. */
+export function hasRoute(edge: string): boolean {
+	const parsed = parseEdge(edge);
+	return parsed !== undefined && parsed.route !== "None";
+}
+
+/**
+ * The edge rules, bundled for the layout planner (shared/world/layout.ts), which imports only types
+ * and so is handed these.
+ */
+export interface TileRules {
+	sides: Side[];
+	opposite: Record<Side, Side>;
+	edgesJoin: (a: string, b: string) => boolean;
+	turnEdges: (edges: Edges, turns: number) => Edges;
+	hasRoute: (edge: string) => boolean;
+}
+
+export const TILE_RULES: TileRules = { sides: SIDES, opposite: OPPOSITE, edgesJoin, turnEdges, hasRoute };

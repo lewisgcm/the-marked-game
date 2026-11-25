@@ -21,28 +21,15 @@ local edges = compiled("../../out/shared/world/tiles")
 
 local tiles = {}
 
-tiles.SIZE = 200
+tiles.SIZE = compiled("../../out/shared/world/layout").TILE_SIZE
 --- Built from tools/tiles/tiles/*.ts, and edited by hand.
 tiles.FOLDERS = { "build/tiles/models", "assets/tiles" }
-tiles.SIDES = edges.SIDES
-tiles.parseEdge = edges.parseEdge
-tiles.edgesJoin = edges.edgesJoin
-tiles.turnEdges = edges.turnEdges
-
---- The edge rules in the form the layout planner takes (src/shared/world/layout.ts).
-tiles.RULES = {
-	sides = edges.SIDES,
-	opposite = edges.OPPOSITE,
-	edgesJoin = edges.edgesJoin,
-	turnEdges = edges.turnEdges,
-	hasRoute = function(edge: string): boolean
-		local parsed = edges.parseEdge(edge)
-		return parsed ~= nil and parsed.route ~= "None"
-	end,
-}
+--- The edge rules, for the layout planner (src/shared/world/layout.ts).
+tiles.RULES = edges.TILE_RULES
+--- Out of each side, as x, z.
+tiles.OUTWARD = { North = { 0, -1 }, East = { 1, 0 }, South = { 0, 1 }, West = { -1, 0 } }
 
 local EDGE = tiles.SIZE / 2
-local OUTWARD = { North = { 0, -1 }, East = { 1, 0 }, South = { 0, 1 }, West = { -1, 0 } }
 
 --- Each tile's edge labels, by name: the planner's catalogue.
 function tiles.catalogue(all: { [string]: any }): { [string]: { [string]: string } }
@@ -173,7 +160,7 @@ function tiles.check(name: string, tile: any, containerKinds: { [string]: any })
 				problem(`{label} at {x}, {z} sticks out of the tile`)
 			end
 			if instance.name == "Road" then
-				for side, out in OUTWARD do
+				for side, out in tiles.OUTWARD do
 					local reach = out[1] * x + out[2] * z + math.abs(out[1]) * halfX + math.abs(out[2]) * halfZ
 					local across = math.abs(out[2]) * x + math.abs(out[1]) * z
 					if reach > EDGE - 0.01 and math.abs(across) < 0.01 then
@@ -191,8 +178,8 @@ function tiles.check(name: string, tile: any, containerKinds: { [string]: any })
 		end
 	end)
 
-	for _, side in tiles.SIDES do
-		local parsed = tiles.parseEdge(labels[side])
+	for _, side in edges.SIDES do
+		local parsed = edges.parseEdge(labels[side])
 		if not parsed then
 			problem(`{side} edge "{labels[side]}" isn't a Route/Ground label`)
 		elseif (parsed.route == "Road") ~= (roadReaches[side] == true) then

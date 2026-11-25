@@ -236,6 +236,28 @@ return function(t)
 		end)
 	end)
 
+	t.describe("borderPlacements", function()
+		local border = { behindAnchor = "Behind", elsewhere = "Plain" }
+		local placed = layout.borderPlacements(MAP_RULES, border, { column = 1, row = 0 }, { x = 0, z = -61 })
+		t.it("puts one behind each column of row 0, the special one behind home", function()
+			t.expect(#placed).toBe(MAP_RULES.columns)
+			for i, p in placed do
+				t.expect(p.tile).toBe(if i - 1 == 1 then "Behind" else "Plain")
+				t.expect(p.x).toBe((i - 2) * 200)
+			end
+		end)
+		t.it("puts them just south of row 0, touching it", function()
+			-- Home's tile reaches z -61 + 100 = 39; a border tile is 100 deep, so its middle is at 89.
+			t.expect(placed[1].z).toBe(89)
+		end)
+		t.it("uses the real border tiles", function()
+			local rules = require("../../../out/shared/world/mapRules")
+			local catalogue = tiles.catalogue(tiles.loadAll())
+			t.expect(catalogue[rules.SOUTH_BORDER.behindAnchor] ~= nil).toBe(true)
+			t.expect(catalogue[rules.SOUTH_BORDER.elsewhere] ~= nil).toBe(true)
+		end)
+	end)
+
 	t.describe("seededRandom", function()
 		t.it("stays between 0 and 1, and repeats for a seed", function()
 			local a, b = layout.seededRandom(9), layout.seededRandom(9)

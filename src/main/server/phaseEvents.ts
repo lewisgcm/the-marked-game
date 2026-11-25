@@ -10,7 +10,7 @@ import { send } from "./core/gameRemote";
 import { healAll } from "./combat/health";
 import { retreatAll, spawnDormant, startNight } from "./infected/director";
 import { setPhaseLighting } from "./house/lighting";
-import { Neighbourhood } from "./world/neighbourhood";
+import type { Street } from "./world/map";
 import { beginNight, clearSummary, endNight } from "./run/nightReport";
 import { getClock } from "./core/round";
 import { setStreetLights } from "./house/streetlights";
@@ -36,7 +36,7 @@ function onSundown() {
 	say(MUM, SUNDOWN);
 }
 
-function onDay(clock: Clock, street: Neighbourhood) {
+function onDay(clock: Clock, street: Street) {
 	clearSummary();
 	spawnDormant(street.dormantSpots, clock.night, clock.night === 1 ? street.dadSpot : undefined);
 	startTradingDay();
@@ -63,14 +63,14 @@ function onDawn(clock: Clock) {
 	Players.GetPlayers().forEach((p) => send(p, "NightSummary", summary));
 }
 
-const ON_PHASE: Record<DayPhase, (clock: Clock, street: Neighbourhood) => void> = {
+const ON_PHASE: Record<DayPhase, (clock: Clock, street: Street) => void> = {
 	Day: onDay,
 	Dusk: () => {},
 	Night: onNight,
 	Dawn: onDawn,
 };
 
-export function onPhase(clock: Clock, street: Neighbourhood) {
+export function onPhase(clock: Clock, street: Street) {
 	print(`[Main] ${clock.phase} ${clock.night}`);
 	setPhaseLighting(clock.phase);
 	ON_PHASE[clock.phase](clock, street);

@@ -6,8 +6,9 @@
 		npm run serve:tiles         # builds, then live-syncs it into Studio
 
 	- Gallery: every tile on its own, in a row, with its edge labels.
-	- Layouts: the run's map (src/shared/world/mapRules.ts) for each seed, planned the way the game will
-	  (src/shared/world/layout.ts), with a roadblock wherever a road runs off the map.
+	- Layouts: the run's map (src/shared/world/mapRules.ts) for each seed, planned and placed the way the
+	  game does it (src/shared/world/layout.ts), with the woods behind home's row and a roadblock wherever
+	  a road runs off the map.
 
 	build/tiles/view is thrown away and rebuilt: edit the tiles (tools/tiles/tiles) instead.
 ]]
@@ -17,17 +18,17 @@ local process = require("@lune/process")
 local serde = require("@lune/serde")
 local tiles = require("./tiles")
 local layout = require("../../out/shared/world/layout")
-local MAP_RULES = require("../../out/shared/world/mapRules").MAP_RULES
+local mapRules = require("../../out/shared/world/mapRules")
+local MAP_RULES = mapRules.MAP_RULES
 
 local OUT = "build/tiles/view"
 local GAP = 60
---- The gallery's row, south of the layouts.
+--- The gallery's row, south of the layouts (and the woods behind them).
 local GALLERY_Z = 460
 --- Seeds to show when none are given.
 local DEFAULT_SEEDS = { 1, 2, 3 }
 
 local IDENTITY = { 1, 0, 0, 0, 1, 0, 0, 0, 1 }
-local OUTWARD = { North = { 0, -1 }, East = { 1, 0 }, South = { 0, 1 }, West = { -1, 0 } }
 
 --- A plain part (no material: SmoothPlastic).
 local function block(name: string, size: { number }, cf: { number }, color: { number }): any
@@ -115,7 +116,7 @@ for i, name in names do
 	local model = tiles.move(all[name], 0, x, GALLERY_Z)
 	table.insert(model.children, label(name, x, 60, GALLERY_Z, 14))
 	local edges = all[name].attributes or {}
-	for side, out in { North = { 0, -1 }, East = { 1, 0 }, South = { 0, 1 }, West = { -1, 0 } } do
+	for side, out in tiles.OUTWARD do
 		local reach = tiles.SIZE / 2 - 8
 		table.insert(
 			model.children,
@@ -150,9 +151,16 @@ for i, seed in seeds do
 		failed += 1
 		print(`  Seed {seed}: {problem}`)
 	end
-	-- Row 0 (home's) is at z = 0; rows count north (-Z).
+	-- Placed as the game places them (layout.tilePlacement), but with the grid centred on `offset` and
+	-- row 0 (home's) at z = 0.
+	local home = MAP_RULES.fixed[1]
+	local origin = { x = offset + (home.column - (MAP_RULES.columns - 1) / 2) * tiles.SIZE, z = 0 }
 	local function centre(column: number, row: number): (number, number)
-		return offset + (column - (MAP_RULES.columns - 1) / 2) * tiles.SIZE, -row * tiles.SIZE
+		local placed = layout.tilePlacement({ tile = "", column = column, row = row, turns = 0 }, home, origin)
+		return placed.x, placed.z
+	end
+	for _, border in layout.borderPlacements(MAP_RULES, mapRules.SOUTH_BORDER, home, origin) do
+		write(folder, `border_{border.x}_{border.tile}`, tiles.move(all[border.tile], 0, border.x, border.z))
 	end
 	local rows = {}
 	for _, placement in planned.tiles do
@@ -165,7 +173,7 @@ for i, seed in seeds do
 	table.insert(extras.children, label(`Seed {seed}`, offset, 70, top - tiles.SIZE / 2 - 20, 20))
 	for _, open in planned.openEnds do
 		local x, z = centre(open.column, open.row)
-		local out = OUTWARD[open.side]
+		local out = tiles.OUTWARD[open.side]
 		table.insert(extras.children, roadblock(open.side, x + out[1] * (tiles.SIZE / 2 - 2), z + out[2] * (tiles.SIZE / 2 - 2)))
 	end
 	write(folder, "Extras", extras)

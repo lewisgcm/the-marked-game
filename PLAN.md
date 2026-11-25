@@ -227,28 +227,33 @@ No gameplay changes: `main/server`, `main/client`, `shared` and the specs are gr
 
 ## Map tiles (25 Nov 2026)
 
-The map becomes 200×200-stud tiles, laid out differently each run (MAP.md). Not used by the game yet.
+The map is 200×200-stud tiles, laid out differently each run (MAP.md): the game's only map since 25 Nov.
 
 - [x] Five sample tiles, a gallery to view them in Studio (`npm run serve:tiles`), and checks on every tile.
       Spec.
 - [x] Tiles are written in TypeScript (`tools/tiles`) and built to JSON, not hand-written JSON (25 Nov 2026):
       a tenth of the size, shared pieces, typed. A tile edited in Studio becomes JSON in `assets/tiles`.
 - [x] **Studio check**: the gallery and sample map look right.
-- [ ] Studio check: editing a tile and re-running `npm run tiles` updates Studio live.
-- [ ] Meshes in tiles (cars, wrecks), tested in Studio; a converter for edits made in Studio.
+- [x] Studio check: editing a tile updates Studio live (after a stale Rojo plugin was reconnected).
+- [ ] A converter for tiles edited in Studio (when someone wants to). Meshes straight in tile files: not
+      needed so far (cars, wrecks and the engine are placed in code at markers).
 - [x] Home tile (Maple Street round a plot where the code-built house goes) and the Fire Station; the map's
       rules use them (home fixed, Fire Station on home's row or the next).
-- [ ] More filler tiles; the family house built from the Home tile's markers.
+- [ ] More filler tiles and the 3 × 4 map with M5's places; the family house built from the Home tile's markers.
 - [x] Pick a layout from a seed (`shared/world/layout.ts`, rules in `mapRules.ts`): home fixed, places in
       their rows, edges joined, every place reachable by road, roads off the map listed. Spec. The gallery
       shows the map for any seeds (`npm run tiles -- 7 42`).
-- [x] Build the run's map from tiles in the game (`world/map.ts`, `tiledMap.ts`), behind `UseTiledMap` (Studio
-      on, live off): seed printed and settable, fallback map, roadblocks, boundary, markers for dormant
-      spots, Dad and spawns, traders at their counters. Spec for placement and the fallback.
-- [x] **Studio check** (25 Nov 2026): README → "The tiled map" looks good.
+- [x] Build the run's map from tiles in the game (`world/map.ts`): seed printed and settable (`MapSeed`),
+      fallback map, roadblocks, boundary, markers for dormant spots, Dad and spawns, traders at their
+      counters. Spec for placement and the fallback. (Tried behind a `UseTiledMap` switch first.)
+- [x] **Studio check** (25 Nov 2026): README → "The map" looks good.
 - [x] Cars and wrecks on the tiled map: `CarSpot` / `WreckSpot` markers, placed by the old map's code. Studio check ✓.
 - [x] `npm run watch` rebuilds the map tiles (and the gallery) on save too (`tiles:watch`).
-- [ ] A strip of woods behind home; then live, and retire the code-built street and bases; update GAMEPLAY §8.
+- [x] Woods along the south edge, behind home's row (border tiles); the night's back and side spawns moved
+      into them, 42-48 from the house again. Spawns have an `Order`: Dad comes from the first. Spec.
+- [x] The tiled map is the only map: the switch, `neighbourhood.ts`, the old base buildings, wreck positions
+      and the house's own grounds and spawns are gone. GAMEPLAY §8 updated.
+- [ ] **Studio check** (you): README → "The map", especially the night's spawns from the woods.
 
 ## M3 — Workbench, trading and the walkie-talkie
 

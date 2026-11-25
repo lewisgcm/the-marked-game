@@ -392,6 +392,11 @@ A typical day earns ~15–30 coins for the party. Ammo prices go up about 15% pe
 The map grows outward; new areas open on the morning walkie report. Walking time from home is the
 main cost — further away means better loot and a later trip home.
 
+**Every run's map is different.** It's built from tiles (MAP.md): home is always at the south edge with
+Maple Street, each place lands somewhere in its band of distance from home, and what's between them
+(streets, fields, forest, swamp) changes, but the roads always join up. Woods line the edge behind home.
+The diagram below is how the places relate, not a fixed layout.
+
 ```
                  [Radio tower] (rescue call, night 10+)
                         │

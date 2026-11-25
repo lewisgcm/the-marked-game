@@ -1,11 +1,11 @@
 # The map: tiles
 
-The neighbourhood is being rebuilt from **tiles**: 200×200-stud areas that always look the same, laid
-out differently each run. This file says what's in each tile and the rules for making one.
-`GAMEPLAY.md` §8 says what the places are *for*.
+The neighbourhood is built from **tiles**: 200×200-stud areas that always look the same, laid out
+differently each run. This file says what's in each tile and the rules for making one. `GAMEPLAY.md` §8
+says what the places are *for*.
 
-**Status:** in the game in Studio (`UseTiledMap` is 1 there, 0 live), being tried out. The family house is
-still built in code, on the Home tile's plot.
+**Status:** the game's map (a 3 × 2 trial). The family house is still built in code, on the Home tile's
+plot.
 
 ## Looking at them
 
@@ -50,13 +50,15 @@ Edges are **route/ground** (see below). Parts are a guide to the cost of a tile.
 
 | Tile | North | East | South | West | Loot | Stones | Dormant | Parts |
 |---|---|---|---|---|---|---|---|---|
-| [Home](#home) | Road/Grass | Road/Town | None/Grass | Road/Town | 12 | 4 | 4 | 255 |
-| [FireStation](#firestation) | None/Grass | Road/Town | None/Grass | Road/Town | – | – | – | 96 |
-| [Houses_A](#houses_a) | Road/Grass | Road/Town | None/Grass | Road/Town | 12 | 4 | 4 | 329 |
-| [Treehouse](#treehouse) | None/Forest | Road/Grass | None/Forest | None/Forest | – | 1 | – | 231 |
+| [Home](#home) | Road/Grass | Road/Town | None/Grass | Road/Town | 12 | 4 | 4 | 262 |
+| [FireStation](#firestation) | None/Grass | Road/Town | None/Grass | Road/Town | – | – | – | 98 |
+| [Houses_A](#houses_a) | Road/Grass | Road/Town | None/Grass | Road/Town | 12 | 4 | 4 | 332 |
+| [Treehouse](#treehouse) | None/Forest | Road/Grass | None/Forest | None/Forest | – | 1 | – | 232 |
 | [Meadow_A](#meadow_a) | Road/Grass | None/Grass | None/Grass | Road/Grass | 2 | 2 | – | 128 |
 | [ForestRoad_A](#forestroad_a) | None/Forest | Road/Forest | Road/Grass | None/Forest | 3 | 1 | 1 | 300 |
 | [Swamp_A](#swamp_a) | None/Swamp | None/Swamp | None/Grass | None/Forest | 3 | 1 | – | 188 |
+| [Woods_South](#the-woods-border-tiles) | None/Grass | None/Forest | None/Forest | None/Forest | – | – | – | 140 |
+| [Woods_BehindHome](#the-woods-border-tiles) | None/Grass | None/Forest | None/Forest | None/Forest | – | – | – | 143 |
 
 ### Home
 Maple Street: the family house with a neighbour either side and two across the road, and a side road north.
@@ -68,6 +70,8 @@ Always at the bottom middle of the map, never turned.
 - **Neighbours:** four bungalows like Houses_A's (TV and dormant infected, drawers, cupboards, tool chest,
   stones). The beside ones moved in from x ±95 to ±72 to fit the tile.
 - **Dad:** a `DadSpot` marker in the left neighbour's front garden, where he stands on Day 1.
+- **The night's first spawn,** across the street facing the house: Dad comes from it. The others are in the
+  woods behind (Woods_BehindHome).
 - **Street lamps:** 4.
 - **Cars:** today's four (minivan and estate in the front gardens beside, the hatchback and ice-cream van at
   the kerb across the road). **Wrecks:** the crashed car at a lamp post and the burnt car.
@@ -107,6 +111,14 @@ Shallow water with dead trees, reeds and mud islands. No road: boardwalks cross 
 - **Shack** (middle island): tackle box (Garage), cupboards (Kitchen).
 - **Islands:** a crate (Garage) to the north-east, only reached by wading; stones on the south-west one, by
   boardwalk. The water doesn't slow anyone yet.
+
+### The woods (border tiles)
+Pines along the map's south edge, one tile behind each column of home's row, thinning to grass on the north
+side. **Border tiles** are 200 wide and only 100 deep (z -50 to 50), are never planned or turned, and are
+placed by `SOUTH_BORDER` in `mapRules.ts`.
+- **Woods_BehindHome** (behind home): the night's spawns 2–4, facing the house: 48 straight behind it, and
+  off its two back corners, about 42 from them. Clearings round each.
+- **Woods_South** (behind the others): just trees.
 
 ## Edges: what can go next to what
 
@@ -154,21 +166,21 @@ plan (0.2 s in all), giving about 960 different maps. `npm test` checks 500 of t
 
 ## In the game
 
-`src/main/server/world/map.ts` builds the old map or the tiled one, as `UseTiledMap` says. For the tiled one
-(`tiledMap.ts`):
+`src/main/server/world/map.ts` builds the map at the start of a run, before any system starts:
 
 1. The tiles arrive as models in `ServerStorage.MapTiles` (Rojo syncs `build/tiles/models` there, so
    `serve:main` and `build:main` build the tiles first). Their edge labels are the planner's catalogue.
 2. The seed is `MapSeed`, or a new one when that's 0, and it's printed: `[Map] Seed 123: Home@1,0 ...`.
    If no map fits, the game uses `FALLBACK_TILES` (`mapRules.ts`, spec-checked) and says so.
 3. Each tile is copied into `Workspace.Map`, turned and moved into place (`tilePlacement`: Home's middle
-   is at (0, -61), so the house stays at the origin). Roads off the map get a roadblock, and invisible
-   walls go round the edge.
+   is at (0, -61), so the house stays at the origin), and the woods go behind home's row
+   (`borderPlacements`). Roads off the map get a roadblock, and invisible walls go round the edge.
 4. **The templates are destroyed before any system starts**, or tag searches would find them too.
-5. Markers are read and hidden: dormant spots, Dad's spot and the night's infected spawns. The Home plot
-   box is removed. Traders stand behind their counters, and the fire engine's model replaces its block.
-6. Cars and wrecks are put at their spots by the same code as the old map (`cars.ts`, `wrecks.ts`, which
-   have their models, colliders, boots, loot and fires), and the spot markers removed.
+5. Markers are read and removed: dormant spots, Dad's spot and the night's infected spawns (sorted by
+   their `Order`: Dad comes from the first). The family house is built (`world.ts`) and the Home plot box
+   removed. Traders stand behind their counters (`bases.ts`), and the fire engine's model replaces its block.
+6. Cars and wrecks are put at their spots (`cars.ts`, `wrecks.ts`, which have their models, colliders,
+   boots, loot and fires).
 
 `npm run watch` rebuilds the tiles (and the gallery) whenever a tile's file is saved, beside compiling the
 game, and Rojo syncs them; stop and Play again. (`npm run tiles:watch` does just the tiles. The watcher
@@ -196,7 +208,7 @@ doesn't type-check: `npm run tiles:build` and `npm test` do.)
 | `StreetLight` | A lamp's SpotLight | |
 | `DormantSpot` | Where a dormant infected stands: its middle, 3 above the floor, its front (-Z) facing the screen | |
 | `DadSpot` | Where Dad waits on Day 1 (Home only, exactly one) | |
-| `InfectedSpawn` | Where the night's infected appear, facing the house (Home only) | |
+| `InfectedSpawn` | Where the night's infected appear, facing the house (Home and Woods_BehindHome) | `Order`: 1, 2, 3...; the first (Home's, across the street) is where Dad comes from |
 | `HomePlot` | Where the code-built house goes (Home only); removed in the game | |
 | `CarSpot` | A parked car: a box the car's size, sitting on the ground, its front (-Z) the way it faces. Use `car()` | `Car`: Minivan, Hatchback, Estate or IceCreamVan |
 | `WreckSpot` | A street wreck, like a car. Use `wreck()` | `Wreck`: SchoolBus, Tank, Ambulance, CrashedCar or BurntCar |
@@ -213,10 +225,5 @@ Markers are red and see-through so they show in Studio; the game hides them. Use
   in Studio before putting one straight into a tile.
 - **Saving a Studio edit back to JSON:** needs a converter. Until then, edits in Studio are lost (and a
   coded tile's next build would replace them anyway).
-- **Live:** turn `UseTiledMap` on for live servers once it's been played, then delete the old map's code
-  (`neighbourhood.ts`, `bases.ts`'s buildings, `wrecks.ts`' positions, `world.ts`' grounds and spawns).
-- **The family house in the Home tile**, built from markers instead of code (with the game switch-over).
-- **Behind home:** the house's back garden is only 17 studs deep before the map's south edge, so the back
-  infected spawn is 11 behind the house (it was 48), and the side ones 17 from it (they were 32). A strip of
-  woods along the south edge would give them room.
-- **The other places** in `GAMEPLAY.md` §8.
+- **The family house in the Home tile**, built from markers instead of code.
+- **The full map:** 3 × 4 with the other places in `GAMEPLAY.md` §8 (M5), and more filler tiles.

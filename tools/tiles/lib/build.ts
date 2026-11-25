@@ -18,7 +18,7 @@ export const window = (center: number): Opening => [center, 5, 3, 8];
  * The solid pieces of a wall from `start` to `finish` with `openings` cut out: full-height pieces
  * between openings, a sill below and a lintel above each. (The game's own walls: src/shared/world/walls.ts.)
  */
-export function wallPieces(start: number, finish: number, height: number, openings: Opening[]) {
+function wallPieces(start: number, finish: number, height: number, openings: Opening[]) {
 	const pieces: Array<[number, number, number, number]> = [];
 	const add = (from: number, to: number, bottom: number, top: number) => {
 		if (to - from > 0.01 && top - bottom > 0.01) pieces.push([from, to, bottom, top]);
@@ -128,14 +128,16 @@ export function stones(t: Tile, x: number, z: number, frame = new CFrame()) {
 
 /**
  * A marker the game reads, then hides: `at` is where an infected's middle goes (3 above the floor),
- * its front (-Z) the way it faces. `tag` says what for (MAP.md).
+ * its front (-Z) the way it faces. `tag` says what for (MAP.md). `order` sorts markers of a kind:
+ * the night's first spawn (Order 1) is where Dad comes from.
  */
-export function marker(t: Tile, tag: "DormantSpot" | "DadSpot" | "InfectedSpawn", at: CFrame) {
-	t.inFolder("Markers", () => t.part(tag, [2, 5, 1], at, S.MARKER, { tags: [tag] }));
+export function marker(t: Tile, tag: "DormantSpot" | "DadSpot" | "InfectedSpawn", at: CFrame, order?: number) {
+	const attributes = order !== undefined ? { Order: `${order}` } : undefined;
+	t.inFolder("Markers", () => t.part(tag, [2, 5, 1], at, S.MARKER, { tags: [tag], attributes }));
 }
 
 /** The parked cars' models (src/main/server/world/cars.ts), and their sizes for the markers. */
-export const CARS = {
+const CARS = {
 	Minivan: [6.21, 6.46, 13.6],
 	Hatchback: [5.61, 4.71, 11.4],
 	Estate: [5.81, 6.3, 14.6],
@@ -144,7 +146,7 @@ export const CARS = {
 export type CarName = keyof typeof CARS;
 
 /** The street wrecks (src/main/server/world/wrecks.ts, which has their colliders, loot and fires). */
-export const WRECKS = {
+const WRECKS = {
 	SchoolBus: [8.4, 7.8, 22.2],
 	Tank: [9, 5.8, 14],
 	Ambulance: [5.8, 8, 13.4],

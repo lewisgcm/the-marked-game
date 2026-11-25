@@ -122,7 +122,8 @@ still join.
      and every base in contact report in (what they want, and what they pay). The first new message
      pops up in the message bar; the button on the left (or T) opens the bases and the log. Mum
      gives the sundown warning. Any system can speak with `say(from, text)`.
-   - **Maple Street** (`neighbourhood.ts`): four houses to search (`containers.ts`, tables in
+   - **The map** (`world/map.ts`, MAP.md): tiles laid out from a seed each run, round the family house;
+     the neighbours' houses, cars and wrecks have things to search (`containers.ts`, tables in
      `shared/items/loot.ts`). A searched container stays empty for the run, except that 3 get something the bases have on
      order every morning; nails get scarcer every night.
      Gardens have stones, back every dawn. A minute before dusk: a warning, and the street lamps.
@@ -206,7 +207,8 @@ src/
                        #   movement, body, state, types
       items/           # inventory, itemUses, containers
       economy/         # coins, wallet, workbench, upgradeEffects, crafting, trading, walkie
-      world/           # world (the house), building, neighbourhood, bases, npc, cars, wrecks, fire, models
+      world/           # map (tiles, from a seed), world (the house), building, bases (traders), npc, cars,
+                       #   wrecks, fire, models
     client/            # main.client.tsx (entry), and:
       core/            # gameState (stores for server messages), theme, sound, device, panel, useViewport
       hud/             # roundHud, messageBar, messageQueue, inventoryHud, gainFeed, walkieUi, dawnCard
@@ -514,19 +516,18 @@ apply from the next phase.
 - [ ] Popups don't show while it's open, and typing a "t" in chat doesn't open it.
 - [ ] Two players see the same messages. Someone who loads in late has the log but no old popups.
 
-### The tiled map (Studio: `UseTiledMap` is 1; MAP.md)
+### The map (MAP.md)
 - [ ] The Output says `[Map] Seed N: ...` and the map matches `npm run tiles -- N`. Setting `MapSeed` to that N in `ServerStorage.GameConfig` before Play gives the same map again; 0 gives a new one each run.
 - [ ] Home is at the bottom middle with the family house on its plot (no blue box, nothing to bump into); kids start in the basement as before. The Treehouse is beside home, the Fire Station beside it or in the row behind, and every road joins up.
 - [ ] No red marker boxes anywhere. A dormant infected stands at each neighbour's TV and in the ranger hut; on Day 1 Dad is in the left neighbour's garden.
 - [ ] The Treehouse kid and the Fire Station chief stand behind their counters (turned with their tile), and trading works at both. The fire engine's model replaces the red block.
 - [ ] Roads that run off the map end at a red and white roadblock, and you can't walk off any edge.
-- [ ] At night the infected come from across the street, the back garden and both sides, and find their way in.
+- [ ] A strip of woods runs along the south edge, behind home's row. At night the infected come from across the street (Dad's first wave too) and out of the woods behind the house (straight behind and both back corners), and find their way in.
 - [ ] Searching, stones and street lamps work on every tile.
 - [ ] Parked cars (with a boot to search) outside the Home neighbours and along the kerb in other streets; the crashed and burnt cars in Home's street (fire, smoke, steam), the ambulance (medical bag) and burning tank by the Fire Station, the school bus in the trees by the Treehouse. You can't walk through them, they turn with their tile, and a car or wreck whose model can't load is a plain block.
-- [ ] With `UseTiledMap` 0 the old map is back, as it was.
 
 ### Maple Street
-- [ ] Two houses either side of home and two across the street, each with a front and back door, its own car (minivan, estate, hatchback; the ice-cream van is at the kerb) and garden stones. Each car's boot can be searched, and you can't walk through a car. Wrecks: a school bus on its side across the road at the Treehouse end (you can walk round it), a tank at the Fire Station end, an ambulance (search the medical bag), a crashed car at a lamp post (search its boot) and a burnt car. You can't walk through them, and infected don't get stuck on them. The burnt car and the tank are on fire and smoking, and the crashed car's bonnet steams; none of it hurts, and the fires glow at night. You can't walk off the map.
+- [ ] A house either side of home and two across the street, each with a front and back door, its own car (minivan, estate; the hatchback and ice-cream van at the kerb) and garden stones. Each car's boot can be searched, and you can't walk through a car. Wrecks (and you can't walk through them, and infected don't get stuck on them): the school bus on its side by the Treehouse, the tank and the ambulance (search the medical bag) by the Fire Station, a crashed car at a lamp post (search its boot) and a burnt car in home's street. The burnt car and the tank are on fire and smoking, and the crashed car's bonnet steams; none of it hurts, and the fires glow at night.
 - [ ] Searching (hold E) shows "+3 Nails" beside your coins for what you got; an empty one says "Nothing useful."; the container goes dark and is empty for everyone (a few restock each morning; see Trading). What doesn't fit is left at your feet: "No room: left on the floor."
 - [ ] 25s before dusk (Studio): Mum says "The sun's going down. Get home." over the walkie and the street lamps come on; off at dawn.
 

@@ -53,15 +53,38 @@ return function(t)
 			end)
 			return n
 		end
-		t.it("Home has one Dad spot, spawns for the night, and the house's plot", function()
+		-- The night's spawns' Order attributes, in Home and the woods behind it.
+		local function spawnOrders()
+			local orders = {}
+			for _, name in { "Home", "Woods_BehindHome" } do
+				tiles.each(all[name], function(instance)
+					local tags = instance.properties and instance.properties.Tags
+					if tags and table.find(tags, "InfectedSpawn") then
+						table.insert(orders, tonumber(instance.attributes and instance.attributes.Order))
+					end
+				end)
+			end
+			table.sort(orders)
+			return orders
+		end
+		t.it("Home has one Dad spot and the house's plot", function()
 			t.expect(tagged(all.Home, "DadSpot")).toBe(1)
-			t.expect(tagged(all.Home, "InfectedSpawn") >= 2).toBe(true)
 			t.expect(tagged(all.Home, "HomePlot")).toBe(1)
+		end)
+		t.it("the night's spawns are numbered 1, 2, 3... and the first (Dad's) is Home's", function()
+			local orders = spawnOrders()
+			t.expect(#orders >= 2).toBe(true)
+			for i, order in orders do
+				t.expect(order).toBe(i)
+			end
+			t.expect(tagged(all.Home, "InfectedSpawn")).toBe(1)
 		end)
 		t.it("no other tile has a Dad spot, spawns or a plot", function()
 			for name, tile in all do
+				local spawnsAllowed = name == "Home" or name == "Woods_BehindHome"
+				local count = tagged(tile, "DadSpot") + tagged(tile, "HomePlot")
 				if name ~= "Home" then
-					t.expect(tagged(tile, "DadSpot") + tagged(tile, "InfectedSpawn") + tagged(tile, "HomePlot")).toBe(0)
+					t.expect(count + (if spawnsAllowed then 0 else tagged(tile, "InfectedSpawn"))).toBe(0)
 				end
 			end
 		end)

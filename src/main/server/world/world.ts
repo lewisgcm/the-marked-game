@@ -5,7 +5,6 @@ import {
 	FLICKER_LIGHT_TAG,
 	GENERATOR_TAG,
 	HOUSE_LIGHT_TAG,
-	INFECTED_SPAWN_TAG,
 	PLANK_PILE_TAG,
 	SCREEN_TAG,
 	WORKBENCH_TAG,
@@ -75,9 +74,6 @@ const GLASS: PartOptions = {
 	transparency: 0.7,
 	shadow: false,
 };
-const GRASS: PartOptions = { material: Enum.Material.Grass, color: new Color3(0.3, 0.42, 0.22) };
-const ROAD: PartOptions = { material: Enum.Material.Asphalt, color: new Color3(0.18, 0.18, 0.19) };
-const PAVING: PartOptions = { material: Enum.Material.Concrete, color: new Color3(0.6, 0.6, 0.58) };
 
 export type EntryKind = "Door" | "Window" | "GarageDoor";
 
@@ -374,25 +370,6 @@ function buildShell(house: Instance) {
 	wall(shell, "Z", b.x1, b.z0 + 0.5, b.z1 - 0.5, below, deep, [], BASEMENT_WALL);
 }
 
-/** Grass all round (with a gap for the house), the street out front and the driveway. */
-function buildGrounds(parent: Instance) {
-	const grounds = folder(parent, "Grounds");
-	const reach = 200;
-	const hx0 = X0 - 0.5;
-	const hx1 = X1 + 0.5;
-	const hz0 = Z0 - 0.5;
-	const hz1 = Z1 + 0.5;
-	// Four strips around the footprint, so nothing fills the basement or blocks its stairs.
-	slab(grounds, "Grass", -reach, reach, -reach, hz0, 0, GRASS);
-	slab(grounds, "Grass", -reach, reach, hz1, reach, 0, GRASS);
-	slab(grounds, "Grass", -reach, hx0, hz0, hz1, 0, GRASS);
-	slab(grounds, "Grass", hx1, reach, hz0, hz1, 0, GRASS);
-	slab(grounds, "Pavement", -reach, reach, -50, -44, 0.2, PAVING);
-	slab(grounds, "Street", -reach, reach, -72, -50, 0.1, ROAD);
-	slab(grounds, "Driveway", 15, 27, -44, Z0 - 0.5, 0.15, PAVING);
-	slab(grounds, "Path", 4, 8, -44, Z0 - 0.5, 0.15, PAVING);
-}
-
 /** Simple blockout furniture, plus the tagged props later systems use. */
 function furnish(parent: Instance) {
 	const f = folder(parent, "Furniture");
@@ -481,36 +458,16 @@ function buildLamps(parent: Instance): Lamp[] {
 	return lamps;
 }
 
-function buildInfectedSpawns(parent: Instance): CFrame[] {
-	const spawns = folder(parent, "InfectedSpawns");
-	// Across the street, the back garden, and both sides; each faces the house.
-	const points = [new Vector3(0, 3, -80), new Vector3(0, 3, 70), new Vector3(-62, 3, 0), new Vector3(62, 3, 0)];
-	return points.map((point) => {
-		const cframe = CFrame.lookAt(point, new Vector3(0, 3, 0));
-		const marker = part(spawns, "InfectedSpawn", new Vector3(4, 1, 4), cframe, {
-			collide: false,
-			transparency: 1,
-			shadow: false,
-		});
-		CollectionService.AddTag(marker, INFECTED_SPAWN_TAG);
-		return cframe;
-	});
-}
-
 /**
- * Builds the family house. With `around` (the tiled map, which brings its own ground and spawn
- * markers), the grounds and spawns here are left out and `around`'s spawns are used instead.
+ * Builds the family house, at the world's origin. The map round it (ground, street, the night's
+ * spawn markers) comes from the tiles (map.ts); `infectedSpawns` are those markers.
  */
-export function buildMainWorld(around?: { infectedSpawns: CFrame[] }): MainWorld {
+export function buildMainWorld(infectedSpawns: CFrame[]): MainWorld {
 	const house = folder(Workspace, "House");
 	buildShell(house);
 	furnish(house);
 	const lamps = buildLamps(house);
 	const entries = buildEntries(house);
-	if (!around) {
-		buildGrounds(Workspace);
-	}
-	const infectedSpawns = around ? around.infectedSpawns : buildInfectedSpawns(Workspace);
 
 	// Kids start in the basement.
 	const basementCentre = new Vector3(-15, BASEMENT_Y, 12);

@@ -28,6 +28,9 @@ export const MAP_RULES: LayoutRules = {
  */
 export const HOME_ORIGIN = { x: 0, z: -61 };
 
+/** The woods along the map's south edge, behind home's row (border tiles: not planned, never turned). */
+export const SOUTH_BORDER = { behindAnchor: "Woods_BehindHome", elsewhere: "Woods_South" };
+
 /** A map to use if the planner finds none (it never has, but a run must always start). Spec-checked. */
 export const FALLBACK_TILES: Placement[] = [
 	{ tile: "Treehouse", column: 0, row: 0, turns: 0 },

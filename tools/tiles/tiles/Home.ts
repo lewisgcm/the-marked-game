@@ -62,12 +62,9 @@ export function home(): Tile {
 	wreck(t, "BurntCar", new CFrame(78, 0.1, -1).mul(turn(110)));
 	// Day 1: Dad, in the left neighbour's front garden, staring in at the living-room TV.
 	marker(t, "DadSpot", left.at(-10, 3.3, -17).mul(turn(180)));
-	// Where the night's infected appear, each facing the house: across the street, the back garden,
-	// and between the house and each neighbour (as today's map, moved in to fit).
-	marker(t, "InfectedSpawn", new CFrame(0, 3, -19).mul(turn(180)));
-	marker(t, "InfectedSpawn", new CFrame(0, 3, 94));
-	marker(t, "InfectedSpawn", new CFrame(-47, 3, 61).mul(turn(-90)));
-	marker(t, "InfectedSpawn", new CFrame(47, 3, 61).mul(turn(90)));
+	// The night's first spawn, across the street facing the house: Dad comes from here. The others are in
+	// the woods behind (Woods_BehindHome).
+	marker(t, "InfectedSpawn", new CFrame(0, 3, -19).mul(turn(180)), 1);
 
 	t.folder("Gardens");
 	// Hedges between the gardens, and fences round the ones across the street.

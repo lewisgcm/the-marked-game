@@ -15,9 +15,20 @@ import { housesA } from "./tiles/Houses_A.ts";
 import { meadowA } from "./tiles/Meadow_A.ts";
 import { swampA } from "./tiles/Swamp_A.ts";
 import { treehouse } from "./tiles/Treehouse.ts";
+import { woodsBehindHome, woodsSouth } from "./tiles/Woods.ts";
 
 /** Every coded tile. A new tile: a file in tiles/, a line here, and its section in MAP.md. */
-const TILES: Array<() => Tile> = [home, fireStation, housesA, treehouse, meadowA, forestRoadA, swampA];
+const TILES: Array<() => Tile> = [
+	home,
+	fireStation,
+	housesA,
+	treehouse,
+	meadowA,
+	forestRoadA,
+	swampA,
+	woodsSouth,
+	woodsBehindHome,
+];
 
 const OUT = "build/tiles/models";
 const HAND_EDITED = "assets/tiles";

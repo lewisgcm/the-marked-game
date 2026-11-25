@@ -14,9 +14,6 @@ export type Side = "North" | "East" | "South" | "West";
 /** What a loot container holds (the loot tables in src/shared/items/loot.ts). */
 export type LootKind = "Kitchen" | "Drawers" | "Garage" | "Car";
 
-export const SIZE = 200;
-export const HALF = SIZE / 2;
-
 /** One instance in a Rojo model file. */
 export interface Instance {
 	name: string;

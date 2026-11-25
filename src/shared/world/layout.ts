@@ -1,11 +1,11 @@
-import type { Edges, Side } from "./tiles";
+import type { Edges, Side, TileRules } from "./tiles";
 
 /**
  * Picks a run's map: which tiles go where on the grid, and which way round (MAP.md). Pure, with the
  * random numbers passed in, so it's unit-tested; the same seed always gives the same map.
  *
- * Imports only types (Lune can't load roblox-ts runtime imports), so the edge rules come in through
- * `TileRules`: pass in `edgesJoin`, `turnEdges` and the rest from shared/world/tiles.ts.
+ * Imports only types (Lune can't load roblox-ts runtime imports), so the edge rules are passed in:
+ * `TILE_RULES` from shared/world/tiles.ts.
  *
  * The grid is `columns` wide and `rows` deep. Row 0 is the south (home's) row; rows count north.
  */
@@ -45,16 +45,6 @@ export interface LayoutRules {
 	start: string;
 }
 
-/** The edge rules, from shared/world/tiles.ts. */
-export interface TileRules {
-	sides: Side[];
-	opposite: Record<Side, Side>;
-	edgesJoin: (a: string, b: string) => boolean;
-	turnEdges: (edges: Edges, turns: number) => Edges;
-	/** Whether an edge carries a road or path. */
-	hasRoute: (edge: string) => boolean;
-}
-
 /** Each tile's edges, by name. */
 export type Catalogue = Record<string, Edges>;
 
@@ -91,6 +81,19 @@ class Grid {
 	}
 	set(column: number, row: number, placement: Placement | undefined) {
 		this.cells[row * this.columns + column] = placement;
+	}
+	/** Every placement, row by row. */
+	placements(): Placement[] {
+		const all: Placement[] = [];
+		for (let row = 0; row < this.rows; row++) {
+			for (let column = 0; column < this.columns; column++) {
+				const placement = this.get(column, row);
+				if (placement) {
+					all.push(placement);
+				}
+			}
+		}
+		return all;
 	}
 }
 
@@ -221,6 +224,8 @@ export function completeLayout(
 
 /** Tiles' size, in studs. */
 export const TILE_SIZE = 200;
+/** How deep the border tiles along the map's south edge are (they're TILE_SIZE wide). */
+export const BORDER_DEPTH = 100;
 
 /**
  * Where a tile goes in the world: the middle of its cell, and how far to turn it about the vertical
@@ -240,6 +245,51 @@ export function tilePlacement(
 }
 
 /**
+ * The border tiles along the south edge, one behind each column of row 0: `behindAnchor` behind the
+ * anchor's (home's) column, `elsewhere` behind the rest. Where each one's middle goes, as tilePlacement.
+ * They're never turned: a border tile's north faces the map.
+ */
+export function borderPlacements(
+	layoutRules: LayoutRules,
+	border: { behindAnchor: string; elsewhere: string },
+	anchor: { column: number; row: number },
+	origin: { x: number; z: number },
+): Array<{ tile: string; x: number; z: number }> {
+	const placements: Array<{ tile: string; x: number; z: number }> = [];
+	for (let column = 0; column < layoutRules.columns; column++) {
+		const { x, z } = tilePlacement({ tile: "", column, row: 0, turns: 0 }, anchor, origin);
+		const tile = column === anchor.column && anchor.row === 0 ? border.behindAnchor : border.elsewhere;
+		placements.push({ tile, x, z: z + TILE_SIZE / 2 + BORDER_DEPTH / 2 });
+	}
+	return placements;
+}
+
+/**
+ * Where each place goes this try: a cell (row * columns + column), picked at random from the free
+ * cells in its rows. Undefined if a place has no room. (It's turned later, to fit.)
+ */
+function pickPlaceCells(layoutRules: LayoutRules, grid: Grid, random: () => number): Map<number, string> | undefined {
+	const { columns, rows } = layoutRules;
+	const placeAt = new Map<number, string>();
+	for (const place of layoutRules.places) {
+		const free: number[] = [];
+		for (let row = place.nearest; row <= math.min(place.furthest, rows - 1); row++) {
+			for (let column = 0; column < columns; column++) {
+				const index = row * columns + column;
+				if (!grid.get(column, row) && !placeAt.has(index)) {
+					free.push(index);
+				}
+			}
+		}
+		if (free.size() === 0) {
+			return undefined;
+		}
+		placeAt.set(free[math.min(free.size() - 1, math.floor(random() * free.size()))], place.tile);
+	}
+	return placeAt;
+}
+
+/**
  * A map following `layoutRules`, or undefined if none could be found (the caller should have a
  * known-good one to fall back on). `random` gives 0..1.
  */
@@ -253,26 +303,8 @@ export function planLayout(
 	for (let attempt = 0; attempt < PLACE_TRIES; attempt++) {
 		const grid = new Grid(columns, rows);
 		layoutRules.fixed.forEach((p) => grid.set(p.column, p.row, p));
-
-		// Where each place goes this try (it's turned later, to fit).
-		const placeAt = new Map<number, string>();
-		let placed = true;
-		for (const place of layoutRules.places) {
-			const free: number[] = [];
-			for (let row = place.nearest; row <= math.min(place.furthest, rows - 1); row++) {
-				for (let column = 0; column < columns; column++) {
-					if (!grid.get(column, row) && !placeAt.has(row * columns + column)) {
-						free.push(row * columns + column);
-					}
-				}
-			}
-			if (free.size() === 0) {
-				placed = false;
-				break;
-			}
-			placeAt.set(free[math.min(free.size() - 1, math.floor(random() * free.size()))], place.tile);
-		}
-		if (!placed) {
+		const placeAt = pickPlaceCells(layoutRules, grid, random);
+		if (!placeAt) {
 			continue;
 		}
 
@@ -284,20 +316,26 @@ export function planLayout(
 				return false;
 			}
 			if (index === columns * rows) {
-				return checkLayout(finish(grid), layoutRules, catalogue, rules).size() === 0;
+				return (
+					checkLayout(
+						completeLayout(grid.placements(), layoutRules, catalogue, rules),
+						layoutRules,
+						catalogue,
+						rules,
+					).size() === 0
+				);
 			}
 			const [column, row] = [index % columns, math.floor(index / columns)];
 			if (grid.get(column, row)) {
 				return fill(index + 1); // fixed
 			}
 			const place = placeAt.get(index);
+			const tiles =
+				place !== undefined
+					? [place]
+					: layoutRules.fillers.filter((f) => (used.get(f.tile) ?? 0) < f.most).map((f) => f.tile);
 			const choices: Placement[] = [];
-			const tiles = place !== undefined ? [place] : layoutRules.fillers.map((f) => f.tile);
 			for (const tile of tiles) {
-				const filler = layoutRules.fillers.find((f) => f.tile === tile);
-				if (place === undefined && (!filler || (used.get(tile) ?? 0) >= filler.most)) {
-					continue;
-				}
 				for (let turns = 0; turns < 4; turns++) {
 					choices.push({ tile, column, row, turns });
 				}
@@ -306,28 +344,23 @@ export function planLayout(
 				if (!fits(choice, grid, catalogue, rules)) {
 					continue;
 				}
+				const isFiller = place === undefined; // fillers count towards their limit
 				grid.set(column, row, choice);
-				if (place === undefined) used.set(choice.tile, (used.get(choice.tile) ?? 0) + 1);
+				if (isFiller) {
+					used.set(choice.tile, (used.get(choice.tile) ?? 0) + 1);
+				}
 				if (fill(index + 1)) {
 					return true;
 				}
-				if (place === undefined) used.set(choice.tile, used.get(choice.tile)! - 1);
+				if (isFiller) {
+					used.set(choice.tile, used.get(choice.tile)! - 1);
+				}
 				grid.set(column, row, undefined);
 			}
 			return false;
 		};
-		const finish = (g: Grid): Layout => {
-			const tiles: Placement[] = [];
-			for (let row = 0; row < rows; row++) {
-				for (let column = 0; column < columns; column++) {
-					const p = g.get(column, row);
-					if (p) tiles.push(p);
-				}
-			}
-			return completeLayout(tiles, layoutRules, catalogue, rules);
-		};
 		if (fill(0)) {
-			return finish(grid);
+			return completeLayout(grid.placements(), layoutRules, catalogue, rules);
 		}
 	}
 	return undefined;

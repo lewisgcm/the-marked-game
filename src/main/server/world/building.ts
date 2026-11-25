@@ -1,7 +1,7 @@
 import { part, PartOptions } from "shared/world/parts";
 import { Opening, wallPieces } from "shared/world/walls";
 
-/** Walls and floors out of parts, for the family house (world.ts) and the street (neighbourhood.ts). */
+/** Walls and floors out of parts, for the family house (world.ts). */
 
 /** Thickness of walls and slabs, in studs. */
 export const THICK = 1;

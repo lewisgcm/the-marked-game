@@ -119,7 +119,7 @@ export function refillGardens() {
 	stonePrompts.forEach((prompt) => (prompt.Enabled = true));
 }
 
-/** Sets up everything searchable. Call once, after the neighbourhood is built. */
+/** Sets up everything searchable. Call once, after the map is built. */
 export function startContainers(hooks: ContainerHooks) {
 	for (const box of CollectionService.GetTagged(LOOT_CONTAINER_TAG)) {
 		if (box.IsA("BasePart")) {
