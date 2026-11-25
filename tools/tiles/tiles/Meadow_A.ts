@@ -1,0 +1,75 @@
+import { CFrame, turn } from "../lib/cframe.ts";
+import { door, fence, loot, oak, roadLines, scatter, stones, wall } from "../lib/build.ts";
+import { Random } from "../lib/random.ts";
+import * as S from "../lib/styles.ts";
+import { Tile } from "../lib/tile.ts";
+
+/** Open fields round a bend in the road: a barn, broken fences, hay bales. Little cover. */
+export function meadowA(): Tile {
+	const t = new Tile("Meadow_A", {
+		North: "Road/Grass",
+		East: "None/Grass",
+		South: "None/Grass",
+		West: "Road/Grass",
+	});
+	t.slab("Ground", -100, 100, -100, 100, 0, S.GRASS, undefined, 2);
+
+	t.folder("Road");
+	t.slab("Road", -11, 11, -100, 11, 0.1, S.ROAD);
+	t.slab("Road", -100, -11, -11, 11, 0.1, S.ROAD);
+	roadLines(t, -98, 0, -12, 0);
+	roadLines(t, 0, -98, 0, -12);
+
+	// The barn's wide door faces the bend.
+	const barn = new CFrame(48, 0, 38).mul(turn(45));
+	t.folder("Barn");
+	t.slab("Floor", -14, 14, -10, 10, 0.2, S.DIRT, barn);
+	wall(t, "X", -10, -14, 14, 0.2, 12, [[0, 10, 0, 9]], S.BARN_WALL, barn);
+	wall(t, "X", 10, -14, 14, 0.2, 12, [door(-8)], S.BARN_WALL, barn);
+	for (const x of [-13.5, 13.5]) wall(t, "Z", x, -9.5, 9.5, 0.2, 12, [], S.BARN_WALL, barn);
+	t.slab("Roof", -15.5, 15.5, -11.5, 11.5, 13.2, S.ROOF, barn);
+	for (const [x, y, z] of [
+		[10, 1.7, 6],
+		[10, 1.7, 1.5],
+		[10, 4.7, 4],
+	])
+		t.box("HayBale", x, y, z, 5, 3, 4, S.HAY, barn);
+	loot(t, "Tool chest", "Garage", [4, 2.5, 2.5], barn.at(-10, 1.45, -7), S.METAL);
+	loot(t, "Workshop drawers", "Drawers", [2, 3.5, 5], barn.at(-12, 1.95, 2), S.WOOD);
+
+	t.folder("Field");
+	for (const [x, z, degrees] of [
+		[24, 74, 20],
+		[-30, 60, 70],
+		[-62, 40, 10],
+		[70, -40, 50],
+		[44, -70, 0],
+		[-70, 78, 35],
+	]) {
+		t.box("HayBale", 0, 1.5, 0, 5, 3, 4, S.HAY, new CFrame(x, 0, z).mul(turn(degrees)));
+	}
+	fence(t, 17, -92, 17, -24);
+	fence(t, -92, 17, -28, 17);
+	fence(t, 88, -88, 88, -20);
+	fence(t, -88, 90, -20, 90);
+	stones(t, -46, -46);
+	stones(t, 74, 74);
+	for (const [x, z, w] of [
+		[-60, -70, 6],
+		[-54, -66, 3.5],
+		[30, -30, 4],
+	]) {
+		t.box("Rock", 0, w * 0.3, 0, w, w * 0.8, w * 0.8, S.STONE, new CFrame(x, 0, z).mul(turn(w * 20)));
+	}
+
+	t.folder("Trees");
+	const clear: Array<[number, number, number, number]> = [
+		[-100, 20, -20, 20],
+		[-20, 20, -100, 20],
+		[22, 74, 12, 64],
+		[-76, -20, 24, 96],
+		[10, 34, 64, 84],
+	];
+	scatter(t, 14, 16, clear, new Random(8), oak);
+	return t;
+}

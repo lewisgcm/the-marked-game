@@ -9,13 +9,15 @@
     "serve": "rojo serve",
     "serve:lobby": "rojo serve lobby.project.json",
     "serve:main": "rojo serve main.project.json",
+    "serve:tiles": "npm run tiles && rojo serve tiles.project.json",
     "build:lobby": "rojo build lobby.project.json -o build/lobby.rbxlx",
     "build:main": "rojo build main.project.json -o build/main.rbxlx",
     "build:dev": "rojo build default.project.json -o build/dev.rbxlx",
+    "tiles": "tsc -p tools/tiles && node tools/tiles/build.ts && lune run tools/tiles/gallery",
     "models": "bash tools/blender/build.sh",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "rbxtsc && lune run tests/run"
+    "test": "rbxtsc && npm run -s tiles && lune run tests/run"
   },
   "keywords": [],
   "author": "",

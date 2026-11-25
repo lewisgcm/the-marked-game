@@ -218,13 +218,17 @@ src/
 default.project.json   # "dev" place: BOTH lobby + main (both worlds build at once — prefer the two below)
 lobby.project.json     # lobby place only
 main.project.json      # main game place only
+tiles.project.json     # the map tiles laid out to look at (MAP.md); not part of the game
 
 tests/                 # unit tests run with Lune against the compiled out/ modules
   run.luau             #   tiny runner (describe / it / expect); `npm test`
   unit/<topic>/        #   one spec per module, in the same topic folders as src/
+tools/tiles/           # the map tiles in TypeScript (run by Node, not part of the game), built and
+                       #   checked by npm run tiles (MAP.md)
 tools/blender/         # 3D models, built from Python with headless Blender (lib/sdf.py for organic shapes)
 assets/
   models/              # generated FBX / GLB / preview PNG (committed)
+  tiles/               # map tiles edited by hand in Studio, if any (MAP.md)
   rojo/                # MeshParts with their Roblox asset IDs, synced by Rojo
 ```
 

@@ -1,0 +1,16 @@
+{
+	// Type-checks the tile build scripts (npm run tiles). Node runs them directly, stripping the types.
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"strict": true,
+		"noEmit": true,
+		"allowImportingTsExtensions": true,
+		"erasableSyntaxOnly": true,
+		"verbatimModuleSyntax": true,
+		"types": [],
+		"lib": ["ES2022"]
+	},
+	"include": ["**/*.ts"]
+}

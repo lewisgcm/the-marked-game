@@ -225,6 +225,21 @@ No gameplay changes: `main/server`, `main/client`, `shared` and the specs are gr
 
 - [x] **Studio check** (main game). The lobby builds; check it loads next time it's opened.
 
+## Map tiles (25 Nov 2026)
+
+The map becomes 200×200-stud tiles, laid out differently each run (MAP.md). Not used by the game yet.
+
+- [x] Five sample tiles, a gallery to view them in Studio (`npm run serve:tiles`), and checks on every tile.
+      Spec.
+- [x] Tiles are written in TypeScript (`tools/tiles`) and built to JSON, not hand-written JSON (25 Nov 2026):
+      a tenth of the size, shared pieces, typed. A tile edited in Studio becomes JSON in `assets/tiles`.
+- [x] **Studio check**: the gallery and sample map look right.
+- [ ] Studio check: editing a tile and re-running `npm run tiles` updates Studio live.
+- [ ] Meshes in tiles (cars, wrecks), tested in Studio; a converter for edits made in Studio.
+- [ ] Home tile and Fire Station; more filler tiles.
+- [ ] Pick a layout from a seed (home fixed, places in distance bands, all reachable). Spec.
+- [ ] Build the run's map from tiles and retire the code-built street and bases; update GAMEPLAY §8.
+
 ## M3 — Workbench, trading and the walkie-talkie
 
 Goal: a reason to spend coins. Playtest question: *do players plan trips around what they want

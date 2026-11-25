@@ -1,0 +1,5 @@
+{
+	"private": true,
+	"type": "module",
+	"description": "The map tiles' build script, run by Node (not part of the game; see MAP.md)."
+}

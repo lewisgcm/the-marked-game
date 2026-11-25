@@ -7,6 +7,7 @@
 ## Design and plan
 
 - **`GAMEPLAY.md`** is the design and the source of truth for how the game should play.
+- **`MAP.md`** is the map's tiles: what's in each, and how to make one.
 - **`MODELLING.md`** is how to model, rig and import characters.
 - **`PLAN.md`** is the build plan. Work through it in milestone order, tick tasks off as they
   land, and note anything that changed.
@@ -20,6 +21,7 @@
 npm run watch          # compile TS -> Luau in out/ on save
 npm run serve:lobby    # Rojo live-sync into Studio (serve / serve:main for the others)
 npm run build:lobby    # static .rbxlx into build/ (build:main, build:dev)
+npm run serve:tiles    # look at the map tiles in Studio without playing (MAP.md)
 npm run models         # rebuild Blender models (FBX/GLB/preview)
 npm run lint           # ESLint + Prettier (lint:fix to auto-fix); run before committing
 npm test               # compile + Lune unit tests (tests/unit); run before committing

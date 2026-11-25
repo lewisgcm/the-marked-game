@@ -23,5 +23,7 @@
 		"baseUrl": "src",
 		"incremental": true,
 		"tsBuildInfoFile": "out/tsconfig.tsbuildinfo"
-	}
+	},
+	// The game only. Tools (tools/tiles) have their own tsconfig and run in Node.
+	"include": ["src"]
 }

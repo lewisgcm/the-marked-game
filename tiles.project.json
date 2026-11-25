@@ -1,0 +1,16 @@
+{
+	"name": "tiles",
+	"servePort": 34873,
+	"tree": {
+		"$className": "DataModel",
+		"Workspace": {
+			"$className": "Workspace",
+			"$properties": {
+				"StreamingEnabled": false
+			},
+			"Tiles": {
+				"$path": "build/tiles/view"
+			}
+		}
+	}
+}
