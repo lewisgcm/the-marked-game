@@ -14,11 +14,12 @@ import {
 	removePlank,
 } from "shared/house/barricade";
 import { rootOf } from "shared/core/characters";
-import { PLANK_PILE_TAG } from "shared/core/tags";
+import { BUILD_PROMPT_TAG, PLANK_PILE_TAG } from "shared/core/tags";
 import { UpgradeId } from "shared/economy/upgrades";
 import { gameConfig } from "../core/config";
 import { giveItem, giveOrDrop, itemCount, itemRoom, takeItem } from "../items/inventory";
 import { playSound } from "../core/effects";
+import { holdsHammer } from "./hammer";
 import { inReach, makePrompt, promptAnchor } from "../core/prompts";
 import { recordStat } from "../core/roundStats";
 import { Entry, MainWorld } from "../world/world";
@@ -33,7 +34,7 @@ import { Entry, MainWorld } from "../world/world";
  * it's broken.
  *
  * Prompts: "Board up" (E, hold) and "Take down" (F, short hold) at every opening, and
- * "Take planks" on the pile. Who may use them, and whether they have planks, is checked here
+ * "Take planks" on the pile. The ones at openings need the hammer in hand. Who may use them, and whether they have planks, is checked here
  * when a prompt fires.
  */
 
@@ -109,8 +110,13 @@ function refresh(state: EntryState) {
 	state.takeDown.Enabled = count > 0;
 }
 
+/** Whether `player` can use one of the prompts at an opening. */
+function canBuild(player: Player, prompt: ProximityPrompt): boolean {
+	return hooks !== undefined && hooks.canAct(player) && holdsHammer(player) && inReach(player, prompt);
+}
+
 function onBoard(player: Player, state: EntryState) {
-	if (!hooks || !hooks.canAct(player) || !inReach(player, state.board)) {
+	if (!hooks || !canBuild(player, state.board)) {
 		return;
 	}
 	if (itemCount(player, "Planks") <= 0) {
@@ -141,7 +147,7 @@ function onBoard(player: Player, state: EntryState) {
 }
 
 function onTakeDown(player: Player, state: EntryState) {
-	if (!hooks || !hooks.canAct(player) || !inReach(player, state.takeDown)) {
+	if (!hooks || !canBuild(player, state.takeDown)) {
 		return;
 	}
 	if (itemRoom(player, "Planks") <= 0) {
@@ -176,6 +182,9 @@ function windowNear(player: Player, suits: (state: EntryState) => boolean): Entr
 
 /** Fits a shutter to the window `player` is next to. Returns why not, or undefined if it's fitted. */
 export function fitShutter(player: Player): string | undefined {
+	if (!holdsHammer(player)) {
+		return "Hold your hammer to fit it.";
+	}
 	const state = windowNear(player, (s) => s.barricade.shutter === undefined);
 	if (!state || !addShutter(state.barricade, gameConfig.shutterHealth.Value)) {
 		return windowNear(player, () => true) ? "It already has a shutter." : "Stand next to a window to fit it.";
@@ -193,6 +202,10 @@ function setUpEntry(entry: Entry) {
 	board.ObjectText = entry.name;
 	const takeDown = makePrompt(anchor, "Take down", Enum.KeyCode.F, gameConfig.holdTakeDown.Value);
 	takeDown.UIOffset = new Vector2(0, 70); // below the board prompt
+	for (const prompt of [board, takeDown]) {
+		prompt.MaxActivationDistance = gameConfig.buildReach.Value;
+		CollectionService.AddTag(prompt, BUILD_PROMPT_TAG);
+	}
 
 	const visuals = new Instance("Folder");
 	visuals.Name = "Planks";

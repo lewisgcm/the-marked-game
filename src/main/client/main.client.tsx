@@ -6,6 +6,7 @@ import { GAME_REMOTE_NAME } from "shared/core/remotes";
 import { CombatFeedback } from "./combat/combatFeedback";
 import { DawnCard } from "./hud/dawnCard";
 import { startFlashlight } from "./combat/flashlight";
+import { startBuildMode } from "./house/buildMode";
 import { startGainFeed } from "./hud/gainFeed";
 import { startGameState } from "./core/gameState";
 import { InventoryHud } from "./hud/inventoryHud";
@@ -31,6 +32,7 @@ startGainFeed();
 startGameState(remote);
 startMelee(remote);
 startSlingshot(remote);
+startBuildMode();
 
 function App() {
 	return (

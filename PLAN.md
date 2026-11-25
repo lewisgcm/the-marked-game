@@ -50,7 +50,6 @@ Art runs alongside, on the same branch: the infected, cars, wrecks, fire engine 
 | Scale waves with party size? | M1 | Yes: wave size × (0.6 + 0.2 × kids), so solo is playable and 6 is chaos. |
 | Does each kid own their weapons, or is there a shared locker? | M2 | Each kid owns what they carry; a **weapon locker** at home for sharing. |
 | Save a run between sessions? Rejoin a run after disconnecting? | M8 | Rejoin yes (lobby button, M8). Saving whole runs: decide after playtests show how long runs actually last. |
-| Shorter E / F prompts (8 studs → ~5) at doors and windows, where two show at once? | Any time | Try it on openings only: less clutter, but you stand closer to board up. |
 | Tell players the power must be on before dark (it counts after 20s)? | After the friends playtest | Only if they get caught out: a word in Mum's sundown line. |
 | Kid classes (Builder / Scout / Medic / Techie)? | After M5 | Not for now; revisit if runs feel samey. |
 
@@ -206,6 +205,15 @@ infected reach barricades through hooks; deleted `speed.ts` and ghost leftovers.
 in AGENTS.md → Code structure.
 
 - [x] **Studio check**: a full day and night plays as before.
+
+## Hammer (25 Nov 2026)
+
+Door and window prompts got in the way of defending, so building needs the hammer in hand.
+
+- [x] **Hammer** (`house/hammer.ts`, `client/house/buildMode.ts`): the prompts show, within 5 studs, only
+      while it's held; the server checks too. Shutters need it as well. Night 1 tip added.
+- [ ] **Playtest**: is fighting at a window clear of prompts, and is swapping hammer and bat under attack tense
+      or just a nuisance?
 
 ## Folders (25 Nov 2026) ✅
 

@@ -1,6 +1,6 @@
 /**
  * The slot inventory (GAMEPLAY.md §5): a fixed number of slots, each holding a stack of one
- * item. Coins and the starter tools (flashlight, bat, slingshot) don't use slots. Pure so it's
+ * item. Coins and the starter tools (flashlight, bat, slingshot, hammer) don't use slots. Pure so it's
  * unit-tested; main/server/items/inventory.ts owns the real ones.
  */
 

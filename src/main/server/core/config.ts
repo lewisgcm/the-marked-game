@@ -159,6 +159,8 @@ function loadGameConfig() {
 		plankPileDawnRefill: int("PlankPileDawnRefill", 10),
 		/** Health of a window shutter (only Dad can hurt it). */
 		shutterHealth: num("ShutterHealth", 300),
+		/** How close to a door or window its prompts show (with the hammer), in studs. Read at the start of a run. */
+		buildReach: num("BuildReach", 5),
 		/** Seconds to hold the prompt to nail a plank up (taking one down is quicker). */
 		boardHoldSeconds: num("BoardHoldSeconds", 1.2),
 

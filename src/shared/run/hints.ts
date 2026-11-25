@@ -11,6 +11,8 @@ export interface HintSituation {
 	phase: DayPhase;
 	/** Planks this kid is carrying. */
 	planks: number;
+	/** Whether they're holding their hammer. */
+	hammer: boolean;
 	/** Whether any door or window has a plank up. */
 	anyBoarded: boolean;
 	/** Whether the generator is running. */
@@ -20,6 +22,7 @@ export interface HintSituation {
 }
 
 export const GRAB_PLANKS = "Grab planks from the pile in the garage.";
+export const TAKE_HAMMER = "Take out your hammer to board up the doors and windows.";
 export const BOARD_UP = "Hold E at a door or window to nail a plank up.";
 export const START_GENERATOR = "Start the generator in the garage.";
 export const EXPLORE = "Search the houses on Maple Street. Be home before dark.";
@@ -35,7 +38,7 @@ export function chooseHint(s: HintSituation): string | undefined {
 		return s.attacked !== undefined ? `They're at the ${s.attacked.lower()}!` : FIGHT;
 	}
 	if (s.planks > 0) {
-		return BOARD_UP;
+		return s.hammer ? BOARD_UP : TAKE_HAMMER;
 	}
 	if (!s.anyBoarded) {
 		return GRAB_PLANKS;

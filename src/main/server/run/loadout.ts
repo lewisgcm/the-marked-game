@@ -3,13 +3,14 @@ import { giveBat } from "../combat/combat";
 import { giveFlashlight } from "../combat/flashlight";
 import { setUpHealth } from "../combat/health";
 import { giveSlingshot } from "../combat/slingshot";
+import { giveHammer } from "../house/hammer";
 import { isMember } from "../core/party";
 import { isFrozen, setFrozen } from "../core/round";
 import { MainWorld } from "../world/world";
 
 /**
- * Sets each kid's character up on every spawn: a flashlight, a baseball bat and a slingshot, moved to the
- * kids' start (and frozen if the countdown is running).
+ * Sets each kid's character up on every spawn: a flashlight, a baseball bat, a slingshot and a hammer,
+ * moved to the kids' start (and frozen if the countdown is running).
  */
 
 let world: MainWorld | undefined;
@@ -21,6 +22,7 @@ export function setUpCharacter(player: Player, character: Model) {
 	task.spawn(() => giveFlashlight(player, character));
 	giveBat(player);
 	giveSlingshot(player);
+	giveHammer(player);
 	setUpHealth(character);
 	const spawnAt = world.kidSpawn;
 	// Wait a frame so the character is fully parented before moving it.

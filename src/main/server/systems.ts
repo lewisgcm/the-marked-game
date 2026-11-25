@@ -8,6 +8,7 @@ import { startContainers } from "./items/containers";
 import { onCraftRequest, startCrafting } from "./economy/crafting";
 import { litBy } from "./combat/flashlight";
 import { alertAll, notify, notifyAll, remote, send } from "./core/gameRemote";
+import { holdsHammer } from "./house/hammer";
 import { isPowered, keepsThemWary, startGenerator } from "./house/generator";
 import { damageKid, startHealth } from "./combat/health";
 import { startHints } from "./run/hints";
@@ -113,6 +114,7 @@ export function startSystems(world: MainWorld) {
 			firstNight: isFirstNight(),
 			phase: getClock().phase,
 			planks: itemCount(player, "Planks"),
+			hammer: holdsHammer(player),
 			anyBoarded: anyBoarded(),
 			powered: isPowered(),
 			attacked: attackedEntry()?.name,

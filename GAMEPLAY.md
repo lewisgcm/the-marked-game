@@ -190,6 +190,8 @@ marked. (Parked idea: a screen left on at the broadcast draws the waves to that 
 ### Barricades
 - Every **door and window** has 3 plank slots. Each plank has health; the infected wear it down.
   A breach with no planks left lets them in.
+- **Build mode:** openings only offer anything to a kid holding their **hammer**, so they're out of the way
+  in a fight, and nailing means putting your weapon down.
 - Kids **repair** (hold to nail a plank, costs 1 plank) and **reinforce** with upgrades (metal
   bars, shutters).
 - Your house: front door, back door, garage door, ~6 windows, all on the ground floor. (Upstairs
@@ -259,7 +261,7 @@ back at the door the next night. A story thread for a later chapter.
 | Tool | Use | Source |
 |---|---|---|
 | Flashlight | Stuns infected for ~2 s if held on the face | Start |
-| Hammer & planks | Barricade / repair (uses nails) | Start (garage) |
+| Hammer & planks | Barricade / repair (uses nails); only while the hammer is held | Start |
 | Noise maker (alarm clock, toy car) | Lures infected away from a weak spot, or into a kill zone | Found / blueprint |
 | Fire extinguisher | Knocks back and stuns a group | Found, limited uses |
 | Rope trap | Snares an infected for ~6 s | Blueprint |
@@ -267,7 +269,7 @@ back at the door the next night. A story thread for a later chapter.
 ### Inventory
 - **Slot-based**: every kid starts with **5 slots**. A slot holds one weapon or tool, or a stack
   of one resource (e.g. up to 5 planks, 20 stones, 12 pistol rounds; stack sizes to tune).
-  Coins and the starter tools (flashlight, bat, slingshot) don't take a slot; weapons found
+  Coins and the starter tools (flashlight, bat, slingshot, hammer) don't take a slot; weapons found
   later do.
 - **Rucksacks** add slots: a **school rucksack** (8 slots) and a **hiking rucksack** (12),
   bought at the workbench (and maybe found or traded later).

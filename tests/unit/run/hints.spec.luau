@@ -2,7 +2,7 @@
 return function(t)
 	local hints = require("../../../out/shared/run/hints")
 	local function hint(overrides)
-		local s = { firstNight = true, phase = "Day", planks = 0, anyBoarded = false, powered = false }
+		local s = { firstNight = true, phase = "Day", planks = 0, hammer = false, anyBoarded = false, powered = false }
 		for k, v in overrides do
 			s[k] = v
 		end
@@ -16,7 +16,9 @@ return function(t)
 		end)
 		t.it("walks through planks, boarding, the generator, then the street", function()
 			t.expect(hint({})).toBe(hints.GRAB_PLANKS)
-			t.expect(hint({ planks = 3 })).toBe(hints.BOARD_UP)
+			t.expect(hint({ planks = 3 })).toBe(hints.TAKE_HAMMER)
+			t.expect(hint({ planks = 3, hammer = true })).toBe(hints.BOARD_UP)
+			t.expect(hint({ hammer = true })).toBe(hints.GRAB_PLANKS)
 			t.expect(hint({ anyBoarded = true })).toBe(hints.START_GENERATOR)
 			t.expect(hint({ anyBoarded = true, powered = true })).toBe(hints.EXPLORE)
 		end)

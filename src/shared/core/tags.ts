@@ -6,6 +6,9 @@ export const FLICKER_LIGHT_TAG = "FlickerLight";
 /** Invisible parts filling each door and window opening of the house: where planks go (M1). */
 export const BARRICADE_SLOT_TAG = "BarricadeSlot";
 
+/** Door and window prompts: clients show them only while the hammer is held. */
+export const BUILD_PROMPT_TAG = "BuildPrompt";
+
 /** Invisible markers outside the house where infected appear. */
 export const INFECTED_SPAWN_TAG = "InfectedSpawn";
 

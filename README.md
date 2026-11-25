@@ -87,7 +87,7 @@ still join.
    dawn, always with a chime); the sky and indoor light blend to the phase over ~6s (`lighting.ts`).
    - Kids start in the **basement** of the family house (a blockout built at runtime by
      `src/main/server/world/world.ts`; layout diagram at the top of that file) with a **flashlight**,
-     a **baseball bat** and a **slingshot**. Ground floor: living room, dining room, kitchen, garage (workbench,
+     a **baseball bat**, a **slingshot** and a **hammer**. Ground floor: living room, dining room, kitchen, garage (workbench,
      generator, plank pile), hall with stairs up and down. Upstairs: two bedrooms, the parents'
      room, a bathroom. Front, back and garage doors and six ground-floor windows are open gaps,
      each with an invisible tagged `BarricadeSlot` for the barricades to come. Outside: garden,
@@ -112,7 +112,7 @@ still join.
      slots). Rucksacks are personal; the rest are for the whole party, whoever pays. It also makes things
      from scrap (`crafting.ts`, list in `shared/economy/recipes.ts`): **window shutters**, and with the **scrap
      press**, nails and stones.
-   - **Window shutters** (`barricades.ts`): use one next to a window. It sits behind the planks; shamblers
+   - **Window shutters** (`barricades.ts`): use one next to a window, hammer in hand. It sits behind the planks; shamblers
      can't hurt it and go and find another way in. Dad can break it. It can't be taken down.
    - **Bases** (`bases.ts`, `trading.ts`; who sells what in `shared/economy/bases.ts`): the **Treehouse** (from
      Day 2) at the left end of Maple Street and the **Fire Station** (Day 3) at the right. Each restocks
@@ -145,9 +145,9 @@ still join.
      the night cost (`shared/run/nightSummary.ts`, counted in `nightReport.ts`).
    - **Barricades** (`barricades.ts`, rules in `shared/house/barricade.ts`): a **Take planks** prompt on
      the garage pile gives up to 5 (the pile starts at 30, +10 every dawn). Every door and
-     window takes 3 planks: hold **Board up** (E) to nail one (a
-     plank and a nail), **Take down** (F) to pull one off
-     and get both back. While any plank is up the opening is blocked for everyone. Planks have 100
+     window takes 3 planks. Holding the **hammer** (`hammer.ts`, `client/house/buildMode.ts`) is build
+     mode: only then do the openings show their prompts (within 5 studs) and the server accept them. Hold
+     **Board up** (E) to nail one (a plank and a nail), **Take down** (F) to pull one off and get both back. While any plank is up the opening is blocked for everyone. Planks have 100
      health (double if nailed on Day/Night 1); the infected will wear down the outermost one.
    - **The infected** (`infected/`, waves in `shared/infected/waves.ts`): at night they come in waves
      from all four sides (Night 1: Dad + 1, then 2 more; from Night 2, three growing waves scaled
@@ -200,7 +200,7 @@ src/
       core/            # config (tuning), party, life, teams, round (day/night clock), roundStats, gameRemote, prompts, effects
       run/             # gatekeeper, admission, loadout (setup on spawn), elimination (taken, spectating),
                        #   roundEnd, resync (re-send state on "Ready"), nightReport, hints
-      house/           # barricades, generator, lighting, streetlights
+      house/           # barricades, hammer, generator, lighting, streetlights
       combat/          # combat (bat), slingshot, flashlight, torch, health, infectedDamage
       infected/        # director (spawning, waves), behaviours (one function per mode), senses,
                        #   movement, body, state, types
@@ -210,6 +210,7 @@ src/
     client/            # main.client.tsx (entry), and:
       core/            # gameState (stores for server messages), theme, sound, device, panel, useViewport
       hud/             # roundHud, messageBar, messageQueue, inventoryHud, gainFeed, walkieUi, dawnCard
+      house/           # buildMode (prompts only with the hammer)
       shops/           # shopPanel, workbenchUi, tradeUi
       combat/          # melee, slingshot, flashlight (beam visuals), faceCamera, combatFeedback
       run/             # spectate, endScreen
@@ -404,7 +405,7 @@ apply from the next phase.
 - [ ] (Published) Following a friend who's mid-run sends you to the lobby (or a "join from the lobby" message), not into their run.
 - [ ] (Published) Joining the main game place directly sends you to the lobby.
 - [ ] As soon as the game loads, a dark "DAY 1 — Board up the house before dark." card covers the screen (no blank wait); nobody can move or jump while it shows.
-- [ ] ~6s later (Studio: 2s party wait + 4s card) it clears; everyone is in the basement with a Flashlight, a Baseball Bat and a Slingshot; no role banner.
+- [ ] ~6s later (Studio: 2s party wait + 4s card) it clears; everyone is in the basement with a Flashlight, a Baseball Bat, a Slingshot and a Hammer; no role banner.
 
 ### The house
 - [ ] The basement has a flickering bulb, shelves and boxes; a ramp leads up into the hall.
@@ -417,7 +418,7 @@ apply from the next phase.
 - [ ] Each phase change chimes. NIGHT 1 (red) and DAY 2 (white) show a title for 2s, with a line of advice until Night 2 and just the title from Day 3. DUSK has no title: the clock turns orange and swells once. DAWN has only the dawn card. The clock pill matches the phase.
 - [ ] The light blends over a few seconds: bright by day, orange at dusk, darkest at night, pinkish at dawn. Indoors stays navigable at night.
 - [ ] Changing `NightSeconds` in ServerStorage → GameConfig during play changes the next night's length.
-- [ ] A player who resets respawns after ~3s in the basement with all three tools (by day).
+- [ ] A player who resets respawns after ~3s in the basement with all four tools (by day).
 - [ ] (Published) After the end screen, everyone is teleported back to the lobby; nobody is left on the end screen.
 - [ ] (Published) Nothing changes on the lobby's Wins board.
 - [ ] No errors in the server or client output during a whole run.
@@ -453,7 +454,7 @@ apply from the next phase.
 
 ### Tips (Day 1 / Night 1)
 - [ ] A tip shows for 8s after it changes, only while no message is showing, then goes.
-- [ ] With no planks: "Grab planks..."; carrying some: "Hold E..."; something boarded and no planks in hand: "Start the generator..."; powered: "Search the houses..." by day, "Get inside..." at dusk.
+- [ ] With no planks: "Grab planks..."; carrying some: "Take out your hammer...", then with it in hand "Hold E..."; something boarded and no planks in hand: "Start the generator..."; powered: "Search the houses..." by day, "Get inside..." at dusk.
 - [ ] At night: "They're at the <opening>!" while one is bashed, otherwise how to fight. Nothing at dawn, while taken, or from Day 2.
 
 ### Dawn card
@@ -478,7 +479,8 @@ apply from the next phase.
 - [ ] Press nails (2 scrap: 3) and Press stones (2 scrap: 8) join everyone's list once the party has the scrap press, not before.
 
 ### Window shutters
-- [ ] Using one next to a window fits a metal shutter on the house side, behind any planks, and uses it up. You can't get through the window, with or without planks, and can still board it up over the shutter.
+- [ ] Using one next to a window, with the hammer in hand, fits a metal shutter on the house side, behind any planks, and uses it up. You can't get through the window, with or without planks, and can still board it up over the shutter.
+- [ ] Without the hammer in hand: "Hold your hammer to fit it."
 - [ ] Away from a window (or at a door): "Stand next to a window to fit it." At a window that has one: "It already has a shutter." Neither uses it up.
 - [ ] Shamblers break planks over a shutter, then leave that window for the nearest opening they can break, walking round the house to it. They ignore a shuttered window with no planks.
 - [ ] With every window shuttered they all come to the doors.
@@ -535,7 +537,10 @@ apply from the next phase.
 
 ### Barricades
 - [ ] The garage pile prompt says "Take planks (30 left)"; using it gives 5 and the count drops to 25. With no room: "Your pockets are full."
-- [ ] At every door and window (from inside, and outside): "Board up (0/3)" (E, hold ~1s) and, once a plank is up, "Take down" (F).
+- [ ] With the hammer put away, no door or window shows a prompt, whatever else you hold. (The plank pile, generator and workbench always do.)
+- [ ] With the hammer in hand, within about 5 studs of any door or window (from inside, and outside): "Board up (0/3)" (E, hold ~1s) and, once a plank is up, "Take down" (F). Putting it away mid-hold cancels it.
+- [ ] Two players: one kid's hammer doesn't show the prompts to the other.
+- [ ] After respawning or being taken and returned, the prompts are hidden until the new hammer is out.
 - [ ] Boarding up uses a plank and a nail; without nails: "You need nails...".
 - [ ] Board up without planks: "You need planks. There's a pile in the garage."
 - [ ] Each plank appears across the opening at a slight angle, on the inside; at 3/3 the Board up prompt goes away.

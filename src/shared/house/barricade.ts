@@ -10,6 +10,9 @@
  * the rest get no further, and go and find another way in.
  */
 
+/** The tool that puts planks and shutters up. */
+export const HAMMER_TOOL_NAME = "Hammer";
+
 export interface Barricade {
 	/** Health of each plank, innermost first. */
 	planks: number[];
