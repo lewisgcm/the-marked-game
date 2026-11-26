@@ -289,7 +289,11 @@ the map looks, not how it plays.
       openings'; now it stands just off the wall. Re-uploaded as model 117961715635785.
 - [x] **The roadblock mesh** at the map's open ends: build.ts writes a `Roadblock` piece (mesh and collider) to
       `build/tiles/kit`, synced to `ServerStorage.MapKit`; `world/map.ts` clones it, the gallery places it.
-- [ ] **Ground and roads:** kerbs, road markings, and grass, forest floor and mud that blend at the seams.
+- [x] **Roads** (plain parts, `lib/build.ts` → Streets): town roads get kerbs and drains along their
+      pavements (now the Pavement material), give-way lines at the side road, a zebra crossing on Home and a
+      keep-clear box at the Fire Station; country roads get solid edge lines (turning the bends) and worn
+      verges. Repeating details are spaced from each tile's middle, so they meet the next tile's.
+- [ ] **Ground:** grass, forest floor and mud that blend at the seams, and patches to break up flat ground.
 - [ ] **The family house** (was in M9): a model over the code-built house, keeping its barricade slots,
       lamps, stairs and basement; later, built from the Home tile's markers instead of code.
 - [ ] **Budget:** parts and triangles per tile, checked on a phone with a full map, before streaming is

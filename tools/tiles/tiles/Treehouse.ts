@@ -2,6 +2,7 @@ import { CFrame, turn, UPRIGHT } from "../lib/cframe.ts";
 import {
 	buildingMesh,
 	campfire,
+	edgeLines,
 	hasKitMesh,
 	logSeat,
 	oak,
@@ -11,6 +12,7 @@ import {
 	scatter,
 	signText,
 	stones,
+	verge,
 	wall,
 	wreck,
 } from "../lib/build.ts";
@@ -32,6 +34,8 @@ export function treehouse(): Tile {
 
 	t.folder("Road");
 	t.slab("Road", 34, 100, -11, 11, 0.1, S.ROAD);
+	verge(t, 34, 100, -11, 11);
+	edgeLines(t, 34, 0, 100, 0);
 	roadLines(t, 40, 0, 98, 0);
 
 	// The tree's front (-Z) faces the road, to the east.

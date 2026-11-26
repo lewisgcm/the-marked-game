@@ -23,8 +23,14 @@ export const WATER = style("Glass", [0.16, 0.24, 0.18], { transparency: 0.35, co
 
 // Streets.
 export const ROAD = style("Asphalt", [0.18, 0.18, 0.19]);
-export const PAVING = style("Concrete", [0.6, 0.6, 0.58]);
+export const PAVING = style("Pavement", [0.62, 0.62, 0.6]);
+export const KERB = style("Concrete", [0.74, 0.74, 0.72]);
 export const ROAD_LINE = style("SmoothPlastic", [0.75, 0.72, 0.6], { shadow: false, collide: false });
+export const EDGE_LINE = style("SmoothPlastic", [0.86, 0.86, 0.83], { shadow: false, collide: false });
+export const YELLOW_LINE = style("SmoothPlastic", [0.85, 0.7, 0.2], { shadow: false, collide: false });
+export const DRAIN = style("Metal", [0.17, 0.17, 0.18], { shadow: false, collide: false });
+export const VERGE = style("Ground", [0.37, 0.32, 0.24]);
+export const BEACON = style("Neon", [1, 0.62, 0.12], { shadow: false });
 
 // Buildings.
 export const HOUSE_WALL = style("SmoothPlastic", [0.72, 0.74, 0.7]);

@@ -1,5 +1,5 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { bungalow, fence, oak, roadLines, streetLamp } from "../lib/build.ts";
+import { bungalow, edgeLines, fence, giveWay, oak, pavement, roadLines, streetLamp, verge } from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -12,14 +12,17 @@ export function housesA(): Tile {
 	t.folder("Road");
 	t.slab("Road", -100, 100, -11, 11, 0.1, S.ROAD);
 	t.slab("Road", -11, 11, -100, -11, 0.1, S.ROAD);
-	t.slab("Pavement", -100, 100, 11, 17, 0.2, S.PAVING);
-	t.slab("Pavement", -100, -11, -17, -11, 0.2, S.PAVING);
-	t.slab("Pavement", 11, 100, -17, -11, 0.2, S.PAVING);
-	// The side road's pavements stop short of its (grass) north edge.
-	t.slab("Pavement", -17, -11, -60, -17, 0.2, S.PAVING);
-	t.slab("Pavement", 11, 17, -60, -17, 0.2, S.PAVING);
+	pavement(t, -100, 100, 11, 17, ["minZ"]);
+	pavement(t, -100, -11, -17, -11, ["maxZ", "maxX"]);
+	pavement(t, 11, 100, -17, -11, ["maxZ", "minX"]);
+	// The side road's pavements stop short of its (grass) north edge; past them it's a country road.
+	pavement(t, -17, -11, -60, -17, ["maxX"]);
+	pavement(t, 11, 17, -60, -17, ["minX"]);
+	verge(t, -11, 11, -100, -60);
+	edgeLines(t, 0, -100, 0, -60);
 	roadLines(t, -98, 0, 98, 0);
-	roadLines(t, 0, -98, 0, -12);
+	roadLines(t, 0, -98, 0, -16);
+	giveWay(t, 0.3, 10.7, -11.8, -1);
 
 	// The front gardens are short, so the cars are parked along the kerb.
 	const kerb = new CFrame(13, 0.1, -37.5).mul(turn(90));

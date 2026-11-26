@@ -2,6 +2,9 @@ import { CFrame, turn } from "../lib/cframe.ts";
 import {
 	buildingMesh,
 	campfire,
+	EDGE_LINE_AT,
+	line,
+	verge,
 	door,
 	dormant,
 	logSeat,
@@ -36,6 +39,13 @@ export function forestRoadA(): Tile {
 	t.slab("Road", 11, 100, -11, 11, 0.1, S.ROAD);
 	roadLines(t, 12, 0, 98, 0);
 	roadLines(t, 0, 12, 0, 98);
+	// Country road: worn verges, and edge lines that turn the corner without overlapping.
+	verge(t, -11, 11, -11, 100);
+	verge(t, 11, 100, -11, 11, 0.004);
+	line(t, -EDGE_LINE_AT, -EDGE_LINE_AT - 0.2, -EDGE_LINE_AT, 100, 0.4);
+	line(t, -EDGE_LINE_AT + 0.2, -EDGE_LINE_AT, 100, -EDGE_LINE_AT, 0.4);
+	line(t, EDGE_LINE_AT, EDGE_LINE_AT - 0.2, EDGE_LINE_AT, 100, 0.4);
+	line(t, EDGE_LINE_AT + 0.2, EDGE_LINE_AT, 100, EDGE_LINE_AT, 0.4);
 
 	// The hut's porch faces the bend.
 	const hut = new CFrame(-46, 0, -40).mul(turn(-135));

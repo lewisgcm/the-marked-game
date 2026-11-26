@@ -3,7 +3,9 @@ import {
 	buildingMesh,
 	fence,
 	hasKitMesh,
+	keepClear,
 	oak,
+	pavement,
 	pointLight,
 	post,
 	roadLines,
@@ -33,9 +35,11 @@ export function fireStation(): Tile {
 
 	t.folder("Road");
 	t.slab("Road", -100, 100, -11, 11, 0.1, S.ROAD);
-	t.slab("Pavement", -100, 100, 11, 17, 0.2, S.PAVING);
-	t.slab("Pavement", -100, 100, -17, -11, 0.2, S.PAVING);
+	pavement(t, -100, 100, 11, 17, ["minZ"]);
+	pavement(t, -100, 100, -17, -11, ["maxZ"]);
 	roadLines(t, -98, 0, 98, 0);
+	// Keep the road clear in front of the engine bay.
+	keepClear(t, -18, -2, -10.5, 10.5);
 
 	// The station's front (-Z) faces the road.
 	const station = new CFrame(0, 0, 47);

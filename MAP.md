@@ -201,6 +201,11 @@ doesn't type-check: `npm run tiles:build` and `npm test` do.)
 - **200×200 studs** around the origin, **ground at y = 0** along every edge. Hills and dips stay inside.
 - **Roads** are 22 wide, with their top at 0.1, and meet an edge at its **middle**. Pavements (6 wide, top
   at 0.2) run to a `Town` edge and stop short of any other.
+- **Dress roads with the Streets pieces** in `lib/build.ts`, so they meet the next tile's: `pavement` (with
+  kerbs on the sides facing the road, and drains), `roadLines` down the middle, and on country roads
+  (`Grass`/`Forest` edges) `edgeLines` and a `verge`; `giveWay`, `zebra` and `keepClear` where they fit.
+  Repeating things are spaced from the tile's middle. Where two painted lines meet (a bend), stop one at
+  the other's edge rather than overlapping them: parts sharing a top flicker.
 - **Blend inside the tile:** if a forest tile has a `Grass` edge, it fades to grass before the edge.
 - **Folders** inside the Model group the parts (`Ground`, `Road`, `Trees`, `Loot`, `Markers`…). Name road
   parts `Road`: that's how the check knows a road reaches an edge.

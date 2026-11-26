@@ -1,5 +1,20 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { buildingMesh, door, fence, hayBale, loot, oak, roadLines, rock, scatter, stones, wall } from "../lib/build.ts";
+import {
+	buildingMesh,
+	door,
+	EDGE_LINE_AT,
+	fence,
+	hayBale,
+	line,
+	loot,
+	oak,
+	roadLines,
+	rock,
+	scatter,
+	stones,
+	verge,
+	wall,
+} from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -19,6 +34,13 @@ export function meadowA(): Tile {
 	t.slab("Road", -100, -11, -11, 11, 0.1, S.ROAD);
 	roadLines(t, -98, 0, -12, 0);
 	roadLines(t, 0, -98, 0, -12);
+	// Country road: worn verges, and edge lines that turn the corner without overlapping.
+	verge(t, -11, 11, -100, 11);
+	verge(t, -100, -11, -11, 11, 0.004);
+	line(t, EDGE_LINE_AT, -100, EDGE_LINE_AT, EDGE_LINE_AT + 0.2, 0.4);
+	line(t, -100, EDGE_LINE_AT, EDGE_LINE_AT - 0.2, EDGE_LINE_AT, 0.4);
+	line(t, -EDGE_LINE_AT, -100, -EDGE_LINE_AT, -EDGE_LINE_AT + 0.2, 0.4);
+	line(t, -100, -EDGE_LINE_AT, -EDGE_LINE_AT - 0.2, -EDGE_LINE_AT, 0.4);
 
 	// The barn's wide door faces the bend.
 	const barn = new CFrame(48, 0, 38).mul(turn(45));

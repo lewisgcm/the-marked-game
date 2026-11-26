@@ -418,6 +418,122 @@ export function roadblock(t: Tile, frame: CFrame) {
 	for (const x of [-10.5, -3.5, 3.5, 10.5]) t.box("BarrierLeg", x, 1.2, 0, 0.4, 2.4, 0.4, S.METAL, frame);
 }
 
+// --- Streets -----------------------------------------------------------------------------------------
+// Roads are 22 wide with their top at 0.1 (MAP.md). Repeating things (dashes, drains) are spaced from the
+// tile's middle, so they line up with the next tile's whichever way it's turned.
+
+/** A side of a rectangle: the one at its least or greatest x or z. */
+export type RectSide = "minX" | "maxX" | "minZ" | "maxZ";
+
+/** A line painted on the road, `width` wide, from (x0, z0) to (x1, z1) along X or Z. */
+export function line(t: Tile, x0: number, z0: number, x1: number, z1: number, width: number, style = S.EDGE_LINE) {
+	const alongX = Math.abs(x1 - x0) >= Math.abs(z1 - z0);
+	const length = Math.abs(alongX ? x1 - x0 : z1 - z0);
+	t.box("RoadLine", (x0 + x1) / 2, 0.1, (z0 + z1) / 2, alongX ? length : width, 0.1, alongX ? width : length, style);
+}
+
+/** Solid white lines along both edges of a straight country road, its middle from (x0, z0) to (x1, z1). */
+export function edgeLines(t: Tile, x0: number, z0: number, x1: number, z1: number) {
+	const alongX = Math.abs(x1 - x0) >= Math.abs(z1 - z0);
+	for (const side of [-EDGE_LINE_AT, EDGE_LINE_AT]) {
+		if (alongX) line(t, x0, z0 + side, x1, z1 + side, 0.4);
+		else line(t, x0 + side, z0, x1 + side, z1, 0.4);
+	}
+}
+
+/** How far a country road's edge lines are from its middle. */
+export const EDGE_LINE_AT = 9.6;
+
+/**
+ * Worn ground along a country road: the road's rectangle (x0..x1 by z0..z1) grown 2.5 all round, under it.
+ * `lift` keeps two verges that overlap (at a bend) out of each other's plane.
+ */
+export function verge(t: Tile, x0: number, x1: number, z0: number, z1: number, lift = 0) {
+	const clip = (v: number) => Math.max(-100, Math.min(100, v));
+	t.slab(
+		"Verge",
+		clip(x0 - 2.5),
+		clip(x1 + 2.5),
+		clip(z0 - 2.5),
+		clip(z1 + 2.5),
+		0.07 + lift,
+		S.VERGE,
+		undefined,
+		0.3,
+	);
+}
+
+/**
+ * A pavement from x0..x1 by z0..z1 (top 0.2), with a kerb along each side in `kerbs` (the ones facing
+ * the road), and a drain grate in the road beside each kerb every 24 studs.
+ */
+export function pavement(t: Tile, x0: number, x1: number, z0: number, z1: number, kerbs: RectSide[] = []) {
+	t.slab("Pavement", x0, x1, z0, z1, 0.2, S.PAVING);
+	for (const side of kerbs) {
+		const alongX = side === "minZ" || side === "maxZ";
+		const edge = { minX: x0, maxX: x1, minZ: z0, maxZ: z1 }[side];
+		const inward = side.startsWith("min") ? 1 : -1;
+		let [from, to] = alongX ? [x0, x1] : [z0, z1];
+		// Where it meets a kerb along X at a corner, a kerb along Z stops at it rather than overlapping.
+		if (!alongX && kerbs.includes("minZ")) from += 0.58;
+		if (!alongX && kerbs.includes("maxZ")) to -= 0.58;
+		// The kerb stones stand a hair proud of the pavement's edge and top, so they don't share its faces.
+		const across = edge + inward * 0.28;
+		const [kx, kz] = alongX ? [(from + to) / 2, across] : [across, (from + to) / 2];
+		t.box("Kerb", kx, 0.12, kz, alongX ? to - from : 0.6, 0.26, alongX ? 0.6 : to - from, S.KERB);
+		const road = edge - inward * 0.7;
+		for (let p = Math.ceil((from + 4 - 12) / 24) * 24 + 12; p <= to - 4; p += 24) {
+			const [dx, dz] = alongX ? [p, road] : [road, p];
+			t.box("Drain", dx, 0.11, dz, alongX ? 1.8 : 0.9, 0.06, alongX ? 0.9 : 1.8, S.DRAIN);
+		}
+	}
+}
+
+/** Give-way marks across a road's lane where it meets another: two dashed lines at `at` along Z, x0..x1. */
+export function giveWay(t: Tile, x0: number, x1: number, at: number, towards: 1 | -1) {
+	for (const z of [at, at + towards * 1.1]) {
+		for (let x = x0 + 0.6; x < x1 - 0.3; x += 1.8) line(t, x, z, Math.min(x + 1.2, x1), z, 0.35);
+	}
+}
+
+/**
+ * A zebra crossing over a road running along X: white bars across x0..x1 (the walk), z0..z1 (the road),
+ * and a beacon on a striped pole on the pavement at each end (`poles`: their z).
+ */
+export function zebra(t: Tile, x0: number, x1: number, z0: number, z1: number, poles: number[]) {
+	for (let z = z0 + 0.8; z < z1 - 0.5; z += 2.4) line(t, x0, z, x1, z, 1.2);
+	for (const z of poles) {
+		for (let i = 0; i < 6; i++) {
+			t.box("BeaconPole", x0 - 1.2, 0.5 + i, z, 0.35, 1, 0.35, i % 2 === 0 ? S.ROAD : S.KERB);
+		}
+		t.part("Beacon", [1, 1, 1], new CFrame(x0 - 1.2, 6.5, z), S.BEACON, {
+			shape: "Ball",
+			children: [pointLight([1, 0.6, 0.15], 10, 0.8)],
+		});
+	}
+}
+
+/** A yellow keep-clear box on the road (x0..x1 by z0..z1): its outline, crossed corner to corner. */
+export function keepClear(t: Tile, x0: number, x1: number, z0: number, z1: number) {
+	line(t, x0, z0, x1, z0, 0.35, S.YELLOW_LINE);
+	line(t, x0, z1, x1, z1, 0.35, S.YELLOW_LINE);
+	line(t, x0, z0 + 0.18, x0, z1 - 0.18, 0.35, S.YELLOW_LINE);
+	line(t, x1, z0 + 0.18, x1, z1 - 0.18, 0.35, S.YELLOW_LINE);
+	const [w, d] = [x1 - x0, z1 - z0];
+	const length = Math.hypot(w, d) - 0.6;
+	const angle = (Math.atan2(d, w) * 180) / Math.PI;
+	// The two diagonals sit a little lower than the outline and each other, so no two share a top.
+	[1, -1].forEach((sign, i) => {
+		const y = 0.1 - 0.005 * i;
+		t.part(
+			"RoadLine",
+			[length, 0.08, 0.3],
+			new CFrame((x0 + x1) / 2, y, (z0 + z1) / 2).mul(turn(-sign * angle)),
+			S.YELLOW_LINE,
+		);
+	});
+}
+
 /** Dashes down the middle of a road, from one point to another. */
 export function roadLines(t: Tile, x0: number, z0: number, x1: number, z1: number) {
 	const count = Math.floor(Math.hypot(x1 - x0, z1 - z0) / 16);
