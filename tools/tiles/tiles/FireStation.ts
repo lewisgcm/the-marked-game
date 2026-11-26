@@ -2,9 +2,11 @@ import { CFrame, turn } from "../lib/cframe.ts";
 import {
 	buildingMesh,
 	fence,
+	GRASS_PATCHES,
 	hasKitMesh,
 	keepClear,
 	oak,
+	patches,
 	pavement,
 	pointLight,
 	post,
@@ -32,6 +34,7 @@ export function fireStation(): Tile {
 		West: "Road/Town",
 	});
 	t.slab("Ground", -100, 100, -100, 100, 0, S.GRASS, undefined, 2);
+	patches(t, 14, [], new Random(33), GRASS_PATCHES);
 
 	t.folder("Road");
 	t.slab("Road", -100, 100, -11, 11, 0.1, S.ROAD);

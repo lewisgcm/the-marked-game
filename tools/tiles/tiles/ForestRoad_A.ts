@@ -3,6 +3,7 @@ import {
 	buildingMesh,
 	campfire,
 	EDGE_LINE_AT,
+	FOREST_PATCHES,
 	line,
 	verge,
 	door,
@@ -10,7 +11,9 @@ import {
 	logSeat,
 	loot,
 	oak,
+	patches,
 	pine,
+	raggedEdge,
 	roadLines,
 	scatter,
 	stones,
@@ -33,6 +36,8 @@ export function forestRoadA(): Tile {
 	});
 	t.slab("Ground", -100, 100, -100, 100, 0, S.FOREST_FLOOR, undefined, 2);
 	t.slab("GrassEdge", -100, 100, 76, 100, 0.05, S.GRASS);
+	patches(t, 14, [[-100, 100, 70, 100]], new Random(35), FOREST_PATCHES);
+	raggedEdge(t, [-100, 100, 76, 100], "minZ", S.GRASS, S.FOREST_FLOOR, new Random(36));
 
 	t.folder("Road");
 	t.slab("Road", -11, 11, -11, 100, 0.1, S.ROAD);

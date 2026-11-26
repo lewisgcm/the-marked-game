@@ -4,10 +4,12 @@ import {
 	door,
 	EDGE_LINE_AT,
 	fence,
+	GRASS_PATCHES,
 	hayBale,
 	line,
 	loot,
 	oak,
+	patches,
 	roadLines,
 	rock,
 	scatter,
@@ -28,6 +30,7 @@ export function meadowA(): Tile {
 		West: "Road/Grass",
 	});
 	t.slab("Ground", -100, 100, -100, 100, 0, S.GRASS, undefined, 2);
+	patches(t, 16, [], new Random(34), GRASS_PATCHES);
 
 	t.folder("Road");
 	t.slab("Road", -11, 11, -100, 11, 0.1, S.ROAD);

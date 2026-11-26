@@ -206,7 +206,9 @@ doesn't type-check: `npm run tiles:build` and `npm test` do.)
   (`Grass`/`Forest` edges) `edgeLines` and a `verge`; `giveWay`, `zebra` and `keepClear` where they fit.
   Repeating things are spaced from the tile's middle. Where two painted lines meet (a bend), stop one at
   the other's edge rather than overlapping them: parts sharing a top flicker.
-- **Blend inside the tile:** if a forest tile has a `Grass` edge, it fades to grass before the edge.
+- **Blend inside the tile:** if a forest tile has a `Grass` edge, it fades to grass before the edge (a
+  band of grass with `raggedEdge` along its inner side). Break up flat ground with `patches`. Heights, so
+  nothing shares a top: ground 0, patches 0.03, a band 0.05, its ragged edge 0.06, verges 0.07, roads 0.1.
 - **Folders** inside the Model group the parts (`Ground`, `Road`, `Trees`, `Loot`, `Markers`…). Name road
   parts `Road`: that's how the check knows a road reaches an edge.
 - **Every part** is anchored and placed with a `CFrame` (in JSON: 12 numbers, position then rotation by

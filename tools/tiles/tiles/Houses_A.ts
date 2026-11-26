@@ -1,5 +1,17 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { bungalow, edgeLines, fence, giveWay, oak, pavement, roadLines, streetLamp, verge } from "../lib/build.ts";
+import {
+	bungalow,
+	edgeLines,
+	fence,
+	giveWay,
+	GRASS_PATCHES,
+	oak,
+	patches,
+	pavement,
+	roadLines,
+	streetLamp,
+	verge,
+} from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -8,6 +20,7 @@ import { Tile } from "../lib/tile.ts";
 export function housesA(): Tile {
 	const t = new Tile("Houses_A", { North: "Road/Grass", East: "Road/Town", South: "None/Grass", West: "Road/Town" });
 	t.slab("Ground", -100, 100, -100, 100, 0, S.GRASS, undefined, 2);
+	patches(t, 14, [], new Random(32), GRASS_PATCHES);
 
 	t.folder("Road");
 	t.slab("Road", -100, 100, -11, 11, 0.1, S.ROAD);

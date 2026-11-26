@@ -1,5 +1,5 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { marker, oak, pine, scatter, type Area } from "../lib/build.ts";
+import { FOREST_PATCHES, marker, oak, patches, pine, raggedEdge, scatter, type Area } from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -13,6 +13,18 @@ import { Tile } from "../lib/tile.ts";
 function woods(t: Tile, clear: Area[], seed: number) {
 	t.slab("Ground", -100, 100, -50, 50, 0, S.FOREST_FLOOR, undefined, 2);
 	t.slab("GrassEdge", -100, 100, -50, -36, 0.05, S.GRASS);
+	// Patches only in the strip, clear of the grass and the map's far edge.
+	patches(
+		t,
+		8,
+		[
+			[-100, 100, -100, -30],
+			[-100, 100, 38, 100],
+		],
+		new Random(seed + 2),
+		FOREST_PATCHES,
+	);
+	raggedEdge(t, [-100, 100, -50, -36], "maxZ", S.GRASS, S.FOREST_FLOOR, new Random(seed + 3));
 	t.folder("Trees");
 	// Only within the strip: keep out of z beyond +-44.
 	const outside: Area[] = [

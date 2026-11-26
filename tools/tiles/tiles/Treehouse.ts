@@ -3,10 +3,13 @@ import {
 	buildingMesh,
 	campfire,
 	edgeLines,
+	FOREST_PATCHES,
 	hasKitMesh,
 	logSeat,
 	oak,
+	patches,
 	pine,
+	raggedEdge,
 	post,
 	roadLines,
 	scatter,
@@ -30,6 +33,17 @@ export function treehouse(): Tile {
 	});
 	t.slab("Ground", -100, 100, -100, 100, 0, S.FOREST_FLOOR, undefined, 2);
 	t.slab("GrassEdge", 72, 100, -100, 100, 0.05, S.GRASS);
+	patches(
+		t,
+		12,
+		[
+			[-44, 44, -44, 44],
+			[66, 100, -100, 100],
+		],
+		new Random(37),
+		FOREST_PATCHES,
+	);
+	raggedEdge(t, [72, 100, -100, 100], "minX", S.GRASS, S.FOREST_FLOOR, new Random(38));
 	t.part("Clearing", [0.5, 84, 84], new CFrame(0, -0.17, 0).mul(UPRIGHT), S.DIRT, { shape: "Cylinder" });
 
 	t.folder("Road");

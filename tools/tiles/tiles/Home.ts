@@ -1,12 +1,14 @@
 import { CFrame, turn } from "../lib/cframe.ts";
 import {
 	bungalow,
+	GRASS_PATCHES,
 	edgeLines,
 	fence,
 	giveWay,
 	hedge,
 	marker,
 	oak,
+	patches,
 	pavement,
 	roadLines,
 	streetLamp,
@@ -39,6 +41,7 @@ export function home(): Tile {
 	t.slab("Ground", -100, 100, plotZ1, 100, 0, S.GRASS, undefined, 2);
 	t.slab("Ground", -100, -plotX, plotZ0, plotZ1, 0, S.GRASS, undefined, 2);
 	t.slab("Ground", plotX, 100, plotZ0, plotZ1, 0, S.GRASS, undefined, 2);
+	patches(t, 14, [[-plotX, plotX, plotZ0, plotZ1]], new Random(31), GRASS_PATCHES);
 
 	t.folder("Road");
 	t.slab("Road", -100, 100, -11, 11, 0.1, S.ROAD);

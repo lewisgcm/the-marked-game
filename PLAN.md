@@ -293,7 +293,10 @@ the map looks, not how it plays.
       pavements (now the Pavement material), give-way lines at the side road, a zebra crossing on Home and a
       keep-clear box at the Fire Station; country roads get solid edge lines (turning the bends) and worn
       verges. Repeating details are spaced from each tile's middle, so they meet the next tile's.
-- [ ] **Ground:** grass, forest floor and mud that blend at the seams, and patches to break up flat ground.
+- [x] **Ground** (plain parts, `lib/build.ts` → Ground): round patches of dark and dry grass and dirt, or leaf
+      litter and moss, spread so none overlap (`patches`); the grass bands on forest tiles meet the forest
+      floor along a ragged edge (`raggedEdge`). Layered by height so nothing shares a top. (The swamp's
+      banks are as they were.)
 - [ ] **The family house** (was in M9): a model over the code-built house, keeping its barricade slots,
       lamps, stairs and basement; later, built from the Home tile's markers instead of code.
 - [ ] **Budget:** parts and triangles per tile, checked on a phone with a full map, before streaming is

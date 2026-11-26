@@ -418,6 +418,68 @@ export function roadblock(t: Tile, frame: CFrame) {
 	for (const x of [-10.5, -3.5, 3.5, 10.5]) t.box("BarrierLeg", x, 1.2, 0, 0.4, 2.4, 0.4, S.METAL, frame);
 }
 
+// --- Ground ------------------------------------------------------------------------------------------
+// Layers, so nothing shares a top (parts that do flicker): ground 0, patches 0.03, a band of another
+// ground 0.05 (GrassEdge), the band's ragged edge 0.06, verges 0.07, roads 0.1.
+
+/** A flat round patch of `style` on the ground, its top at `top`. */
+function disc(t: Tile, name: string, x: number, z: number, radius: number, top: number, style: Style) {
+	t.part(name, [0.2, radius * 2, radius * 2], new CFrame(x, top - 0.1, z).mul(UPRIGHT), style, {
+		shape: "Cylinder",
+	});
+}
+
+/** The patches for grass ground, and for forest floor. */
+export const GRASS_PATCHES = [S.GRASS_DARK, S.GRASS_DARK, S.GRASS_DRY, S.DIRT_PATCH];
+export const FOREST_PATCHES = [S.LEAF_LITTER, S.MOSS, S.MOSS];
+
+/**
+ * `count` round patches (radius 3 to 8) of the `kinds` at random, spread so none overlap,
+ * keeping out of `avoid`: breaks up flat ground. Under roads and floors they're simply hidden.
+ */
+export function patches(t: Tile, count: number, avoid: Area[], random: Random, kinds: Style[], reach = 90) {
+	t.inFolder("Ground", () =>
+		scatter(
+			t,
+			count,
+			17,
+			avoid,
+			random,
+			(_, x, z, r) => {
+				const kind = kinds[Math.floor(r.between(0, kinds.length - 0.001))];
+				disc(t, "Patch", x, z, r.between(3, 8), 0.03, kind);
+			},
+			reach,
+		),
+	);
+}
+
+/**
+ * Makes the inner edge of a band of other ground (`band`, e.g. a forest tile's GrassEdge, top 0.05) ragged:
+ * along its `side`, patches of the band's ground (`bandStyle`) reach out, and patches of the ground beyond
+ * (`groundStyle`) reach in, alternately, none overlapping.
+ */
+export function raggedEdge(t: Tile, band: Area, side: RectSide, bandStyle: Style, groundStyle: Style, random: Random) {
+	const [x0, x1, z0, z1] = band;
+	const alongX = side === "minZ" || side === "maxZ";
+	const edge = { minX: x0, maxX: x1, minZ: z0, maxZ: z1 }[side];
+	const outward = side.startsWith("min") ? -1 : 1; // out of the band
+	const [from, to] = alongX ? [x0, x1] : [z0, z1];
+	t.inFolder("Ground", () => {
+		let i = 0;
+		for (let p = from + 5; p <= to - 5; p += 10, i++) {
+			const reachOut = i % 2 === 0;
+			// At most 4 across, 9.5 apart at least: neighbours never touch (they share a top).
+			const radius = random.between(2.5, 4);
+			const across = edge + (reachOut ? outward : -outward) * random.between(1, 2.5);
+			const [x, z] = alongX
+				? [p + random.between(-0.25, 0.25), across]
+				: [across, p + random.between(-0.25, 0.25)];
+			disc(t, "Edge", x, z, radius, 0.06, reachOut ? bandStyle : groundStyle);
+		}
+	});
+}
+
 // --- Streets -----------------------------------------------------------------------------------------
 // Roads are 22 wide with their top at 0.1 (MAP.md). Repeating things (dashes, drains) are spaced from the
 // tile's middle, so they line up with the next tile's whichever way it's turned.

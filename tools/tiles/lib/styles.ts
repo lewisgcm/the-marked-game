@@ -21,6 +21,14 @@ export const MUD = style("Mud", [0.24, 0.21, 0.15]);
 export const DIRT = style("Ground", [0.36, 0.28, 0.2]);
 export const WATER = style("Glass", [0.16, 0.24, 0.18], { transparency: 0.35, collide: false, shadow: false });
 
+// Patches on the ground (lib/build.ts → Ground): only 0.03 proud, so they needn't collide.
+const FLAT = { collide: false, shadow: false };
+export const GRASS_DARK = style("Grass", [0.25, 0.36, 0.19], FLAT);
+export const GRASS_DRY = style("Grass", [0.43, 0.46, 0.27], FLAT);
+export const DIRT_PATCH = style("Ground", [0.38, 0.31, 0.22], FLAT);
+export const LEAF_LITTER = style("Ground", [0.31, 0.25, 0.17], FLAT);
+export const MOSS = style("LeafyGrass", [0.17, 0.29, 0.13], FLAT);
+
 // Streets.
 export const ROAD = style("Asphalt", [0.18, 0.18, 0.19]);
 export const PAVING = style("Pavement", [0.62, 0.62, 0.6]);
