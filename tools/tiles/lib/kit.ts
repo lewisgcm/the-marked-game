@@ -21,7 +21,7 @@ export type KitName = keyof typeof MESHES;
 
 /**
  * The importer turns the mesh round, so a mesh's middle is on the other side in X from where Blender has
- * it (as the lobby kit found: KIT_X_SIGN in src/lobby/server/kit.ts). Matters only for lopsided meshes.
+ * it (as the old lobby kit found, and the dead trees confirmed). Matters only for lopsided meshes.
  */
 const KIT_X_SIGN = -1;
 

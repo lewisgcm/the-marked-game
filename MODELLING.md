@@ -12,7 +12,7 @@ Notes for making a character for MARKED, from Blender to walking around in the g
 - Give each one a silhouette and one odd detail (Dad's missing slipper, the neighbour's hood).
 - Colours come from the shared palette (`lib/palette.py`, 16 × 16). **Append** new swatches. An uploaded
   model keeps the palette it was uploaded with, so later changes don't affect it until it's rebuilt and
-  imported again. (The lobby kit shares one uploaded image: rebuild it and that needs uploading too.)
+  imported again.
 
 ## Rig
 

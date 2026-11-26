@@ -6,7 +6,7 @@ produce the FBX you upload to Roblox plus a preview render.
 
 ```sh
 npm run models                 # build every asset (FBX + GLB + preview PNG)
-npm run models -- teleport_pad # build one asset
+npm run models -- map_kit      # build one asset
 npm run models -- --no-render  # skip previews, for fast iteration
 ```
 
@@ -26,31 +26,6 @@ Override with `BLENDER=/path/to/blender npm run models`.
 
 Until step 4 happens the model file has no `MeshId` and `findMeshAsset` returns `undefined`,
 so the game falls back to plain parts. A fresh clone always runs.
-
-## The lobby kit (low-poly, one import for everything)
-
-The lobby's props (graves, trees, fence, gate, chapel, bell tower, crypts, lanterns, rocks,
-pedestal, candles) and the three ritual items are one asset, `lobby_kit`, in the Synty-style
-low-poly look: faceted shapes coloured from one shared palette image (`lib/palette.py`,
-`lib/lowpoly.py`). `npm run models -- lobby_kit` writes the FBX, the palette PNG and
-`src/shared/lobby/kitManifest.ts` (each prop's size and centre, so code can stand it on the ground).
-
-To upload it (once, and again only if the kit changes):
-
-1. **Palette:** Studio → Asset Manager → Bulk Import → `assets/models/_palette/palette.png`.
-   Right-click it → Copy Asset ID.
-2. **Meshes:** File → Import → `assets/models/lobby_kit/lobby_kit.fbx`, with **Merge Meshes
-   off** (each prop must be its own MeshPart), Anchored on, and Upload to Roblox + Add to
-   Workspace on. Check File Geometry reads ~57 studs wide, not ~5700.
-3. Make sure the imported model in Workspace is named `lobby_kit`, then paste
-   `tools/blender/print_mesh_ids.lua` into the command bar and run it.
-4. Save the printed `Name=rbxassetid://…` lines to a file and run
-   `python3 tools/blender/kit_rojo.py ids.txt <palette id>` — it writes `assets/rojo/kit/*.model.json`
-   and updates the Skull, Book and Candles models.
-5. Delete the imported `lobby_kit` model from Workspace.
-
-Until every kit mesh has an ID, the lobby keeps building its old blockout (`kitReady()` in
-`src/lobby/server/kit.ts`).
 
 ## The map kit (trees, fences and props for the map's tiles)
 
@@ -245,19 +220,15 @@ the centre, so a centred mesh lands exactly where the code puts it.
   renders near-black; the preview lights and `AgX - Punchy` look are tuned so materials read
   the way they will in-game.
 - **Multi-material models split into several MeshParts on import.** Keep gameplay meshes to
-  one or two materials, and add glow with Neon parts at runtime (see `createPadGlowRing`).
+  one or two materials, and add glow with Neon parts at runtime.
 - **Material colours do not survive FBX → MeshPart.** The importer brings geometry, not the
   Principled shader, so a model lands in Studio flat grey unless you bake a texture. That is
-  why each `.model.json` sets a `Color` tint — the teleport pad's two-tone look is baked
-  into the *preview* only, and in-game it reads as one dark part plus the Neon ring.
+  why the kits colour every face from one palette image instead (`lib/palette.py`).
 
 ## Assets
 
 | Asset | Size (studs) | Tris | Used by |
 | --- | --- | --- | --- |
-| `teleport_pad` | 10 × 0.786 × 10 | 312 | lobby queue platforms (`src/lobby/server/world.ts`) |
-| `skull` | 0.77 × 1.05 × 1.1 | ~4000 | ritual item: lobby pedestal (`src/lobby/server/decor.ts`), main-game pickup |
-| `book` | 1.88 × 0.52 × 1.11 | ~1600 | ritual item: covers, spine and clasp only — the pages are a Part filled in at runtime (`BOOK_PAGES_SIZE` in `decor.ts` mirrors `PAGES` in `book.py`) |
 | `light_cone` | 36.95 × 36.95 × 32 | 128 | flashlight beam: open, double-sided cone; nested ×3 at runtime as translucent Neon for a fade (`src/main/client/combat/flashlight.ts`). Length/angle mirror `BEAM_VISUAL_LENGTH` / `FLASHLIGHT_HALF_ANGLE` |
 | `torch` | 0.63 × 0.75 × 1.74 | 588 | the kids' flashlight; the game's Lens part sits in its open front (`src/main/server/combat/torch.ts`) |
 | `fire_engine` | 8.4 × 9.43 × 21.1 | 2760 | the Fire Station's engine (`lib/vehicle.py`); `src/main/server/world/bases.ts` loads it |
@@ -265,9 +236,3 @@ the centre, so a centred mesh lands exactly where the code puts it.
 | `street_cars` | four meshes, up to 7.25 × 9.3 × 14.6 | 3712 | Maple Street: Minivan, Hatchback, Estate, IceCreamVan (`lib/vehicle.py`); `src/main/server/world/cars.ts` loads them as one model |
 | `infected_dad` | 2.64 × 5.26 × 1.28 | 1264 | Dad, the first infected, on an R15 rig (`infected/body.ts` loads it) |
 | `infected_neighbour` | 2.62 × 5.28 × 1.38 | 1292 | the ordinary shambler, on an R15 rig (`infected/body.ts` loads it) |
-| `candles` | 1.48 × 1.22 × 1.28 | 1500 | ritual item: melted candle cluster; flames are added at runtime at each wick (`CANDLE_WICKS` in `decor.ts` mirrors `CANDLES` in `candles.py`) |
-
-The teleport pad's groove dimensions are duplicated in `src/lobby/server/world.ts`
-(`PAD_GROOVE_OUTER` / `PAD_GROOVE_INNER`), because the Neon ring that fills that groove is
-built from parts at runtime rather than baked into the mesh. If you change the pad's
-profile, update those constants — the build log prints the real numbers.

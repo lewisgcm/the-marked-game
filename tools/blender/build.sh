@@ -2,7 +2,7 @@
 # Build game models with headless Blender.
 #
 #   tools/blender/build.sh                  # every asset
-#   tools/blender/build.sh teleport_pad     # one asset
+#   tools/blender/build.sh map_kit          # one asset
 #   tools/blender/build.sh --no-render      # skip preview PNGs
 #
 # Override the Blender binary with BLENDER=/path/to/blender.

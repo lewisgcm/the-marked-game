@@ -1,7 +1,7 @@
 """Headless Blender build driver for this repo's game models.
 
     tools/blender/build.sh                    # build every asset in assets/
-    tools/blender/build.sh teleport_pad       # build one asset
+    tools/blender/build.sh map_kit            # build one asset
     tools/blender/build.sh --no-render        # skip preview PNGs (fast)
 
 Each file in tools/blender/assets/ is a plain Python module with a `build()`

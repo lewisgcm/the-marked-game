@@ -55,11 +55,13 @@ export function wall(
 	openings: Opening[],
 	style: Style,
 	frame = new CFrame(),
+	thick = 1,
+	name = "Wall",
 ) {
 	for (const [a, b, bottom, top] of wallPieces(from, to, height, openings)) {
 		const [length, middle, tall, y] = [b - a, (a + b) / 2, top - bottom, base + (bottom + top) / 2];
-		if (along === "X") t.box("Wall", middle, y, at, length, tall, 1, style, frame);
-		else t.box("Wall", at, y, middle, 1, tall, length, style, frame);
+		if (along === "X") t.box(name, middle, y, at, length, tall, thick, style, frame);
+		else t.box(name, at, y, middle, thick, tall, length, style, frame);
 	}
 }
 
@@ -105,12 +107,12 @@ export function pointLight(color: [number, number, number], range: number, brigh
 	};
 }
 
-/** Text on the front (-Z) face of a part. */
-export function signText(text: string): Instance {
+/** Text on the front (-Z) face of a part, or another `face` ("Top" for words painted on a floor). */
+export function signText(text: string, face = "Front", color: [number, number, number] = [1, 0.95, 0.85]): Instance {
 	return {
 		name: "Text",
 		className: "SurfaceGui",
-		properties: { Face: "Front", SizingMode: "PixelsPerStud", PixelsPerStud: 30 },
+		properties: { Face: face, SizingMode: "PixelsPerStud", PixelsPerStud: 30 },
 		children: [
 			{
 				name: "Label",
@@ -124,7 +126,7 @@ export function signText(text: string): Instance {
 					},
 					BackgroundTransparency: 1,
 					TextScaled: true,
-					TextColor3: [1, 0.95, 0.85],
+					TextColor3: color,
 					Text: text,
 				},
 			},

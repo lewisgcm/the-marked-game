@@ -24,11 +24,13 @@ export interface Instance {
 }
 
 export interface PartOptions {
-	className?: "Part" | "WedgePart";
+	className?: "Part" | "WedgePart" | "SpawnLocation";
 	shape?: "Cylinder" | "Ball";
 	tags?: string[];
 	attributes?: Record<string, string>;
 	children?: Instance[];
+	/** Any other properties, as Rojo writes them (e.g. a SpawnLocation's Neutral). */
+	properties?: Record<string, unknown>;
 }
 
 export class Tile {
@@ -72,6 +74,7 @@ export class Tile {
 		if (style.shadow === false) properties.CastShadow = false;
 		if (style.transparency) properties.Transparency = style.transparency;
 		if (options.tags) properties.Tags = options.tags;
+		if (options.properties) Object.assign(properties, options.properties);
 		const instance: Instance = { name, className: options.className ?? "Part", properties };
 		if (options.attributes) instance.attributes = options.attributes;
 		if (options.children) instance.children = options.children;

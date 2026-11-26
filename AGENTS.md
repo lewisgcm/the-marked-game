@@ -29,9 +29,9 @@ npm test               # compile + Lune unit tests (tests/unit); run before comm
 ```
 
 **Fast loop:** `npm run watch` (terminal 1) + `npm run serve:<place>` (terminal 2), then connect
-the Rojo plugin in Studio. No rebuild + reopen. The lobby world (floor, zones, pads, beams) is
-built at *runtime* by `buildLobbyWorld()`, so it only exists while the server is running. So is the
-main game's map (`world/map.ts`, from the tiles in `ServerStorage.MapTiles`): inspect it during a
+the Rojo plugin in Studio. No rebuild + reopen. The lobby's gym hall is a model Rojo syncs into
+Workspace (`tools/tiles/lobby/Hall.ts`), so it shows while editing; its party zones are added at
+*runtime* by `buildLobbyWorld()`. The main game's map (`world/map.ts`, from the tiles in `ServerStorage.MapTiles`): inspect it during a
 playtest. To see the tiles without playing, `npm run serve:tiles` (MAP.md).
 
 ## Roblox Studio MCP
@@ -138,7 +138,7 @@ When you add or change player-facing behaviour, update **README.md → Regressio
   size and keep `Size` at `1,1,1`. Setting it to the mesh dimensions scales it up (this bit us:
   a 10-stud pad rendered 100 studs).
   A synced mesh drawn at any other scale than its own is also culled by the wrong box: it vanishes when
-  its middle leaves the screen (seen with the lobby's chapel, and tested in a tile 26 Nov 2026). In a tile
+  its middle leaves the screen (seen with the old lobby's chapel, and tested in a tile 26 Nov 2026). In a tile
   file, `Size` and `InitialSize` are both the mesh's own size (`Tile.mesh` does it), which Rojo writes, live
   sync included; the lobby fixes scaled ones with `sized()`. So: one mesh per size, never a scaled copy.
 - **Roblox FBX import reads Blender as metres → cm → 1 cm = 1 stud.** Export at `EXPORT_SCALE = 0.01`

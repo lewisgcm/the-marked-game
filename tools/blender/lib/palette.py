@@ -18,8 +18,8 @@ import os
 import bmesh
 import bpy
 
-# Uploaded models keep the palette they were uploaded with, so this can grow. (Except the lobby kit, which
-# shares one uploaded image: if the kit is rebuilt, upload the new palette with it.)
+# Uploaded models keep the palette they were uploaded with, so this can grow. Append only: the map's meshes
+# share one uploaded image (the newest), so a swatch must never move.
 GRID = 16  # swatches per row/column
 CELL = 16  # pixels per swatch
 SIZE = GRID * CELL

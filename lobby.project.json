@@ -22,27 +22,6 @@
 			},
 			"Shared": {
 				"$path": "out/shared"
-			},
-			"Assets": {
-				"$className": "Folder",
-				"TeleportPad": {
-					"$path": "assets/rojo/teleport_pad.model.json"
-				},
-				"Skull": {
-					"$path": "assets/rojo/skull.model.json"
-				},
-				"Book": {
-					"$path": "assets/rojo/book.model.json"
-				},
-				"Candles": {
-					"$path": "assets/rojo/candles.model.json"
-				},
-				"LobbyKit": {
-					"$path": "assets/rojo/kit"
-				},
-				"LobbyGround": {
-					"$path": "assets/rojo/lobby_ground.model.json"
-				}
 			}
 		},
 		"ServerScriptService": {
@@ -65,6 +44,9 @@
 			"$properties": {
 				"FilteringEnabled": true,
 				"StreamingEnabled": false
+			},
+			"Hall": {
+				"$path": "build/lobby/Hall.model.json"
 			}
 		},
 		"HttpService": {

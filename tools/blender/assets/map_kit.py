@@ -1,5 +1,5 @@
 """The map kit: the trees, hedges, fences, rocks, hay, reeds, lamps and camp things the map's tiles are
-dressed with, each its own mesh in one FBX (one import, like the lobby kit).
+dressed with, each its own mesh in one FBX (one import).
 
 Models go straight into the tile files (MAP.md → Making a tile), drawn at the size they're made: a mesh
 can't be scaled there. So anything that comes in sizes comes as variants (Pine_A, _B, _C), and fences come

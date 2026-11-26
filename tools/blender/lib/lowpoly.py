@@ -306,7 +306,7 @@ def ground_patch(name, radius=14.0, seed=5):
 	return ob
 
 
-# --- lobby kit -------------------------------------------------------------------------------
+# --- more props (from the old lobby kit; the map kit uses dead_tree and rock) -----------------------
 
 
 def _prism(name, base, top, r_base, r_top, sides, swatch, phase=None):
@@ -385,7 +385,7 @@ def ritual_candle(name, seed=31):
 
 
 def candle_cluster(name):
-	"""The Candles ritual item: four candles in a wax puddle. Wicks match CANDLE_WICKS (decor.ts)."""
+	"""Four candles in a wax puddle."""
 	parts = []
 	puddle = _prism(f"{name}_puddle", (0, 0, 0), (0, 0, 0.1), 0.75, 0.7, 8, "wax", 0)
 	puddle.scale = (1, 0.87, 1)

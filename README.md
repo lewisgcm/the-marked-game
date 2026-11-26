@@ -13,8 +13,8 @@ scavenge and trade by day, and survive as many nights as you can.
 
 > **Current state: M1 and M2 built, awaiting playtests.** Kids hold the family house through an
 > endless day/night clock (barricades, generator, waves of infected) and search the neighbourhood by day
-> for supplies (a different map every run, built from tiles: MAP.md). Trading comes next (M3), and the lobby still looks like the ghost-hunt prototype's
-> churchyard until M6 (that prototype: git tag `ghost-prototype`, design in
+> for supplies (a different map every run, built from tiles: MAP.md). The lobby is being re-themed as the school gym hall
+> (M6; the ghost-hunt prototype it grew from: git tag `ghost-prototype`, design in
 > [docs/archive/GAMEPLAY-ghost-prototype.md](docs/archive/GAMEPLAY-ghost-prototype.md)). This README
 > describes **what the code does today**, and is updated as each milestone in [PLAN.md](PLAN.md)
 > lands.
@@ -48,23 +48,21 @@ each with a `ZoneContainer` detection region and a `BillboardGui` showing the pl
 - UI is written with **[react-luau](https://react-luau.dev)** (`@rbxts/react` + `@rbxts/react-roblox`):
   the client party UI and the in-world `BillboardGui` counters are declarative JSX components.
 
-The lobby is a **ruined churchyard at night**. Players spawn inside an iron gate and follow a
-flagstone path to the three pads, which are dressed as ritual circles: flickering candles, rising
-embers, and a pedestal behind each one holding a ritual item from the ghost prototype (book, skull,
-candles). Graves line the sides and back, dead trees frame the corners, and a crumbling chapel with
-a leaning bell tower and a red-glowing window closes off the north end. Low fog drifts across the
-ground.
+The lobby is the **school gym hall after the last bell** (GAMEPLAY.md §1). Players spawn on the
+south side of a basketball court; the car park's three open double doors are along the north wall, each
+with a yellow **PICK UP** pad painted inside it. The late sun slants in through the high windows; two of
+the strip lights buzz and flicker. Wall bars, crash mats, hoops, coats on hooks and bags under them, a
+stage with curtains and two noticeboards, and the news on a trolley.
 
-- **Scoreboard:** a noticeboard beside the path shows the **top 10 players by total wins**, all-time
-  across every server, and each player's **Wins** appear in the Roblox player list. Wins are
-  recorded by the main game when a round ends (everyone on the winning side; not in Studio) and
-  saved with DataStore (`src/shared/lobby/stats.ts`, `src/lobby/server/leaderboard.ts`).
-- Lighting (night, crimson haze, bloom) lives in `setupLighting()` in `src/lobby/server/world.ts`.
-- All set dressing is built at runtime in `src/lobby/server/decor.ts` from plain parts with a fixed
-  random seed, so the layout is the same every run. It's a blockout: the chapel, gate, trees and
-  ritual items are meant to become Blender models later.
-- Candle flicker runs on each client (`src/shared/world/flicker.ts`, started from
-  `src/lobby/client/candleFlicker.client.ts`), driven by the `FlickerLight` CollectionService tag, so it costs no network traffic.
+- **The hall is a model, not runtime code:** `tools/tiles/lobby/Hall.ts` builds
+  `build/lobby/Hall.model.json` (`npm run tiles:build`), which Rojo puts in the lobby's Workspace, so it
+  shows in Studio without playing. Its trees, lamps and fence are the map kit's meshes.
+- `src/lobby/server/world.ts` puts a party zone and billboard at each `LobbyPad` marker in the hall, and
+  sets the light (late afternoon).
+- **Scoreboard:** a noticeboard shows the **top 10 players by total wins**, and each player's **Wins**
+  appear in the player list (`src/shared/lobby/stats.ts`, `src/lobby/server/leaderboard.ts`). Best run
+  and total nights replace it later in M6.
+- The faulty strip lights flicker on each client (`src/lobby/client/faultyLights.ts`, `FaultyLight` tag).
 
 ## The main game
 
@@ -193,10 +191,10 @@ src/
     items/             # inventory, loot, gains, slotLayout
     economy/           # bases, pricing, trade, upgrades, recipes, walkie
     world/             # parts, walls, flicker, assets (mesh lookup), tiles + layout + mapRules (the map, MAP.md)
-    lobby/             # partyHandoff (lobby -> main), lastTitle, stats, kitManifest, ritualItems (until M6)
+    lobby/             # partyHandoff (lobby -> main), lastTitle, stats
   lobby/
-    server/            # world.ts, decor.ts (churchyard), queue.ts (parties), zoneDisplay.tsx, config.ts
-    client/            # main.client.tsx, partyUi.tsx, candleFlicker.client.ts
+    server/            # world.ts (zones at the hall's pads, light), queue.ts (parties), zoneDisplay.tsx, config.ts
+    client/            # main.client.tsx, partyUi.tsx, faultyLights.ts
   main/
     server/            # main.server.ts (entry: the start-up order), systems.ts (starts and connects
                        #   everything), phaseEvents.ts (what each phase does), and:
@@ -248,12 +246,11 @@ Blender headlessly and writes the FBX to upload plus a preview render.
 
 ```sh
 npm run models                 # rebuild every model
-npm run models -- teleport_pad # just one
+npm run models -- map_kit      # just one
 ```
 
-Models so far: the lobby's **teleport pad**, the three ritual items (**skull**, **book**,
-**candles**) used on the lobby pedestals (they were the ghost prototype's ritual pickups), and the flashlight's
-**light cone**. Organic shapes (skull, melted candles) are modelled as signed distance fields
+Models so far: the flashlight's **light cone**, the cars, wrecks, fire engine, torch, the infected, and the
+map's kit and buildings (tools/blender/README.md → Assets). Organic shapes (skull, melted candles) are modelled as signed distance fields
 (`tools/blender/lib/sdf.py`). Until a model's asset ID is filled into
 `assets/rojo/<model>.model.json`, the game falls back to plain parts.
 
@@ -389,26 +386,18 @@ apply from the next phase.
 
 ### Lobby
 - [ ] Joining fresh on a **phone/tablet** (or Studio's Device Emulator), you can move straight away (streaming is off).
-- [ ] The churchyard is readable at night: floor, graves, chapel and pads visible; can't fall or jump out (60-stud walls).
-- [ ] Candles flicker; fog and embers drift; the three pedestals show the book, skull and candles models.
-- [ ] First player onto a pad becomes host and gets the size picker (2–6; 1–6 in Studio).
+- [ ] You spawn in the gym hall on the south side of the court; you can't leave the hall and car park.
+- [ ] The hall: court lines, wall bars, crash mats, hoops, coats and bags, the stage and noticeboards, the news trolley; late sun through the high windows; two strip lights flicker now and then.
+- [ ] First player onto a pick-up pad becomes host and gets the size picker (1–6).
 - [ ] Players already standing on the pad join when the host presses Create.
+- [ ] Solo: a party of one counts down and starts.
 - [ ] Countdown only runs with at least the minimum party; stepping off below it returns to "Need N more".
 - [ ] Walking off the pad leaves the party; the bottom hint says so; there's no Leave button.
 - [ ] Pad billboard shows count and state and isn't oversized.
 - [ ] Host who doesn't press Create in time is removed; the next player on the pad becomes host.
 - [ ] (Published places only) the party teleports to one reserved server together.
-- [ ] The scoreboard beside the path shows the top 10 by wins (or "No one has won yet" / a fog message if the DataStore is unavailable, e.g. Studio without API access).
+- [ ] The scoreboard shows the top 10 by wins (or "No one has won yet" / a fog message if the DataStore is unavailable, e.g. Studio without API access).
 - [ ] The player list (top-right) shows each player's Wins.
-
-### Lobby look (low-poly kit)
-- [ ] The lobby is built from the low-poly kit, not grey blocks: iron fence on a low stone wall all round, gate with stone pillars and an iron arch, chapel ruins with a glowing red pointed window, a leaning bell tower, a crypt either side, gothic/round/cross/broken graves and obelisks, twisted dead trees, rubble.
-- [ ] Night is cool and blue; warm flickering lanterns line the path from the gate; candles and the red pad glow stand out.
-- [ ] No "[LobbyKit] ... has no MeshId" warning in the Output.
-- [ ] Walking right up to the chapel, tower and crypts, they stay visible (no popping out).
-- [ ] The ground is flat-coloured low-poly facets (grass, moss and dirt patches, a dirt strip under the path), not a realistic grass texture; the path stones are flat greys.
-- [ ] You can't walk through the graves, fence, gate pillars, crypts, chapel, tower, tree trunks or lantern posts; you can walk over rubble.
-- [ ] Each pad's pedestal shows its low-poly ritual item (book with pages, skull, candle cluster with flames on the wicks).
 - [ ] (Published) After a run, each player's title from it (gold, or red if they were taken) floats above their head, above the name tag; it's still there after a reset, and gone after an hour.
 
 ### Main game: run

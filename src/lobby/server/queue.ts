@@ -253,7 +253,7 @@ export class QueueManager {
 
 		// Reserve the server first so the party list can be stored under its ID before
 		// anyone arrives. The main server reads it back from MemoryStore — never from the
-		// client — to know who is in the party and pick the ghost.
+		// client — to know who is in the party.
 		if (!this.teleportParty(players)) {
 			warn(`[Lobby] Launch failed for ${zone.model.Name}; disbanding.`);
 			this.disband(zone);

@@ -18,6 +18,7 @@ import { meadowA } from "./tiles/Meadow_A.ts";
 import { swampA } from "./tiles/Swamp_A.ts";
 import { treehouse } from "./tiles/Treehouse.ts";
 import { woodsBehindHome, woodsSouth } from "./tiles/Woods.ts";
+import { lobbyHall } from "./lobby/Hall.ts";
 
 /** Every coded tile. A new tile: a file in tiles/, a line here, and its section in MAP.md. */
 const TILES: Array<() => Tile> = [
@@ -43,6 +44,9 @@ const PIECES: Array<() => Tile> = [
 		return t;
 	},
 ];
+
+/** The lobby's hall (lobby/Hall.ts): build/lobby/Hall.model.json, straight into the lobby's Workspace. */
+const LOBBY_OUT = "build/lobby";
 
 const OUT = "build/tiles/models";
 const KIT_OUT = "build/tiles/kit";
@@ -74,6 +78,11 @@ for (const make of PIECES) {
 	pieces.add(`${piece.name}.model.json`);
 }
 for (const file of readdirSync(KIT_OUT)) if (!pieces.has(file)) rmSync(`${KIT_OUT}/${file}`);
+
+mkdirSync(LOBBY_OUT, { recursive: true });
+writeFileSync(`${LOBBY_OUT}/Hall.model.json`, lobbyHall().toJson());
+console.log(`Built the lobby hall into ${LOBBY_OUT}`);
+
 if (process.argv.includes("--gallery")) {
 	spawnSync("lune", ["run", "tools/tiles/gallery"], { stdio: "inherit" });
 }

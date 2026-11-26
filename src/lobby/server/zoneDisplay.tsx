@@ -47,7 +47,7 @@ function ZoneDisplayComponent({ adornee, playerCount, state }: ZoneDisplayProps)
 	return (
 		<billboardgui
 			Size={new UDim2(0, 240, 0, 64)}
-			StudsOffset={new Vector3(0, 12, 0)}
+			StudsOffset={new Vector3(0, 9, 0)}
 			AlwaysOnTop={true}
 			Adornee={adornee}
 		>

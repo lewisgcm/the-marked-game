@@ -87,8 +87,8 @@ Goal: a clean base that still compiles, lints and passes tests, with only the ge
 Notes — what changed from the plan:
 - `banishCamera.ts` was **deleted, not generalised**: it only orbited the altar. M7 writes a
   proper shot-list camera (get the old one from the tag if useful).
-- `ritualItems.ts` and the skull/book/candles models **stay until M6**: the lobby pedestals still
-  use them. They were removed from `main.project.json`.
+- `ritualItems.ts` and the skull/book/candles models stayed until M6 (the lobby pedestals used them);
+  deleted with the churchyard.
 - Added a **Studio-only practice infected** (`practiceDummy.ts`) so melee can be tested; delete it
   once real infected exist (M1).
 - Added `noticeHud.tsx` (notices used to live in the objective HUD).
@@ -222,7 +222,7 @@ Door and window prompts got in the way of defending, so building needs the hamme
 ## Folders (25 Nov 2026) ✅
 
 No gameplay changes: `main/server`, `main/client`, `shared` and the specs are grouped by topic
-(AGENTS.md → Code structure). Later: split `world.ts` and the lobby's `decor.ts`.
+(AGENTS.md → Code structure). Later: split `world.ts`.
 
 - [x] **Studio check** (main game). The lobby builds; check it loads next time it's opened.
 
@@ -366,13 +366,20 @@ Goal: Nights 1–10 as designed in GAMEPLAY.md §9.
 
 Goal: the lobby looks like MARKED. Mostly visual (GAMEPLAY.md §1).
 
-- [ ] Replace the churchyard decor (`decor.ts`, `kitDecor.ts`) with the **school gym hall**.
+- [x] Replace the churchyard with the **school gym hall** (26 Nov 2026): a model built like the map's tiles
+      (`tools/tiles/lobby/Hall.ts` → `build/lobby/Hall.model.json`, synced into Workspace, so it shows in
+      Studio while editing): court, walls, high windows and sun, strip lights (two faulty), wall bars,
+      mats, hoops, coats and bags, stage and noticeboards, news trolley, the car park through three
+      double doors, a pick-up pad inside each (`LobbyPad` markers; `world.ts` puts the zones there).
+      Plain parts for now; the map kit's meshes outside.
+- [ ] The hall's props as meshes (a `lobby_hall` kit: bags, coats, hoops, wall bars, mats, trolley).
 - [ ] A **parent NPC at each pad**, billboard above them; idle "slightly off" animations; the
       hall's screens glitch and every parent freezes now and then.
 - [ ] Countdown end: the parent walks the party out through the doors, fade, teleport.
-- [ ] Minimum party size **1**.
-- [ ] Delete the last ghost-prototype leftovers: `ritualItems.ts`, `recordWin` in `stats.ts`, the skull,
-      book and candles models, and old ghost comments in the lobby's `queue.ts` and `config.ts`.
+- [x] Minimum party size **1**.
+- [x] Delete the last ghost-prototype leftovers: `ritualItems.ts`, the skull, book and candles models,
+      the lobby kit, teleport pad and churchyard decor, and old ghost comments in the lobby's `queue.ts`
+      and `config.ts`. (`recordWin` goes with the leaderboards.)
 - [ ] Leaderboards: **best run** and **total nights** (replace *Wins* in `stats.ts` and
       `leaderboard.ts`; player list shows best run).
 

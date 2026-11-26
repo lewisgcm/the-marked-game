@@ -1,9 +1,9 @@
--- Paste into Studio's command bar (View > Command Bar) after importing lobby_kit.fbx or map_kit.fbx.
--- Prints one "Name=rbxassetid://..." line per imported MeshPart (and the map kit's palette as
--- "Texture=..."); copy the Output and paste it back so tools/blender/kit_rojo.py (lobby kit) or
--- tools/blender/map_kit_ids.py (map kit) can write the IDs in.
+-- Paste into Studio's command bar (View > Command Bar) after importing map_kit.fbx or map_buildings.fbx.
+-- Prints one "Name=rbxassetid://..." line per imported MeshPart, and the palette as "Texture=...";
+-- save the Output to a file for tools/blender/map_kit_ids.py. (With the Studio MCP, the agent reads the
+-- IDs itself from the uploaded model: tools/blender/README.md.)
 local found = 0
-for _, kit in { "lobby_kit", "map_kit" } do
+for _, kit in { "map_kit", "map_buildings" } do
 	local model = workspace:FindFirstChild(kit)
 	if model then
 		local texture
@@ -19,9 +19,9 @@ for _, kit in { "lobby_kit", "map_kit" } do
 				found += 1
 			end
 		end
-		if kit == "map_kit" then
+		do
 			print("Texture=" .. (texture or "(none: was the palette uploaded with the FBX?)"))
 		end
 	end
 end
-print(found .. " meshes found" .. (found == 0 and " (is the imported model named lobby_kit or map_kit, in Workspace?)" or ""))
+print(found .. " meshes found" .. (found == 0 and " (is the imported model named map_kit or map_buildings, in Workspace?)" or ""))
