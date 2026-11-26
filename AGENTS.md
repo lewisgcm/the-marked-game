@@ -37,14 +37,16 @@ playtest. To see the tiles without playing, `npm run serve:tiles` (MAP.md).
 ## Roblox Studio MCP
 
 Studio is controllable through the `roblox-studio` MCP server. Enable "MCP mode" in Studio, then
-add the server (done globally on this machine):
+add the server (done on this machine for both):
 
 ```sh
 opencode mcp add roblox-studio --global -- "/Applications/RobloxStudio.app/Contents/MacOS/StudioMCP"
+claude mcp add roblox-studio -- "/Applications/RobloxStudio.app/Contents/MacOS/StudioMCP"   # this project
 ```
 
-Call its tools inside `execute` as `tools["roblox-studio"].<tool>(...)`. `search({ namespace: "roblox-studio" })`
-lists them all. The essential ones:
+A newly added server's tools appear only in a new session (Claude Code: exit, then `claude --continue`).
+In opencode, call its tools inside `execute` as `tools["roblox-studio"].<tool>(...)`;
+`search({ namespace: "roblox-studio" })` lists them all. The essential ones:
 
 - `list_roblox_studios()` → get a `studio_id`; direct every call at one instance.
 - `start_stop_play` → press Play/Stop; `get_console_output` → read logs; `screen_capture` → screenshot.
@@ -53,6 +55,11 @@ lists them all. The essential ones:
 
 The lobby world is built at runtime, so inspect it with `datamodel_type: "Server"` **during a
 playtest** — `Workspace.TeleportZones` won't exist in Edit mode.
+
+Use it rather than asking for copy-pasted Output: e.g. after an import, load the uploaded model with
+`InsertService:LoadAsset(id)` in `Edit` and read every `MeshId` and `TextureID` from it (that's how the map
+kit's IDs were read), or `screen_capture` with a camera position to look at tiles in `serve:tiles`.
+`screen_capture` can time out on a busy scene; try again, or from a nearer camera.
 
 ## Code structure (main-game server)
 
@@ -132,7 +139,8 @@ When you add or change player-facing behaviour, update **README.md → Regressio
   a 10-stud pad rendered 100 studs).
   A synced mesh drawn at any other scale than its own is also culled by the wrong box: it vanishes when
   its middle leaves the screen (seen with the lobby's chapel, and tested in a tile 26 Nov 2026). In a tile
-  file, `Size` and `InitialSize` are both the mesh's own size; the lobby fixes scaled ones with `sized()`.
+  file, `Size` and `InitialSize` are both the mesh's own size (`Tile.mesh` does it), which Rojo writes, live
+  sync included; the lobby fixes scaled ones with `sized()`. So: one mesh per size, never a scaled copy.
 - **Roblox FBX import reads Blender as metres → cm → 1 cm = 1 stud.** Export at `EXPORT_SCALE = 0.01`
   (`tools/blender/build.py`) so a 10-unit model arrives at 10 studs. Always check Studio's
   **File Geometry** readout before importing; `1000` means the export scale is wrong.

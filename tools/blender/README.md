@@ -65,13 +65,19 @@ To upload it (once, and again whenever the kit changes):
 1. **File → Import → `assets/models/map_kit/map_kit.fbx`**, with **Merge Meshes off** (each prop its own
    MeshPart), Anchored on, Upload to Roblox and Add to Workspace on. File Geometry should read about
    76 studs wide, not 7600.
-2. Name the imported model `map_kit` (in Workspace), paste `tools/blender/print_mesh_ids.lua` into the
-   command bar and run it.
-3. Save the Output (the `Name=rbxassetid://…` lines and `Texture=…`) to a file and run
-   `python3 tools/blender/map_kit_ids.py ids.txt`. It writes `tools/tiles/lib/mapKitIds.ts`. (If there's no
-   texture, Bulk Import `assets/models/_palette/palette.png` and add a `Texture=rbxassetid://…` line.)
+2. **Read the IDs.** With the Studio MCP (AGENTS.md), the agent does it: give it the imported model's
+   asset ID, and it loads that with `InsertService:LoadAsset` and reads each MeshPart's `MeshId` and the
+   palette `TextureID` (done this way 26 Nov 2026: model 140405497216248). By hand: name the imported model
+   `map_kit` in Workspace, run `tools/blender/print_mesh_ids.lua` in the command bar, and save the Output.
+3. `python3 tools/blender/map_kit_ids.py ids.txt` (the `Name=rbxassetid://…` lines and `Texture=…`) writes
+   `tools/tiles/lib/mapKitIds.ts`. The importer put the palette in `TextureID`; if it's ever missing, Bulk
+   Import `assets/models/_palette/palette.png` and add a `Texture=rbxassetid://…` line.
 4. Delete the imported model, and `npm run tiles`: the tiles use the meshes now. A mesh with no ID stays a
    blockout.
+
+Before uploading a changed kit, try it with placeholder IDs (any `Name=rbxassetid://1` for every mesh):
+`npm test` then checks every tile with the meshes in, e.g. a big tree turned near a tile's edge that would
+stick out. Put the real IDs back after.
 
 ## Rigged characters (R15)
 
@@ -194,6 +200,10 @@ exactly the modelled size.
 Verify it at import time rather than trusting it: the importer's **File Geometry** readout
 should show the size you modelled (e.g. `10 × 0.79 × 10`). If it shows `1000`, the export
 scale is wrong; don't import and hope.
+
+(In a map tile it's different: `Size` and `InitialSize` are both the mesh's own size, so it culls and
+collides by its real box. See MAP.md → Making a tile. The rest of this section is about model files cloned
+by code.)
 
 The mesh is authored at its final size, and the `MeshPart`'s `Size` stays at `1,1,1`: a
 MeshPart's `Size` is a **multiplier** of the mesh's own scale, not an absolute stud size, so

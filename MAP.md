@@ -229,6 +229,11 @@ Markers are red and see-through so they show in Studio; the game hides them. Use
   pieces in `build.ts` (`pine`, `oak`, `deadTree`, `reeds`, `rock`, `hedge`, `hayBale`, `fence`,
   `streetLamp`, `tent`, `campfire`, `logSeat`), with their colliders. Use those rather than `kitMesh`
   (`lib/kit.ts`) directly; a mesh not uploaded yet is built as its blockout.
+- **Keep big meshes ~10 studs in from the edge.** A mesh turned 45° takes more room than its size, and the
+  check fails if it sticks out of the tile (a big oak at z = 92 did). `scatter` keeps to 93 from the middle;
+  trees placed by hand, 88.
+- **Sizes vary by variant**, not by scaling: `pine`, `oak` and `deadTree` still pick a height at random, and
+  use the kit's nearest size (Pine_A/B/C...), drawing the random numbers as before, so trees stay put.
 
 `npm test` checks every tile for all of this (`tests/unit/world/tiles.spec.luau`). Add a new tile to this file.
 

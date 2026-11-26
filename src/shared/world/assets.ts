@@ -36,9 +36,10 @@ const sizedCache = new Map<MeshPart, MeshPart>();
 /**
  * A copy of a Rojo-built MeshPart with its real size.
  *
- * Rojo can't write a MeshPart's mesh size, so a synced MeshPart reports Size 1,1,1 and the
- * mesh is drawn at its own scale around that. Roblox then culls it by that 1-stud box: big
- * meshes (the chapel, the crypts) vanished whenever their centre left the screen. A MeshPart
+ * These model files say Size 1,1,1 and no InitialSize, and the lobby scales its props: a mesh
+ * drawn at any scale but its own is culled by the wrong box, so big meshes (the chapel, the
+ * crypts) vanished whenever their centre left the screen. (Map tiles avoid this instead: Size and
+ * InitialSize both the mesh's size, never scaled; MAP.md.) A MeshPart
  * made by AssetService.CreateMeshPartAsync has its true Size, so it culls (and collides)
  * correctly; to scale it, multiply that Size. Made once per mesh and cached. Server only.
  */
