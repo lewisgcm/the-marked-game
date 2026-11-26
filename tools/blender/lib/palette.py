@@ -123,6 +123,23 @@ SWATCHES = {
 	"canvas_dark": ("#4f5235", False),
 	"barrier_white": ("#e6e3da", False),
 	"wood_light": ("#9a7a55", False),
+	# map buildings
+	"house_wall": ("#cfc8b6", False),
+	"house_trim": ("#e9e4d8", False),
+	"interior": ("#a39a86", False),
+	"ceiling": ("#8a8270", False),
+	"roof_slate": ("#4b3f3e", False),
+	"roof_slate_dark": ("#352c2b", False),
+	"brick": ("#8e3d2f", False),
+	"brick_dark": ("#6a2c22", False),
+	"concrete": ("#93928c", False),
+	"concrete_dark": ("#6b6a66", False),
+	"barn_red": ("#8b3027", False),
+	"barn_red_dark": ("#64221c", False),
+	"log": ("#6b4a32", False),
+	"log_dark": ("#4a3222", False),
+	"tin": ("#7b7e7f", False),
+	"shutter": ("#5a6b72", False),
 }
 
 _NAMES = list(SWATCHES)

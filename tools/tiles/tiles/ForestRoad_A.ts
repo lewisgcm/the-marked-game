@@ -1,5 +1,6 @@
 import { CFrame, turn } from "../lib/cframe.ts";
 import {
+	buildingMesh,
 	campfire,
 	door,
 	dormant,
@@ -40,13 +41,14 @@ export function forestRoadA(): Tile {
 	const hut = new CFrame(-46, 0, -40).mul(turn(-135));
 	const floor = 0.3;
 	t.folder("RangerHut");
+	const shell = buildingMesh(t, "RangerHut", hut);
 	t.slab("Floor", -12, 12, -9, 9, floor, S.FLOORBOARDS, hut);
 	t.slab("Porch", -12, 12, -14, -9, floor, S.WOOD, hut);
-	wall(t, "X", -9, -12, 12, floor, 10, [window(-6), door(5)], S.WOOD, hut);
-	wall(t, "X", 9, -12, 12, floor, 10, [], S.WOOD, hut);
-	for (const x of [-11.5, 11.5]) wall(t, "Z", x, -8.5, 8.5, floor, 10, [window(0)], S.WOOD, hut);
-	t.slab("Roof", -13.5, 13.5, -15, 10.5, floor + 11, S.ROOF, hut);
-	for (const x of [-11, 11]) t.box("PorchPost", x, floor + 5, -13.5, 0.7, 10, 0.7, S.WOOD, hut);
+	wall(t, "X", -9, -12, 12, floor, 10, [window(-6), door(5)], shell(S.WOOD), hut);
+	wall(t, "X", 9, -12, 12, floor, 10, [], shell(S.WOOD), hut);
+	for (const x of [-11.5, 11.5]) wall(t, "Z", x, -8.5, 8.5, floor, 10, [window(0)], shell(S.WOOD), hut);
+	t.slab("Roof", -13.5, 13.5, -15, 10.5, floor + 11, shell(S.ROOF), hut);
+	for (const x of [-11, 11]) t.box("PorchPost", x, floor + 5, -13.5, 0.7, 10, 0.7, shell(S.WOOD), hut);
 	t.box("Desk", -4, floor + 1.5, 6.8, 7, 3, 2.5, S.WOOD, hut);
 	tv(t, hut.at(-4, floor + 4.4, 7.4), [4, 2.6, 0.3]);
 	dormant(t, hut.at(-4, floor + 3, 0).mul(turn(180)));

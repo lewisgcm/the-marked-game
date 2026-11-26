@@ -1,0 +1,24 @@
+{
+	"triangles": 5144,
+	"vertices": 3408,
+	"size": [
+		113.0,
+		105.116,
+		42.167
+	],
+	"name": "map_buildings",
+	"size_roblox": [
+		113.0,
+		42.167,
+		105.116
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/map_buildings/map_buildings.fbx",
+		"assets/models/map_buildings/map_buildings.glb",
+		"assets/models/map_buildings/preview.png"
+	]
+}

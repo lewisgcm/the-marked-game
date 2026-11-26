@@ -1,6 +1,7 @@
 import { CFrame, turn, UPRIGHT } from "./cframe.ts";
-import { hasKitMesh, kitMesh, kitSize } from "./kit.ts";
-import type { KitName } from "./mapKit.ts";
+import { hasKitMesh, kitMesh, kitSize, type KitName } from "./kit.ts";
+
+export { hasKitMesh };
 import { Random } from "./random.ts";
 import * as S from "./styles.ts";
 import type { Style } from "./styles.ts";
@@ -229,20 +230,31 @@ export function streetLamp(t: Tile, frame: CFrame) {
 // --- Buildings ---------------------------------------------------------------------------------------
 
 /**
+ * Building mesh `name` (map_buildings.py) at `frame`, and the style for its blockout's shell (walls, roof,
+ * posts): invisible colliders under the mesh, or the blockout's own look until the mesh is uploaded. The
+ * mesh is modelled on the blockout's numbers, so change both together. Floors, loot and so on stay.
+ */
+export function buildingMesh(t: Tile, name: KitName, frame: CFrame): (style: Style) => Style {
+	const meshed = kitMesh(t, name, frame);
+	return (style) => (meshed ? S.COLLIDER : style);
+}
+
+/**
  * A neighbour's bungalow, 36 x 26, its front (-Z) to the street: living room (TV, someone watching it,
  * drawers) on the left, kitchen (cupboards, tool chest) on the right, a path and stones out front.
  */
 export function bungalow(t: Tile, frame: CFrame, parked?: { car: CarName; at: CFrame }) {
 	const [floor, halfW, halfD, height] = [0.3, 18, 13, 11];
 	t.folder("Houses");
+	const shell = buildingMesh(t, "Bungalow", frame);
 	t.slab("Floor", -halfW, halfW, -halfD, halfD, floor, S.FLOORBOARDS, frame);
-	t.slab("Roof", -19.5, 19.5, -14.5, 14.5, floor + height + 1, S.ROOF, frame);
-	wall(t, "X", -halfD, -halfW, halfW, floor, height, [window(-10), door(6)], S.HOUSE_WALL, frame);
-	wall(t, "X", halfD, -halfW, halfW, floor, height, [door(10)], S.HOUSE_WALL, frame);
+	t.slab("Roof", -19.5, 19.5, -14.5, 14.5, floor + height + 1, shell(S.ROOF), frame);
+	wall(t, "X", -halfD, -halfW, halfW, floor, height, [window(-10), door(6)], shell(S.HOUSE_WALL), frame);
+	wall(t, "X", halfD, -halfW, halfW, floor, height, [door(10)], shell(S.HOUSE_WALL), frame);
 	// The side walls stop inside the front and back walls, so the corners don't overlap.
-	wall(t, "Z", -halfW + 0.5, -halfD + 0.5, halfD - 0.5, floor, height, [window(4)], S.HOUSE_WALL, frame);
-	wall(t, "Z", halfW - 0.5, -halfD + 0.5, halfD - 0.5, floor, height, [window(-4)], S.HOUSE_WALL, frame);
-	wall(t, "Z", 0, -halfD + 0.5, halfD - 0.5, floor, height, [door(4)], S.HOUSE_WALL, frame);
+	wall(t, "Z", -halfW + 0.5, -halfD + 0.5, halfD - 0.5, floor, height, [window(4)], shell(S.HOUSE_WALL), frame);
+	wall(t, "Z", halfW - 0.5, -halfD + 0.5, halfD - 0.5, floor, height, [window(-4)], shell(S.HOUSE_WALL), frame);
+	wall(t, "Z", 0, -halfD + 0.5, halfD - 0.5, floor, height, [door(4)], shell(S.HOUSE_WALL), frame);
 
 	t.box("TVStand", -10, floor + 1, 11, 6, 2, 2, S.WOOD, frame);
 	tv(t, frame.at(-10, floor + 3.6, 11.6));

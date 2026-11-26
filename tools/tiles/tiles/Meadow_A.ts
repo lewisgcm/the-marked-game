@@ -1,5 +1,5 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { door, fence, hayBale, loot, oak, roadLines, rock, scatter, stones, wall } from "../lib/build.ts";
+import { buildingMesh, door, fence, hayBale, loot, oak, roadLines, rock, scatter, stones, wall } from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -23,11 +23,12 @@ export function meadowA(): Tile {
 	// The barn's wide door faces the bend.
 	const barn = new CFrame(48, 0, 38).mul(turn(45));
 	t.folder("Barn");
+	const shell = buildingMesh(t, "Barn", barn);
 	t.slab("Floor", -14, 14, -10, 10, 0.2, S.DIRT, barn);
-	wall(t, "X", -10, -14, 14, 0.2, 12, [[0, 10, 0, 9]], S.BARN_WALL, barn);
-	wall(t, "X", 10, -14, 14, 0.2, 12, [door(-8)], S.BARN_WALL, barn);
-	for (const x of [-13.5, 13.5]) wall(t, "Z", x, -9.5, 9.5, 0.2, 12, [], S.BARN_WALL, barn);
-	t.slab("Roof", -15.5, 15.5, -11.5, 11.5, 13.2, S.ROOF, barn);
+	wall(t, "X", -10, -14, 14, 0.2, 12, [[0, 10, 0, 9]], shell(S.BARN_WALL), barn);
+	wall(t, "X", 10, -14, 14, 0.2, 12, [door(-8)], shell(S.BARN_WALL), barn);
+	for (const x of [-13.5, 13.5]) wall(t, "Z", x, -9.5, 9.5, 0.2, 12, [], shell(S.BARN_WALL), barn);
+	t.slab("Roof", -15.5, 15.5, -11.5, 11.5, 13.2, shell(S.ROOF), barn);
 	for (const [x, y, z] of [
 		[10, 1.7, 6],
 		[10, 1.7, 1.5],

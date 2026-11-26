@@ -1,12 +1,23 @@
 import { CFrame } from "./cframe.ts";
-import { MAP_KIT, type KitName } from "./mapKit.ts";
+import { MAP_BUILDINGS } from "./mapBuildings.ts";
+import { MAP_KIT } from "./mapKit.ts";
 import { MAP_KIT_IDS, MAP_KIT_TEXTURE } from "./mapKitIds.ts";
 import type { Tile } from "./tile.ts";
 
 /**
- * The map kit's meshes (tools/blender/assets/map_kit.py) in tiles. Until a mesh is uploaded and its ID
- * pasted in (mapKitIds.ts), the pieces in build.ts build their old blockout instead.
+ * The map's meshes in tiles: the kit (tools/blender/assets/map_kit.py: trees, fences, props) and the
+ * buildings (map_buildings.py). Until a mesh is uploaded and its ID is in mapKitIds.ts, the pieces in
+ * build.ts build their old blockout instead.
  */
+
+/** A mesh: its size, and its middle from its base point (Roblox axes, before KIT_X_SIGN). */
+export interface KitMesh {
+	size: [number, number, number];
+	centre: [number, number, number];
+}
+
+const MESHES = { ...MAP_KIT, ...MAP_BUILDINGS };
+export type KitName = keyof typeof MESHES;
 
 /**
  * The importer turns the mesh round, so a mesh's middle is on the other side in X from where Blender has
@@ -21,7 +32,7 @@ export function hasKitMesh(name: KitName): boolean {
 
 /** A kit mesh's size (Roblox axes). */
 export function kitSize(name: KitName): [number, number, number] {
-	return MAP_KIT[name].size;
+	return MESHES[name].size;
 }
 
 /**
@@ -31,7 +42,7 @@ export function kitSize(name: KitName): [number, number, number] {
 export function kitMesh(t: Tile, name: KitName, base: CFrame): boolean {
 	const id = MAP_KIT_IDS[name];
 	if (id === undefined) return false;
-	const { size, centre } = MAP_KIT[name];
+	const { size, centre } = MESHES[name];
 	t.mesh(name, size, base.mul(new CFrame(centre[0] * KIT_X_SIGN, centre[1], centre[2])), {
 		MeshId: id,
 		TextureID: MAP_KIT_TEXTURE,

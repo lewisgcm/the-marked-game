@@ -1,5 +1,17 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { deadTree, door, loot, post, reeds, scatter, stones, wall, window, type Area } from "../lib/build.ts";
+import {
+	buildingMesh,
+	deadTree,
+	door,
+	loot,
+	post,
+	reeds,
+	scatter,
+	stones,
+	wall,
+	window,
+	type Area,
+} from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -55,12 +67,13 @@ export function swampA(): Tile {
 	const shack = new CFrame(4, 0, 0);
 	const floor = 0.3;
 	t.folder("Shack");
+	const shell = buildingMesh(t, "SwampShack", shack);
 	t.slab("Floor", -11, 11, -9, 9, floor, S.FLOORBOARDS, shack);
-	wall(t, "X", 9, -11, 11, floor, 9, [door(0)], S.DEAD_WOOD, shack);
-	wall(t, "X", -9, -11, 11, floor, 9, [window(0)], S.DEAD_WOOD, shack);
-	wall(t, "Z", -10.5, -8.5, 8.5, floor, 9, [], S.DEAD_WOOD, shack);
-	wall(t, "Z", 10.5, -8.5, 8.5, floor, 9, [door(-1)], S.DEAD_WOOD, shack);
-	t.slab("Roof", -12.5, 12.5, -10.5, 10.5, floor + 10, S.ROOF, shack);
+	wall(t, "X", 9, -11, 11, floor, 9, [door(0)], shell(S.DEAD_WOOD), shack);
+	wall(t, "X", -9, -11, 11, floor, 9, [window(0)], shell(S.DEAD_WOOD), shack);
+	wall(t, "Z", -10.5, -8.5, 8.5, floor, 9, [], shell(S.DEAD_WOOD), shack);
+	wall(t, "Z", 10.5, -8.5, 8.5, floor, 9, [door(-1)], shell(S.DEAD_WOOD), shack);
+	t.slab("Roof", -12.5, 12.5, -10.5, 10.5, floor + 10, shell(S.ROOF), shack);
 	loot(t, "Tackle box", "Garage", [3, 1.5, 2], shack.at(-8, floor + 0.75, -6.5), S.METAL);
 	loot(t, "Cupboards", "Kitchen", [2, 3.5, 5], shack.at(-9, floor + 1.75, 2), S.WOOD);
 	// Out on the north-east island: only reached by wading.

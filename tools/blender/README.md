@@ -79,6 +79,16 @@ Before uploading a changed kit, try it with placeholder IDs (any `Name=rbxasseti
 `npm test` then checks every tile with the meshes in, e.g. a big tree turned near a tile's edge that would
 stick out. Put the real IDs back after.
 
+### The map's buildings
+
+`map_buildings` is the bungalow, barn, ranger hut, swamp shack, Fire Station, training tower and treehouse,
+uploaded apart from the kit (so a building change doesn't mean uploading the trees again). Each is modelled in
+its tile's coordinates from the blockout's own numbers (walls, doors, windows), and the blockout's walls and
+roof stay as invisible colliders (`buildingMesh` in `tools/tiles/lib/build.ts`): change both together.
+`npm run models -- map_buildings` writes `tools/tiles/lib/mapBuildings.ts`. Upload it like the kit (File
+Geometry about 113 studs wide); `map_kit_ids.py` keeps the IDs already there, and the newest upload's palette
+colours everything (swatches are only ever added).
+
 ## Rigged characters (R15)
 
 Full notes: [MODELLING.md](../../MODELLING.md).

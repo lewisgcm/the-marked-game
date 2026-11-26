@@ -1,5 +1,17 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { fence, oak, pointLight, post, roadLines, signText, streetLamp, wall, wreck } from "../lib/build.ts";
+import {
+	buildingMesh,
+	fence,
+	hasKitMesh,
+	oak,
+	pointLight,
+	post,
+	roadLines,
+	signText,
+	streetLamp,
+	wall,
+	wreck,
+} from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -29,12 +41,13 @@ export function fireStation(): Tile {
 	const station = new CFrame(0, 0, 47);
 	const floor = 0.3;
 	t.folder("Station");
+	const shell = buildingMesh(t, "FireStationBuilding", station);
 	t.slab("Apron", -22, 22, 17, 31, 0.15, S.CONCRETE);
 	t.slab("Floor", -22, 22, -16, 16, floor, S.CONCRETE, station);
-	t.slab("Roof", -23, 23, -17, 17, 16, S.CONCRETE, station);
-	wall(t, "X", 16, -22, 22, floor, 15, [], S.BRICK, station);
-	wall(t, "Z", -21.5, -15.5, 15.5, floor, 15, [], S.BRICK, station);
-	wall(t, "Z", 21.5, -15.5, 15.5, floor, 15, [], S.BRICK, station);
+	t.slab("Roof", -23, 23, -17, 17, 16, shell(S.CONCRETE), station);
+	wall(t, "X", 16, -22, 22, floor, 15, [], shell(S.BRICK), station);
+	wall(t, "Z", -21.5, -15.5, 15.5, floor, 15, [], shell(S.BRICK), station);
+	wall(t, "Z", 21.5, -15.5, 15.5, floor, 15, [], shell(S.BRICK), station);
 	// The engine bay is open to the street on the left; the counter is in the opening on the right.
 	wall(
 		t,
@@ -48,7 +61,7 @@ export function fireStation(): Tile {
 			[-10, 16, 0, 12],
 			[12, 12, 0, 9],
 		],
-		S.BRICK,
+		shell(S.BRICK),
 		station,
 	);
 	t.box("Engine", -10, floor + 4.2, 1, 8, 7, 20, S.FIRE_RED, station);
@@ -71,9 +84,13 @@ export function fireStation(): Tile {
 	// Across the road: the car park and the training tower.
 	t.slab("CarPark", -70, 10, -66, -17, 0.12, S.ROAD);
 	for (let x = -66; x <= 6; x += 12) t.box("BayLine", x, 0.13, -58, 0.4, 0.1, 16, S.ROAD_LINE);
-	t.box("Tower", 0, 15, 0, 12, 30, 12, S.BRICK, new CFrame(52, 0, -58));
-	t.box("TowerDoor", 0, 4, 6.05, 4, 8, 0.2, S.WOOD, new CFrame(52, 0, -58));
-	for (const y of [12, 20, 27]) t.box("TowerWindow", 0, y, 6.05, 3, 3, 0.2, S.ROAD, new CFrame(52, 0, -58));
+	const tower = new CFrame(52, 0, -58);
+	const towerShell = buildingMesh(t, "TrainingTower", tower);
+	t.box("Tower", 0, 15, 0, 12, 30, 12, towerShell(S.BRICK), tower);
+	if (!hasKitMesh("TrainingTower")) {
+		t.box("TowerDoor", 0, 4, 6.05, 4, 8, 0.2, S.WOOD, tower);
+		for (const y of [12, 20, 27]) t.box("TowerWindow", 0, y, 6.05, 3, 3, 0.2, S.ROAD, tower);
+	}
 	fence(t, -70, -66, 10, -66);
 	for (const x of [-84, 30, 70]) post(t, "Hydrant", x, -19, 0, 2.4, 1, S.FIRE_RED);
 
