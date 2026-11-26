@@ -278,7 +278,6 @@ the map looks, not how it plays.
 - [x] **Upload the map kit** (26 Nov 2026, model 140405497216248; IDs read through the Studio MCP). Sizes
       match the build, dead trees sit on their trunks (`KIT_X_SIGN` right), every tile passes with them.
 - [x] **Studio check** (26 Nov 2026): in a playtest, the kit's colliders block you where things look solid.
-- [ ] The roadblock mesh at the map's open ends (`world/map.ts` builds them in code) and in the gallery.
 - [x] **Buildings** (`tools/blender/assets/map_buildings.py`, a second FBX): the bungalow, barn, ranger hut,
       swamp shack, Fire Station, its training tower and the treehouse, modelled on the blockouts' numbers, so
       doors and windows are where they were (open: kids and the infected go through). The blockout walls and
@@ -286,6 +285,10 @@ the map looks, not how it plays.
       Checked with placeholder IDs: every tile passes.
 - [x] **Upload the buildings** (26 Nov 2026, model 92928712614118; IDs read through the Studio MCP, sizes match
       the build). Studio check: looks good in a playtest.
+- [x] Trim no longer flickers (26 Nov 2026): it started inside the wall, so its sides shared planes with the
+      openings'; now it stands just off the wall. Re-uploaded as model 117961715635785.
+- [x] **The roadblock mesh** at the map's open ends: build.ts writes a `Roadblock` piece (mesh and collider) to
+      `build/tiles/kit`, synced to `ServerStorage.MapKit`; `world/map.ts` clones it, the gallery places it.
 - [ ] **Ground and roads:** kerbs, road markings, and grass, forest floor and mud that blend at the seams.
 - [ ] **The family house** (was in M9): a model over the code-built house, keeping its barricade slots,
       lamps, stairs and basement; later, built from the Home tile's markers instead of code.

@@ -7,7 +7,9 @@
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import type { Tile } from "./lib/tile.ts";
+import { roadblock } from "./lib/build.ts";
+import { CFrame } from "./lib/cframe.ts";
+import { Tile } from "./lib/tile.ts";
 import { fireStation } from "./tiles/FireStation.ts";
 import { forestRoadA } from "./tiles/ForestRoad_A.ts";
 import { home } from "./tiles/Home.ts";
@@ -30,7 +32,20 @@ const TILES: Array<() => Tile> = [
 	woodsBehindHome,
 ];
 
+/**
+ * Pieces the game places itself, not tiles: ServerStorage.MapKit (build/tiles/kit). Each is built standing
+ * at the origin; the game moves a copy where it's wanted.
+ */
+const PIECES: Array<() => Tile> = [
+	() => {
+		const t = new Tile("Roadblock");
+		roadblock(t, new CFrame());
+		return t;
+	},
+];
+
 const OUT = "build/tiles/models";
+const KIT_OUT = "build/tiles/kit";
 const HAND_EDITED = "assets/tiles";
 
 mkdirSync(OUT, { recursive: true });
@@ -50,6 +65,15 @@ for (const make of TILES) {
 // Tiles whose code has gone. (Not the whole folder: Rojo may be watching it.)
 for (const file of readdirSync(OUT)) if (!written.has(file)) rmSync(`${OUT}/${file}`);
 console.log(`Built ${written.size} tiles into ${OUT}`);
+
+mkdirSync(KIT_OUT, { recursive: true });
+const pieces = new Set<string>();
+for (const make of PIECES) {
+	const piece = make();
+	writeFileSync(`${KIT_OUT}/${piece.name}.model.json`, piece.toJson());
+	pieces.add(`${piece.name}.model.json`);
+}
+for (const file of readdirSync(KIT_OUT)) if (!pieces.has(file)) rmSync(`${KIT_OUT}/${file}`);
 if (process.argv.includes("--gallery")) {
 	spawnSync("lune", ["run", "tools/tiles/gallery"], { stdio: "inherit" });
 }

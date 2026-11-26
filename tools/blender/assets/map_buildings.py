@@ -128,11 +128,14 @@ class Building:
 			self._paint_inside(ob)
 			self.add(ob)
 		if frame:
-			out = (1 if at > (self.middle[1] if along == "X" else self.middle[0]) else -1) * (thick / 2)
+			out = 1 if at > (self.middle[1] if along == "X" else self.middle[0]) else -1
 			for center, width, bottom, top in openings:
-				self._frame(along, at + out, center, width, base + bottom, base + top, frame, sill and bottom > 0)
+				self._frame(along, at + out * thick / 2, out, center, width, base + bottom, base + top, frame, sill and bottom > 0)
 
-	def _frame(self, along, face, center, width, y0, y1, swatch, sill):
+	def _frame(self, along, face, out, center, width, y0, y1, swatch, sill):
+		"""Trim round an opening, standing out from the wall's outside `face` (towards `out`). It starts just
+		off the face, so none of it lies in the same plane as the wall or the opening's sides (they'd
+		flicker as the camera turns)."""
 		t, d = 0.35, 0.25  # trim width, how far it stands out
 		pieces = [
 			(center - width / 2 - t, center - width / 2, y0, y1 + t),
@@ -142,7 +145,7 @@ class Building:
 		if sill:
 			pieces.append((center - width / 2 - 0.5, center + width / 2 + 0.5, y0 - 0.3, y0))
 		for a, b, lo, hi in pieces:
-			z0, z1 = sorted((face - d, face + d))
+			z0, z1 = sorted((face + out * 0.02, face + out * (d + 0.02)))
 			if along == "X":
 				self.add(block("trim", a, b, lo, hi, z0, z1, swatch))
 			else:
@@ -165,10 +168,12 @@ class Building:
 			y = base + bottom + step / 2
 			while y < base + top - 0.1:
 				lo, hi = y - step * 0.18, y + step * 0.18
+				# Ends just short of the piece's, off the plane of an opening's sides.
+				a0, b0 = a + (0.03 if a > start else 0), b - (0.03 if b < finish else 0)
 				if along == "X":
-					self.add(block("band", a, b, lo, hi, at - out, at + out, swatch))
+					self.add(block("band", a0, b0, lo, hi, at - out, at + out, swatch))
 				else:
-					self.add(block("band", at - out, at + out, lo, hi, a, b, swatch))
+					self.add(block("band", at - out, at + out, lo, hi, a0, b0, swatch))
 				y += step
 
 	def done(self):
@@ -195,11 +200,11 @@ def bungalow(name):
 	b.add(block("chimney", 9, 12, eave + 2, eave + 8.5, 3, 6, "brick"))
 	b.add(block("chimney_cap", 8.7, 12.3, eave + 8.5, eave + 9, 2.7, 6.3, "concrete_dark"))
 	# Shutters by the front window, a step at each door.
-	for x in (-13.95, -6.05):
+	for x in (-14.05, -5.95):
 		b.add(block("shutter", x - 1.1, x + 1.1, floor + 2.6, floor + 8.4, -13.75, -13.55, "shutter"))
 	b.add(block("step", 3.2, 8.8, 0, floor, -15.2, -13.5, "concrete"))
 	b.add(block("step", 7.2, 12.8, 0, floor, 13.5, 15.2, "concrete"))
-	b.add(block("skirting", -18.2, 18.2, 0, 0.6, -13.7, -13.45, "concrete_dark"))
+	b.add(block("skirting", -18.2, 18.2, 0, floor, -13.7, -13.45, "concrete_dark"))
 	return b.done()
 
 
@@ -333,7 +338,7 @@ def fire_station(name):
 			b.add(block("band", -22.3, 22.3, y, top, -16.8, -16.5, "concrete"))
 		b.add(block("band", -22.3, 22.3, y, top, 16.5, 16.8, "concrete"))
 		for x in (-22.3, 22.0):
-			b.add(block("band", x, x + 0.3, y, top, -16.8, 16.8, "concrete"))
+			b.add(block("band", x, x + 0.3, y, top, -16.5, 16.5, "concrete"))
 	# The bay's roller door, rolled up under the lintel.
 	b.add(block("roller", -17.6, -2.4, floor + 10.6, floor + 12, -16.2, -15.6, "fire_red"))
 	roof = block(f"{name}_roof", -23, 23, 15, 16, -17, 17, "concrete_dark")

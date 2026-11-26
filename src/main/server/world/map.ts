@@ -33,6 +33,8 @@ import { buildWrecks, isWreckName, WreckName } from "./wrecks";
  */
 
 const TILE_FOLDER = "MapTiles";
+/** Pieces the map places itself (the roadblock): ServerStorage.MapKit, from build/tiles/kit. */
+const KIT_FOLDER = "MapKit";
 
 /** What the day's phases need from the map. */
 export interface Street {
@@ -108,8 +110,22 @@ function placeCarsAndWrecks(map: Folder) {
 	buildWrecks(wrecks);
 }
 
-/** A red and white barrier across a road where it runs off the map. */
+/**
+ * A red and white barrier across a road where it runs off the map: a copy of the MapKit's Roadblock (its
+ * mesh and collider, built standing at the origin: tools/tiles/build.ts), or plain boards without it.
+ */
 function roadblock(parent: Instance, at: CFrame) {
+	const piece = ServerStorage.FindFirstChild(KIT_FOLDER)?.FindFirstChild("Roadblock");
+	if (piece) {
+		const copy = piece.Clone();
+		for (const part of copy.GetDescendants()) {
+			if (part.IsA("BasePart")) {
+				part.CFrame = at.mul(part.CFrame);
+			}
+		}
+		copy.Parent = parent;
+		return;
+	}
 	for (let i = 0; i < 4; i++) {
 		const white = i % 2 === 1;
 		part(parent, "Barrier", new Vector3(6.5, 1, 0.4), at.mul(new CFrame(-10.5 + 7 * i, 2.4, 0)), {

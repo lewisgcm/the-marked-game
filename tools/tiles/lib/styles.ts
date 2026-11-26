@@ -41,6 +41,8 @@ export const BRICK = style("Brick", [0.6, 0.25, 0.2]);
 export const CONCRETE = style("Concrete", [0.55, 0.55, 0.55]);
 export const FIRE_RED = style("Metal", [0.75, 0.12, 0.1]);
 export const LAMP = style("Neon", [1, 0.95, 0.85]);
+export const BARRIER_RED = style("SmoothPlastic", [0.8, 0.12, 0.1]);
+export const BARRIER_WHITE = style("SmoothPlastic", [0.95, 0.95, 0.95]);
 export const HEDGE = style("Grass", [0.2, 0.34, 0.17]);
 
 // Plants.

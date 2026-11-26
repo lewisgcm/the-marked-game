@@ -403,6 +403,21 @@ function meshFence(t: Tile, length: number, frame: CFrame) {
 	collider(t, [total, 3, 0.6], frame.at(0, 1.5, 0));
 }
 
+/**
+ * A red and white barrier across a road, 28 wide along `frame`'s X, standing at `frame`. The game puts one
+ * wherever a road runs off the map (world/map.ts, from the MapKit piece build.ts writes).
+ */
+export function roadblock(t: Tile, frame: CFrame) {
+	if (kitMesh(t, "Roadblock", frame)) {
+		collider(t, [28, 3, 0.8], frame.at(0, 1.5, 0));
+		return;
+	}
+	for (let i = 0; i < 4; i++) {
+		t.box("Barrier", -10.5 + 7 * i, 2.4, 0, 6.5, 1, 0.4, i % 2 === 1 ? S.BARRIER_WHITE : S.BARRIER_RED, frame);
+	}
+	for (const x of [-10.5, -3.5, 3.5, 10.5]) t.box("BarrierLeg", x, 1.2, 0, 0.4, 2.4, 0.4, S.METAL, frame);
+}
+
 /** Dashes down the middle of a road, from one point to another. */
 export function roadLines(t: Tile, x0: number, z0: number, x1: number, z1: number) {
 	const count = Math.floor(Math.hypot(x1 - x0, z1 - z0) / 16);

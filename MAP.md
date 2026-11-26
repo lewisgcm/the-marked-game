@@ -180,7 +180,9 @@ plan (0.2 s in all), giving about 960 different maps. `npm test` checks 500 of t
    If no map fits, the game uses `FALLBACK_TILES` (`mapRules.ts`, spec-checked) and says so.
 3. Each tile is copied into `Workspace.Map`, turned and moved into place (`tilePlacement`: Home's middle
    is at (0, -61), so the house stays at the origin), and the woods go behind home's row
-   (`borderPlacements`). Roads off the map get a roadblock, and invisible walls go round the edge.
+   (`borderPlacements`). Roads off the map get a roadblock (a copy of `ServerStorage.MapKit.Roadblock`, a
+   piece `tools/tiles/build.ts` writes to `build/tiles/kit` from `roadblock()` in `lib/build.ts`), and
+   invisible walls go round the edge. A new project mapping like `MapKit` needs `rojo serve` restarted.
 4. **The templates are destroyed before any system starts**, or tag searches would find them too.
 5. Markers are read and removed: dormant spots, Dad's spot and the night's infected spawns (sorted by
    their `Order`: Dad comes from the first). The family house is built (`world.ts`) and the Home plot box

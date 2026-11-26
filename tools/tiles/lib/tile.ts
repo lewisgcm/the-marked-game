@@ -33,11 +33,12 @@ export interface PartOptions {
 
 export class Tile {
 	readonly name: string;
-	readonly edges: Record<Side, Edge>;
+	/** Its edge labels; none for a piece that isn't a tile (a roadblock the game places itself). */
+	readonly edges?: Record<Side, Edge>;
 	private readonly folders = new Map<string, Instance[]>();
 	private current = "Ground";
 
-	constructor(name: string, edges: Record<Side, Edge>) {
+	constructor(name: string, edges?: Record<Side, Edge>) {
 		this.name = name;
 		this.edges = edges;
 	}
@@ -135,7 +136,9 @@ export class Tile {
 	toJson(): string {
 		const line = (value: unknown) => JSON.stringify(value).replace(/,"/g, ', "').replace(/":/g, '": ');
 		const folders = [...this.folders];
-		const out = ["{", '\t"className": "Model",', `\t"attributes": ${line(this.edges)},`, '\t"children": ['];
+		const out = ["{", '\t"className": "Model",'];
+		if (this.edges) out.push(`\t"attributes": ${line(this.edges)},`);
+		out.push('\t"children": [');
 		folders.forEach(([name, parts], i) => {
 			out.push("\t\t{", `\t\t\t"name": "${name}",`, '\t\t\t"className": "Folder",', '\t\t\t"children": [');
 			parts.forEach((part, j) => out.push(`\t\t\t\t${line(part)}${j < parts.length - 1 ? "," : ""}`));

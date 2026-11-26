@@ -70,29 +70,14 @@ local function label(text: string, x: number, y: number, z: number, height: numb
 	return part
 end
 
---- A red and white barrier across a road where it leaves the map, `x, z` the edge's middle.
+--- The roadblock the game puts where a road leaves the map (build/tiles/kit, written by build.ts), turned
+--- across the road at `x, z`, the edge's middle.
+local ROADBLOCK = serde.decode("json", fs.readFile("build/tiles/kit/Roadblock.model.json"))
 local function roadblock(side: string, x: number, z: number): any
-	local alongX = side == "North" or side == "South"
-	local cf = { x, 0, z }
-	table.move(if alongX then IDENTITY else { 0, 0, 1, 0, 1, 0, -1, 0, 0 }, 1, 9, 4, cf)
-	local function at(dx: number, y: number): { number }
-		local moved = table.clone(cf)
-		moved[2] = y
-		if alongX then
-			moved[1] += dx
-		else
-			moved[3] += dx
-		end
-		return moved
-	end
-	local parts = {}
-	for i = 0, 3 do
-		table.insert(parts, block("Board", { 6.5, 1, 0.4 }, at(-10.5 + 7 * i, 2.4), if i % 2 == 0 then { 0.8, 0.12, 0.1 } else { 0.95, 0.95, 0.95 }))
-	end
-	for _, dx in { -10.5, -3.5, 3.5, 10.5 } do
-		table.insert(parts, block("Leg", { 0.4, 2.4, 0.4 }, at(dx, 1.2), { 0.3, 0.3, 0.3 }))
-	end
-	return { name = "Roadblock", className = "Model", children = parts }
+	local across = if side == "North" or side == "South" then 0 else 1
+	local placed = tiles.move(ROADBLOCK, across, x, z)
+	placed.name = "Roadblock"
+	return placed
 end
 
 local all = tiles.loadAll()
