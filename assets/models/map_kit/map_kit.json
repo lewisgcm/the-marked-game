@@ -1,0 +1,24 @@
+{
+	"triangles": 3932,
+	"vertices": 2440,
+	"size": [
+		75.975,
+		50.093,
+		30.59
+	],
+	"name": "map_kit",
+	"size_roblox": [
+		75.975,
+		30.59,
+		50.093
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/map_kit/map_kit.fbx",
+		"assets/models/map_kit/map_kit.glb",
+		"assets/models/map_kit/preview.png"
+	]
+}

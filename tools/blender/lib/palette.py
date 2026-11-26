@@ -106,6 +106,23 @@ SWATCHES = {
 	"bus_yellow": ("#d3a032", False),
 	"olive": ("#646e4b", False),
 	"olive_dark": ("#474f36", False),
+	# the map kit (trees, hedges, fields, camp)
+	"pine": ("#2e4a33", False),
+	"pine_dark": ("#1f3325", False),
+	"leaf": ("#4c7238", False),
+	"leaf_dark": ("#36552a", False),
+	"hedge": ("#365a2c", False),
+	"hedge_dark": ("#26421f", False),
+	"dead_wood": ("#625a50", False),
+	"dead_wood_dark": ("#433d36", False),
+	"reed": ("#7f8443", False),
+	"reed_head": ("#4a3424", False),
+	"hay": ("#c9a650", False),
+	"hay_dark": ("#97793a", False),
+	"canvas": ("#6d7049", False),
+	"canvas_dark": ("#4f5235", False),
+	"barrier_white": ("#e6e3da", False),
+	"wood_light": ("#9a7a55", False),
 }
 
 _NAMES = list(SWATCHES)

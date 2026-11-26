@@ -5,8 +5,9 @@ differently each run. This file says what's in each tile and the rules for makin
 says what the places are *for*.
 
 **Status:** the game's only map: a 3 × 2 trial, with woods behind home's row (600 × 500 studs). The tiles
-are blockouts of plain parts, apart from cars, wrecks and the fire engine (models placed at markers); the
-family house is still built in code, on the Home tile's plot. Models for the rest: PLAN.md → Map art.
+are blockouts of plain parts, apart from cars, wrecks and the fire engine (models placed at markers) and,
+once it's uploaded, the map kit (trees, hedges, fences, rocks, hay, reeds, lamps, camp things); the family
+house is still built in code, on the Home tile's plot. Models for the rest: PLAN.md → Map art.
 
 ## Looking at them
 
@@ -221,13 +222,21 @@ doesn't type-check: `npm run tiles:build` and `npm test` do.)
 Markers are red and see-through so they show in Studio; the game hides them. Use `marker()` in
 `tools/tiles/lib/build.ts`.
 
+- **Models** (MeshParts) go in at the size their mesh was made: `Size` and `InitialSize` both the mesh's
+  own size. Never scale one in a tile: a scaled mesh vanishes when its middle leaves the screen. Export a
+  bigger model instead. Meshes don't collide; put plain-part colliders inside (a trunk, walls).
+- **The map kit** (`tools/blender/assets/map_kit.py`; uploading it: `tools/blender/README.md`) is used by the
+  pieces in `build.ts` (`pine`, `oak`, `deadTree`, `reeds`, `rock`, `hedge`, `hayBale`, `fence`,
+  `streetLamp`, `tent`, `campfire`, `logSeat`), with their colliders. Use those rather than `kitMesh`
+  (`lib/kit.ts`) directly; a mesh not uploaded yet is built as its blockout.
+
 `npm test` checks every tile for all of this (`tests/unit/world/tiles.spec.luau`). Add a new tile to this file.
 
 ## Not done yet
 
 - **Models for the tiles** (PLAN.md → Map art): trees, fences, buildings and ground made in Blender like
-  the cars and the infected. First, test whether a MeshPart can go straight into a tile file (its size
-  may not survive JSON); if not, they're placed in code at markers, as the cars are.
+  the cars and the infected. They'll go straight in the tile files as MeshParts (tested 26 Nov 2026), so
+  they show here too.
 - **Saving a Studio edit back to JSON:** needs a converter. Until then, edits in Studio are lost (and a
   coded tile's next build would replace them anyway).
 - **The family house in the Home tile**, built from markers instead of code.

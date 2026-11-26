@@ -264,13 +264,21 @@ were made: Blender models from Python (`tools/blender`, MODELLING.md for anythin
 shared palette, uploaded once, then wired in. Keep every tag, marker and collider working: art changes how
 the map looks, not how it plays.
 
-- [ ] **Decide how tiles hold models.** Test one MeshPart straight in a tile file in Studio: does its size
-      survive JSON (`InitialSize`), does it cull and collide properly, does it live-sync? If yes, models go
-      in the tiles and show in `serve:tiles` too. If not, tiles mark where they go and the server places
-      them, as it does the cars (the gallery then shows blockouts).
-- [ ] **A map kit** (`tools/blender/assets/map_kit.py`, one FBX and one upload, like the lobby kit): pine,
-      oak and dead trees, hedges, fences, rocks, hay bales, reeds, street lamps, the roadblock, a tent and
-      a campfire. Swap them into `tools/tiles/lib/build.ts`, so every tile gets them at once.
+- [x] **Decide how tiles hold models** (tested 26 Nov 2026 with the lobby kit's tree): models go straight
+      in the tile files as MeshParts, so `serve:tiles` shows the real art. Size and InitialSize = the mesh's
+      own size survive JSON, live sync and a built place, and draw and cull right. A *scaled* mesh (Size 2×
+      InitialSize) vanishes when its middle leaves the screen, so export each model at the size it's used
+      and never scale it in a tile. Meshes don't collide (`CanCollide` off); plain parts inside are the
+      colliders, as the wrecks have (a trunk, a building's walls).
+- [x] **A map kit** (`tools/blender/assets/map_kit.py`, one FBX, like the lobby kit): pines, oaks and dead
+      trees in three sizes, reeds, rocks, a hedge, hay bales, fence rails and posts, a street lamp, a tent,
+      a campfire, a log seat and the roadblock. The pieces in `tools/tiles/lib/build.ts` use them, with
+      plain-part colliders, once their IDs are in (`map_kit_ids.py`); blockouts until then. Checked with
+      placeholder IDs: every tile passes.
+- [x] **Upload the map kit** (26 Nov 2026, model 140405497216248; IDs read through the Studio MCP). Sizes
+      match the build, dead trees sit on their trunks (`KIT_X_SIGN` right), every tile passes with them.
+- [x] **Studio check** (26 Nov 2026): in a playtest, the kit's colliders block you where things look solid.
+- [ ] The roadblock mesh at the map's open ends (`world/map.ts` builds them in code) and in the gallery.
 - [ ] **Buildings:** the bungalow, barn, ranger hut, swamp shack, Fire Station and treehouse. Doors and
       windows where the blockouts have them (kids and the infected go in and out), loot containers and TVs
       where they are; invisible plain-part colliders where a mesh is hollow or ragged, as the wrecks have.

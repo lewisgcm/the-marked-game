@@ -130,6 +130,9 @@ When you add or change player-facing behaviour, update **README.md → Regressio
 - **`MeshPart.Size` is a multiplier of the mesh's own scale, not studs.** Author meshes at final
   size and keep `Size` at `1,1,1`. Setting it to the mesh dimensions scales it up (this bit us:
   a 10-stud pad rendered 100 studs).
+  A synced mesh drawn at any other scale than its own is also culled by the wrong box: it vanishes when
+  its middle leaves the screen (seen with the lobby's chapel, and tested in a tile 26 Nov 2026). In a tile
+  file, `Size` and `InitialSize` are both the mesh's own size; the lobby fixes scaled ones with `sized()`.
 - **Roblox FBX import reads Blender as metres → cm → 1 cm = 1 stud.** Export at `EXPORT_SCALE = 0.01`
   (`tools/blender/build.py`) so a 10-unit model arrives at 10 studs. Always check Studio's
   **File Geometry** readout before importing; `1000` means the export scale is wrong.

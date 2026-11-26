@@ -52,6 +52,27 @@ To upload it (once, and again only if the kit changes):
 Until every kit mesh has an ID, the lobby keeps building its old blockout (`kitReady()` in
 `src/lobby/server/kit.ts`).
 
+## The map kit (trees, fences and props for the map's tiles)
+
+`map_kit` is everything the map's tiles are dressed with: pines, oaks and dead trees (three sizes each),
+reeds, rocks, a hedge section, hay bales, fence rails and posts, a street lamp, a tent, a campfire, a log
+seat and the roadblock. They go straight into the tile files (MAP.md → Making a tile), so they can't be
+scaled: sizes are variants. `npm run models -- map_kit` writes the FBX (palette inside) and
+`tools/tiles/lib/mapKit.ts` (each mesh's size and middle).
+
+To upload it (once, and again whenever the kit changes):
+
+1. **File → Import → `assets/models/map_kit/map_kit.fbx`**, with **Merge Meshes off** (each prop its own
+   MeshPart), Anchored on, Upload to Roblox and Add to Workspace on. File Geometry should read about
+   76 studs wide, not 7600.
+2. Name the imported model `map_kit` (in Workspace), paste `tools/blender/print_mesh_ids.lua` into the
+   command bar and run it.
+3. Save the Output (the `Name=rbxassetid://…` lines and `Texture=…`) to a file and run
+   `python3 tools/blender/map_kit_ids.py ids.txt`. It writes `tools/tiles/lib/mapKitIds.ts`. (If there's no
+   texture, Bulk Import `assets/models/_palette/palette.png` and add a `Texture=rbxassetid://…` line.)
+4. Delete the imported model, and `npm run tiles`: the tiles use the meshes now. A mesh with no ID stays a
+   blockout.
+
 ## Rigged characters (R15)
 
 Full notes: [MODELLING.md](../../MODELLING.md).

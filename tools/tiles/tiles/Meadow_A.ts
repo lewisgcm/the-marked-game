@@ -1,5 +1,5 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { door, fence, loot, oak, roadLines, scatter, stones, wall } from "../lib/build.ts";
+import { door, fence, hayBale, loot, oak, roadLines, rock, scatter, stones, wall } from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -33,7 +33,7 @@ export function meadowA(): Tile {
 		[10, 1.7, 1.5],
 		[10, 4.7, 4],
 	])
-		t.box("HayBale", x, y, z, 5, 3, 4, S.HAY, barn);
+		hayBale(t, barn.at(x, y - 1.5, z));
 	loot(t, "Tool chest", "Garage", [4, 2.5, 2.5], barn.at(-10, 1.45, -7), S.METAL);
 	loot(t, "Workshop drawers", "Drawers", [2, 3.5, 5], barn.at(-12, 1.95, 2), S.WOOD);
 
@@ -46,7 +46,7 @@ export function meadowA(): Tile {
 		[44, -70, 0],
 		[-70, 78, 35],
 	]) {
-		t.box("HayBale", 0, 1.5, 0, 5, 3, 4, S.HAY, new CFrame(x, 0, z).mul(turn(degrees)));
+		hayBale(t, new CFrame(x, 0, z).mul(turn(degrees)));
 	}
 	fence(t, 17, -92, 17, -24);
 	fence(t, -92, 17, -28, 17);
@@ -59,7 +59,7 @@ export function meadowA(): Tile {
 		[-54, -66, 3.5],
 		[30, -30, 4],
 	]) {
-		t.box("Rock", 0, w * 0.3, 0, w, w * 0.8, w * 0.8, S.STONE, new CFrame(x, 0, z).mul(turn(w * 20)));
+		rock(t, w, new CFrame(x, 0, z).mul(turn(w * 20)));
 	}
 
 	t.folder("Trees");

@@ -1,10 +1,16 @@
 import { CFrame, turn, UPRIGHT } from "./cframe.ts";
+import { hasKitMesh, kitMesh, kitSize } from "./kit.ts";
+import type { KitName } from "./mapKit.ts";
 import { Random } from "./random.ts";
 import * as S from "./styles.ts";
 import type { Style } from "./styles.ts";
 import type { Instance, LootKind, Tile } from "./tile.ts";
 
-/** Pieces tiles are made of: walls, trees, fences, loot, markers. Change one here and every tile changes. */
+/**
+ * Pieces tiles are made of: walls, trees, fences, loot, markers. Change one here and every tile changes.
+ * Trees, hedges, fences, rocks, hay, reeds, lamps and the camp things are map kit meshes (kit.ts) with
+ * plain-part colliders, or their blockouts until the kit is uploaded.
+ */
 
 /** A rectangle on the ground: x0..x1 by z0..z1. */
 export type Area = [number, number, number, number];
@@ -76,6 +82,17 @@ export function post(
 /** A cylinder lying down along its frame's X. */
 export function log(t: Tile, name: string, length: number, diameter: number, frame: CFrame, style = S.BARK) {
 	t.part(name, [length, diameter, diameter], frame, style, { shape: "Cylinder" });
+}
+
+/** An invisible part that collides, for a mesh that doesn't. */
+export function collider(t: Tile, size: [number, number, number], at: CFrame) {
+	t.part("Collider", size, at, S.COLLIDER);
+}
+
+/** The kit variant for `value` in `from`..`to`: the range split evenly between `variants`. */
+function variant(value: number, from: number, to: number, variants: KitName[]): KitName {
+	const i = Math.floor(((value - from) / (to - from)) * variants.length);
+	return variants[Math.min(variants.length - 1, Math.max(0, i))];
 }
 
 /** A small light, as a child of a part. */
@@ -189,7 +206,9 @@ export function tv(t: Tile, at: CFrame, size: [number, number, number] = [5, 3, 
 
 /** A street lamp on the pavement; its light hangs out over the road (-Z) and comes on at sundown. */
 export function streetLamp(t: Tile, frame: CFrame) {
-	t.box("LampPost", 0, 7, 0, 0.6, 14, 0.6, S.METAL, frame);
+	const mesh = kitMesh(t, "StreetLamp", frame);
+	if (mesh) collider(t, [0.6, 14, 0.6], frame.at(0, 7, 0));
+	else t.box("LampPost", 0, 7, 0, 0.6, 14, 0.6, S.METAL, frame);
 	const light: Instance = {
 		name: "Light",
 		className: "SpotLight",
@@ -203,7 +222,8 @@ export function streetLamp(t: Tile, frame: CFrame) {
 			Tags: ["StreetLight"],
 		},
 	};
-	t.box("LampHead", 0, 14, -1, 2, 0.5, 3, S.METAL, frame, { children: [light] });
+	// With the mesh, the head is an invisible part that holds the light.
+	t.box("LampHead", 0, 14, -1, 2, 0.5, 3, mesh ? S.COLLIDER : S.METAL, frame, { children: [light] });
 }
 
 // --- Buildings ---------------------------------------------------------------------------------------
@@ -243,7 +263,14 @@ export function bungalow(t: Tile, frame: CFrame, parked?: { car: CarName; at: CF
 export function pine(t: Tile, x: number, z: number, random: Random) {
 	const height = random.between(20, 30);
 	const width = random.between(8, 10.5);
-	const frame = new CFrame(x, 0, z).mul(turn(random.between(0, 90)));
+	const spin = random.between(0, 90);
+	const name = variant(height, 20, 30, ["Pine_A", "Pine_B", "Pine_C"]);
+	if (kitMesh(t, name, new CFrame(x, 0, z).mul(turn(spin * 4)))) {
+		const tall = kitSize(name)[1] * 0.6;
+		collider(t, [1.4, tall, 1.4], new CFrame(x, tall / 2, z));
+		return;
+	}
+	const frame = new CFrame(x, 0, z).mul(turn(spin));
 	post(t, "Trunk", 0, 0, 0, height * 0.7, 1.8, S.BARK, frame);
 	[1, 0.72, 0.42].forEach((scale, i) => {
 		const w = width * scale;
@@ -255,7 +282,14 @@ export function pine(t: Tile, x: number, z: number, random: Random) {
 export function oak(t: Tile, x: number, z: number, random: Random) {
 	const height = random.between(9, 13);
 	const width = random.between(8, 11);
-	const frame = new CFrame(x, 0, z).mul(turn(random.between(0, 90)));
+	const spin = random.between(0, 90);
+	const name = variant(height, 9, 13, ["Oak_A", "Oak_B", "Oak_C"]);
+	if (kitMesh(t, name, new CFrame(x, 0, z).mul(turn(spin * 4)))) {
+		const tall = kitSize(name)[1] * 0.45;
+		collider(t, [1.8, tall, 1.8], new CFrame(x, tall / 2, z));
+		return;
+	}
+	const frame = new CFrame(x, 0, z).mul(turn(spin));
 	post(t, "Trunk", 0, 0, 0, height, 2, S.BARK, frame);
 	t.box("Leaves", 0, height + 1.5, 0, width, width * 0.7, width, S.LEAVES, frame);
 	t.box(
@@ -275,18 +309,24 @@ export function oak(t: Tile, x: number, z: number, random: Random) {
 export function deadTree(t: Tile, x: number, z: number, random: Random) {
 	const height = random.between(10, 17);
 	const frame = new CFrame(x, 0, z).mul(turn(random.between(0, 360)));
-	post(t, "DeadTrunk", 0, 0, -1, height, 1.6, S.DEAD_WOOD, frame);
-	for (const k of [0.55, 0.75]) {
-		t.box("Branch", 1.6, height * k, 0, 4, 0.5, 0.5, S.DEAD_WOOD, frame.mul(turn(random.between(0, 360))));
+	const branches = [random.between(0, 360), random.between(0, 360)];
+	const name = variant(height, 10, 17, ["DeadTree_A", "DeadTree_B", "DeadTree_C"]);
+	if (kitMesh(t, name, frame.at(0, -1, 0))) {
+		const tall = kitSize(name)[1] * 0.5;
+		collider(t, [1.4, tall, 1.4], new CFrame(x, tall / 2 - 1, z));
+		return;
 	}
+	post(t, "DeadTrunk", 0, 0, -1, height, 1.6, S.DEAD_WOOD, frame);
+	[0.55, 0.75].forEach((k, i) => {
+		t.box("Branch", 1.6, height * k, 0, 4, 0.5, 0.5, S.DEAD_WOOD, frame.mul(turn(branches[i])));
+	});
 }
 
 /** A clump of three reeds. */
 export function reeds(t: Tile, x: number, z: number, random: Random) {
-	for (let i = 0; i < 3; i++) {
-		const [dx, dz] = [random.between(-1.5, 1.5), random.between(-1.5, 1.5)];
-		t.box("Reed", x + dx, 0.9, z + dz, 0.35, random.between(3, 4.5), 0.35, S.REEDS);
-	}
+	const stems = [0, 1, 2].map(() => [random.between(-1.5, 1.5), random.between(-1.5, 1.5), random.between(3, 4.5)]);
+	if (kitMesh(t, "Reeds", new CFrame(x, 0, z).mul(turn(stems[0][0] * 120)))) return;
+	for (const [dx, dz, height] of stems) t.box("Reed", x + dx, 0.9, z + dz, 0.35, height, 0.35, S.REEDS);
 }
 
 /**
@@ -323,10 +363,32 @@ export function scatter(
 export function fence(t: Tile, x0: number, z0: number, x1: number, z1: number) {
 	const length = Math.hypot(x1 - x0, z1 - z0);
 	const frame = new CFrame((x0 + x1) / 2, 0, (z0 + z1) / 2).mul(turn(Math.abs(x1 - x0) > Math.abs(z1 - z0) ? 0 : 90));
+	if (hasKitMesh("FencePost")) {
+		meshFence(t, length, frame);
+		return;
+	}
 	for (const y of [1.2, 2.4]) t.box("Rail", 0, y, 0, length, 0.5, 0.3, S.WOOD, frame);
 	const posts = Math.max(1, Math.round(length / 8));
 	for (let i = 0; i <= posts; i++)
 		t.box("Post", -length / 2 + (length * i) / posts, 1.5, 0, 0.6, 3, 0.6, S.WOOD, frame);
+}
+
+/**
+ * A fence from the kit: posts 8 apart, and a shorter last run (6, 4 or 2), so it may end up to a stud
+ * short of or past `length`. One collider the length of it.
+ */
+function meshFence(t: Tile, length: number, frame: CFrame) {
+	const runs: number[] = [];
+	for (let left = Math.round(length / 2) * 2; left > 0; left -= Math.min(8, left)) runs.push(Math.min(8, left));
+	const total = runs.reduce((a, b) => a + b, 0);
+	let x = -total / 2;
+	kitMesh(t, "FencePost", frame.at(x, 0, 0));
+	for (const run of runs) {
+		kitMesh(t, `FenceRails_${run}` as KitName, frame.at(x + run / 2, 0, 0));
+		x += run;
+		kitMesh(t, "FencePost", frame.at(x, 0, 0));
+	}
+	collider(t, [total, 3, 0.6], frame.at(0, 1.5, 0));
 }
 
 /** Dashes down the middle of a road, from one point to another. */
@@ -350,6 +412,7 @@ export function roadLines(t: Tile, x0: number, z0: number, x1: number, z1: numbe
 
 /** A cold campfire: a ring of stones round two logs. */
 export function campfire(t: Tile, x: number, z: number) {
+	if (kitMesh(t, "Campfire", new CFrame(x, 0, z))) return;
 	for (let i = 0; i < 6; i++) {
 		const a = (i * Math.PI) / 3;
 		t.box("FireStone", x + 2 * Math.cos(a), 0.3, z + 2 * Math.sin(a), 1.1, 0.8, 1.1, S.STONE);
@@ -360,11 +423,44 @@ export function campfire(t: Tile, x: number, z: number) {
 
 /** A log to sit on, turned `degrees`. */
 export function logSeat(t: Tile, x: number, z: number, degrees: number) {
-	log(t, "LogSeat", 7, 1.6, new CFrame(x, 0.8, z).mul(turn(degrees)));
+	const frame = new CFrame(x, 0, z).mul(turn(degrees));
+	if (kitMesh(t, "LogSeat", frame)) collider(t, [7, 1.6, 1.6], frame.at(0, 0.8, 0));
+	else log(t, "LogSeat", 7, 1.6, frame.at(0, 0.8, 0));
 }
 
 /** A ridge tent, its ridge along the frame's Z. */
 export function tent(t: Tile, frame: CFrame) {
-	t.part("Tent", [10, 5.5, 4.5], frame.at(-2.25, 2.75, 0).mul(turn(90)), S.CANVAS, { className: "WedgePart" });
-	t.part("Tent", [10, 5.5, 4.5], frame.at(2.25, 2.75, 0).mul(turn(-90)), S.CANVAS, { className: "WedgePart" });
+	// The blockout's two wedges are the mesh's colliders.
+	const style = kitMesh(t, "Tent", frame) ? S.COLLIDER : S.CANVAS;
+	const name = style === S.COLLIDER ? "Collider" : "Tent";
+	t.part(name, [10, 5.5, 4.5], frame.at(-2.25, 2.75, 0).mul(turn(90)), style, { className: "WedgePart" });
+	t.part(name, [10, 5.5, 4.5], frame.at(2.25, 2.75, 0).mul(turn(-90)), style, { className: "WedgePart" });
+}
+
+/** A hay bale, 5 long (X), 4 deep and 3 tall, standing at `frame`. */
+export function hayBale(t: Tile, frame: CFrame) {
+	if (kitMesh(t, "HayBale", frame)) collider(t, [5, 3, 4], frame.at(0, 1.5, 0));
+	else t.box("HayBale", 0, 1.5, 0, 5, 3, 4, S.HAY, frame);
+}
+
+/** A rock about `width` across, standing at `frame` (three sizes in the kit). */
+export function rock(t: Tile, width: number, frame: CFrame) {
+	const name = width >= 5 ? "Rock_A" : width >= 3.75 ? "Rock_B" : "Rock_C";
+	if (kitMesh(t, name, frame)) {
+		const [sx, sy, sz] = kitSize(name);
+		collider(t, [sx * 0.8, sy * 0.9, sz * 0.8], frame.at(0, (sy * 0.9) / 2, 0));
+	} else {
+		t.box("Rock", 0, width * 0.3, 0, width, width * 0.8, width * 0.8, S.STONE, frame);
+	}
+}
+
+/** A clipped hedge, 3 wide and 3 tall, `length` long along `frame`'s X (in 12-stud sections in the kit). */
+export function hedge(t: Tile, length: number, frame: CFrame) {
+	if (!hasKitMesh("Hedge")) {
+		t.box("Hedge", 0, 1.5, 0, length, 3, 3, S.HEDGE, frame);
+		return;
+	}
+	const count = Math.max(1, Math.round(length / 12));
+	for (let i = 0; i < count; i++) kitMesh(t, "Hedge", frame.at(-length / 2 + (length * (i + 0.5)) / count, 0, 0));
+	collider(t, [length, 3, 3], frame.at(0, 1.5, 0));
 }

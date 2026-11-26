@@ -50,6 +50,9 @@ export const LEAVES = style("Grass", [0.24, 0.4, 0.2], { collide: false });
 export const PINE_NEEDLES = style("LeafyGrass", [0.14, 0.26, 0.16], { collide: false });
 export const REEDS = style("Grass", [0.4, 0.45, 0.22], { collide: false, shadow: false });
 
+/** What a mesh collides with: an invisible plain part inside it (meshes in tiles don't collide). */
+export const COLLIDER = style("SmoothPlastic", [1, 1, 1], { transparency: 1, shadow: false });
+
 /** Markers: seen in Studio, hidden by the game. */
 export const MARKER = style("Neon", [1, 0.2, 0.2], { transparency: 0.5, collide: false, shadow: false });
 /** Where something built by the game's code goes (the family house). */

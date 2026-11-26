@@ -1,5 +1,5 @@
 import { CFrame, turn } from "../lib/cframe.ts";
-import { bungalow, fence, marker, oak, roadLines, streetLamp, wreck } from "../lib/build.ts";
+import { bungalow, fence, hedge, marker, oak, roadLines, streetLamp, wreck } from "../lib/build.ts";
 import { Random } from "../lib/random.ts";
 import * as S from "../lib/styles.ts";
 import { Tile } from "../lib/tile.ts";
@@ -68,8 +68,7 @@ export function home(): Tile {
 
 	t.folder("Gardens");
 	// Hedges between the gardens, and fences round the ones across the street.
-	for (const x of [-42, 42]) t.box("Hedge", x, 1.5, 58, 3, 3, 36, S.HEDGE);
-	for (const x of [-92, 92]) t.box("Hedge", x, 1.5, 58, 3, 3, 36, S.HEDGE);
+	for (const x of [-92, -42, 42, 92]) hedge(t, 36, new CFrame(x, 0, 58).mul(turn(90)));
 	for (const [a, b] of [
 		[-88, -32],
 		[32, 88],
@@ -80,15 +79,15 @@ export function home(): Tile {
 	}
 	const random = new Random(13);
 	for (const [x, z] of [
-		[-50, 90],
+		[-50, 88],
 		[-90, 88],
-		[50, 92],
+		[50, 88],
 		[88, 86],
 		[-80, -70],
 		[80, -72],
 		[-40, -84],
 		[38, -82],
-		[0, 92],
+		[0, 88],
 	]) {
 		oak(t, x, z, random);
 	}

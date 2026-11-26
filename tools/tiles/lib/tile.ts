@@ -79,6 +79,27 @@ export class Tile {
 		this.folders.set(this.current, list);
 	}
 
+	/**
+	 * An uploaded mesh, its middle at `cframe`, drawn at its own `size` (Size and InitialSize both that:
+	 * a mesh scaled in a tile file vanishes when its middle leaves the screen). Use `kitMesh` in kit.ts.
+	 */
+	mesh(name: string, size: [number, number, number], cframe: CFrame, properties: Record<string, unknown>) {
+		const instance: Instance = {
+			name,
+			className: "MeshPart",
+			properties: {
+				Anchored: true,
+				Size: size.map(round),
+				InitialSize: size.map(round),
+				CFrame: cframe.toArray(),
+				...properties,
+			},
+		};
+		const list = this.folders.get(this.current) ?? [];
+		list.push(instance);
+		this.folders.set(this.current, list);
+	}
+
 	/** A box `sx` by `sy` by `sz`, its middle at `x, y, z` in `frame`'s space. */
 	box(
 		name: string,
