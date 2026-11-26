@@ -1,6 +1,6 @@
 import { CollectionService, InsertService, Players, Workspace } from "@rbxts/services";
 import { HABITS, Habit, HALL_GLITCH_ATTRIBUTE, PARENT_TAG } from "shared/lobby/hall";
-import { GLITCH_EVERY, PARENT_MODELS, PARENT_SCALE } from "./config";
+import { GLITCH_EVERY, PARENT_MODELS, PARENT_SCALE, WALK_OUT_SECONDS } from "./config";
 import { ParentSpot } from "./world";
 
 /**
@@ -9,6 +9,12 @@ import { ParentSpot } from "./world";
  * They're tagged LobbyParent with their Habit; each client moves them (lobby/client/parents.ts), so the
  * server only stands them there. And every so often every screen in the hall glitches at once.
  */
+
+/** The parents standing, by pad (the hall's order). */
+const standing = new Map<number, Model>();
+
+/** How long after leading a party out a parent is back at their pad (the next one's arrived). */
+const BACK_AFTER = WALK_OUT_SECONDS + 6;
 
 function isHabit(value: string): value is Habit {
 	return (HABITS as readonly string[]).includes(value);
@@ -82,14 +88,32 @@ export function startParents(spots: ParentSpot[]) {
 	const folder = new Instance("Folder");
 	folder.Name = "Parents";
 	folder.Parent = Workspace;
-	for (const spot of spots) {
+	spots.forEach((spot, index) => {
 		if (!isHabit(spot.habit)) {
 			warn(`[Lobby] A ParentSpot says Habit = ${spot.habit}, which isn't one.`);
-			continue;
+			return;
 		}
 		const habit = spot.habit;
-		task.spawn(() => stand(loadModel(habit) ?? standIn(habit), spot, habit, folder));
+		task.spawn(() => {
+			const model = loadModel(habit) ?? standIn(habit);
+			stand(model, spot, habit, folder);
+			standing.set(index, model);
+		});
+	});
+}
+
+/**
+ * The parent at pad `index` turns and leads their party out through `door`: each client walks them there
+ * (lobby/client/parents.ts: LeavingAt is server time, LeaveTo where to). Later they're back at the pad.
+ */
+export function leadOut(index: number, door: CFrame) {
+	const model = standing.get(index);
+	if (!model) {
+		return;
 	}
+	model.SetAttribute("LeaveTo", door.Position);
+	model.SetAttribute("LeavingAt", Workspace.GetServerTimeNow());
+	task.delay(BACK_AFTER, () => model.SetAttribute("LeavingAt", undefined));
 }
 
 /** Every so often, every screen in the hall glitches at once and the parents freeze: each client plays it. */

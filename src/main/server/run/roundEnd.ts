@@ -1,20 +1,20 @@
 import { Players } from "@rbxts/services";
 import { saveLastTitleAsync } from "shared/lobby/lastTitle";
+import { recordRun } from "shared/lobby/stats";
+import { nightsSurvived } from "shared/run/phases";
 import { LOBBY_PLACE_ID } from "shared/core/placeIds";
 import { EndReason } from "shared/run/round";
 import { ScoreCard } from "shared/run/scoreboard";
 import { safeTeleport } from "shared/core/safeTeleport";
 import { send } from "../core/gameRemote";
 import { getLobbyPlaceId } from "../core/party";
-import { getPhase } from "../core/round";
+import { getClock, getPhase } from "../core/round";
 import { scoreboardCards } from "../core/roundStats";
 
 /**
  * What happens when a run ends: everyone sees the scoreboard (and can head back early), each
- * kid's title is saved for the lobby, then everyone goes home.
- *
- * Nothing is recorded on the lobby leaderboard yet: it still counts ghost-game wins until M6
- * replaces it with best run + total nights.
+ * kid's title and the run's nights are saved for the lobby (its best run and total nights boards:
+ * shared/lobby/stats.ts), then everyone goes home.
  */
 
 let scoreboard: ScoreCard[] | undefined;
@@ -27,14 +27,19 @@ export function getScoreboard(): ScoreCard[] | undefined {
 /** Anyone still here this long after the return teleport is kicked with a rejoin message. */
 const RETURN_TIMEOUT = 30;
 
-/** Builds and sends the scoreboard, and saves each kid's title for the lobby. */
+/** Builds and sends the scoreboard, and saves each kid's title and the run's nights for the lobby. */
 export function onRunEnd(reason: EndReason) {
-	print(`[Main] Run over: ${reason}.`);
+	const nights = nightsSurvived(getClock());
+	print(`[Main] Run over: ${reason}, after ${nights} nights.`);
 	const cards = scoreboardCards();
 	scoreboard = cards;
 	Players.GetPlayers().forEach((p) => send(p, "Scoreboard", cards));
 	for (const card of cards) {
 		task.spawn(() => saveLastTitleAsync(card.userId, { title: card.title, taken: card.taken }));
+		// Everyone in the run gets its nights: the party survived them together.
+		if (nights > 0) {
+			task.spawn(() => recordRun(card.userId, nights));
+		}
 	}
 }
 

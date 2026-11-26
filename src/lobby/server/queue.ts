@@ -5,6 +5,7 @@ import { savePartyAsync } from "shared/lobby/partyHandoff";
 import { MAIN_GAME_PLACE_ID } from "shared/core/placeIds";
 import { LobbyClientMessages, LobbyServerMessages } from "shared/core/remotes";
 import { safeTeleport } from "shared/core/safeTeleport";
+import { WALK_OUT_SECONDS } from "./config";
 import { parsePartySize } from "./partySize";
 import { LobbyWorld, LobbyZone } from "./world";
 
@@ -16,7 +17,8 @@ import { LobbyWorld, LobbyZone } from "./world";
  * - **hosting**: the host is choosing a party size; others on the pad wait.
  * - **open**: the party exists but has fewer than LowestPlayer members.
  * - **counting**: enough players; counting down. Drops back to open if people leave.
- * - **launching**: teleport in flight; the party is locked.
+ * - **launching**: the pad's parent leads the party out (WALK_OUT_SECONDS, the screen fading), then the
+ *   teleport; the party is locked.
  *
  * All party state lives here on the server. The only client request is the host's
  * Create, which is validated against this state. Leaving is done by walking off the pad.
@@ -42,10 +44,13 @@ export class QueueManager {
 	private readonly send: ReturnType<typeof clientSender<LobbyServerMessages>>;
 	private readonly config: LobbyWorld["configuration"];
 	private readonly zoneData = new Map<LobbyZone, ZoneData>();
+	/** Sends the parent at pad `index` (the world's zones' order) out of the door. */
+	private readonly leadOut: (index: number) => void;
 
-	constructor(world: LobbyWorld, remote: RemoteEvent) {
+	constructor(world: LobbyWorld, remote: RemoteEvent, leadOut: (index: number) => void) {
 		this.world = world;
 		this.remote = remote;
+		this.leadOut = leadOut;
 		this.send = clientSender<LobbyServerMessages>(remote);
 		this.config = world.configuration;
 	}
@@ -236,9 +241,19 @@ export class QueueManager {
 			return;
 		}
 		data.state = "launching";
-		data.generation++;
+		const launching = ++data.generation;
+		// The parent leads them out while the screen fades; then they go.
+		zone.display.setState("Off we go...");
+		for (const player of data.players) {
+			this.send(player, "LeadOut", { door: zone.door.Position, seconds: WALK_OUT_SECONDS });
+		}
+		this.leadOut(this.world.zones.indexOf(zone));
+		task.wait(WALK_OUT_SECONDS);
+		if (data.generation !== launching) {
+			return;
+		}
 		this.refreshDisplay(zone);
-		this.launch(zone, data.generation);
+		this.launch(zone, launching);
 	}
 
 	private launch(zone: LobbyZone, generation: number) {

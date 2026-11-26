@@ -1,4 +1,4 @@
-import { CollectionService, Players, RunService } from "@rbxts/services";
+import { CollectionService, Players, RunService, Workspace } from "@rbxts/services";
 import { Habit, HALL_GLITCH_SECONDS, PARENT_TAG } from "shared/lobby/hall";
 import { onHallGlitch, onTvGlitch } from "./hallEvents";
 
@@ -11,7 +11,9 @@ import { onHallGlitch, onTvGlitch } from "./hallEvents";
  * - **Coat** (a dad): the coat over his arm, looking slowly round the hall; when the TV glitches, he twitches.
  * - **Phone**: phone up, head down to it, and nothing else. Ever. Not even breathing.
  *
- * When every screen in the hall glitches at once, all of them freeze where they are.
+ * When every screen in the hall glitches at once, all of them freeze where they are. When a party's countdown
+ * ends, its parent turns and walks out of the door (LeavingAt, LeaveTo: lobby/server/parents.ts), and is back
+ * at the pad when the server clears it.
  */
 
 type Joint = Motor6D | AnimationConstraint;
@@ -26,7 +28,16 @@ interface Parent {
 	twitchAt: number;
 	/** When the next jingle of the keys starts. */
 	jingleAt: number;
+	/** Where they stand at the pad. */
+	home: CFrame;
+	/** Whether they were walking out last frame. */
+	away: boolean;
 }
+
+/** How fast a parent walks out, and how far past the door they go. */
+const WALK_SPEED = 5;
+const PAST_DOOR = 8;
+const TURN_SECONDS = 0.6;
 
 const parents = new Map<Model, Parent>();
 let frozenUntil = 0;
@@ -40,7 +51,19 @@ function findJoint(model: Model, part: string): Joint | undefined {
 	return undefined;
 }
 
-const MOVED = ["Head", "UpperTorso", "LeftUpperArm", "LeftLowerArm", "RightUpperArm", "RightLowerArm", "RightHand"];
+const MOVED = [
+	"Head",
+	"UpperTorso",
+	"LeftUpperArm",
+	"LeftLowerArm",
+	"RightUpperArm",
+	"RightLowerArm",
+	"RightHand",
+	"LeftUpperLeg",
+	"LeftLowerLeg",
+	"RightUpperLeg",
+	"RightLowerLeg",
+];
 
 function track(instance: Instance) {
 	if (!instance.IsA("Model") || parents.has(instance)) return;
@@ -60,6 +83,8 @@ function track(instance: Instance) {
 			look: 0,
 			twitchAt: -math.huge,
 			jingleAt: os.clock() + 3,
+			home: instance.GetPivot(),
+			away: false,
 		});
 	});
 }
@@ -120,6 +145,37 @@ function pose(parent: Parent, t: number, dt: number): Map<string, CFrame> {
 	return poses;
 }
 
+/**
+ * Walking out, `elapsed` seconds after leaving: turning round on the spot, then walking to the door and on
+ * past it. Moves the model (locally) and adds the legs' and arms' swing to `poses`.
+ */
+function walkOut(parent: Parent, elapsed: number, poses: Map<string, CFrame>) {
+	const to = parent.model.GetAttribute("LeaveTo");
+	if (!typeIs(to, "Vector3")) return;
+	const home = parent.home;
+	const door = new Vector3(to.X, home.Y, to.Z);
+	const away = door.sub(home.Position).Unit;
+	const finish = door.add(away.mul(PAST_DOOR));
+	// Facing the door: the model's front (-Z) along `away`.
+	const facing = CFrame.lookAt(home.Position, home.Position.add(away));
+	if (elapsed < TURN_SECONDS) {
+		const turned = home.Lerp(facing, elapsed / TURN_SECONDS);
+		parent.model.PivotTo(turned);
+		return;
+	}
+	const walked = math.min((elapsed - TURN_SECONDS) * WALK_SPEED, finish.sub(home.Position).Magnitude);
+	parent.model.PivotTo(facing.add(away.mul(walked)));
+	if (walked >= finish.sub(home.Position).Magnitude) return;
+	const step = math.sin(elapsed * 7);
+	poses.set("LeftUpperLeg", angles(step * 0.5));
+	poses.set("RightUpperLeg", angles(-step * 0.5));
+	poses.set("LeftLowerLeg", angles(-math.max(0, -step) * 0.6));
+	poses.set("RightLowerLeg", angles(-math.max(0, step) * 0.6));
+	// The free arm swings (the other's busy: keys, coat; the phone parent's arms stay as they are).
+	if (parent.habit === "Keys") poses.set("LeftUpperArm", angles(-step * 0.35));
+	if (parent.habit === "Coat") poses.set("RightUpperArm", angles(-step * 0.35));
+}
+
 export function startParents() {
 	CollectionService.GetTagged(PARENT_TAG).forEach(track);
 	CollectionService.GetInstanceAddedSignal(PARENT_TAG).Connect(track);
@@ -130,13 +186,18 @@ export function startParents() {
 	});
 	RunService.RenderStepped.Connect((dt) => {
 		const t = os.clock();
-		// Frozen: every joint stays where it was.
-		if (t < frozenUntil) return;
+		const frozen = t < frozenUntil;
 		for (const [, parent] of parents) {
-			for (const [part, cf] of pose(parent, t, dt)) {
-				const joint = parent.joints.get(part);
-				if (joint) joint.Transform = cf;
-			}
+			const leftAt = parent.model.GetAttribute("LeavingAt");
+			const leaving = typeIs(leftAt, "number");
+			if (parent.away && !leaving) parent.model.PivotTo(parent.home); // back at the pad
+			parent.away = leaving;
+			// Frozen: every joint stays where it was (unless they're on their way out).
+			if (frozen && !leaving) continue;
+			const poses = pose(parent, t, dt);
+			if (leaving) walkOut(parent, Workspace.GetServerTimeNow() - leftAt, poses);
+			// Every joint, so one that stops moving (a leg after walking) goes back to rest.
+			for (const [part, joint] of parent.joints) joint.Transform = poses.get(part) ?? new CFrame();
 		}
 	});
 }

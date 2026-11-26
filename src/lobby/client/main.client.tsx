@@ -3,6 +3,7 @@ import { createPortal, createRoot } from "@rbxts/react-roblox";
 import { Players, ReplicatedStorage } from "@rbxts/services";
 import { onServerMessage, serverSender } from "shared/core/net";
 import { LobbyClientMessages, LobbyServerMessages, QUEUE_REMOTE_NAME } from "shared/core/remotes";
+import { comeBack, leadOut } from "./leadOut";
 import { PartyUi, PartyUiMode } from "./partyUi";
 
 const player = Players.LocalPlayer;
@@ -18,7 +19,11 @@ function App() {
 			CreateParty: ({ lowest, highest, expireSeconds }) =>
 				setMode({ kind: "create", lowest, highest, expireSeconds }),
 			JoinParty: () => setMode({ kind: "party" }),
-			LeaveParty: () => setMode({ kind: "hidden" }),
+			LeaveParty: () => {
+				setMode({ kind: "hidden" });
+				comeBack();
+			},
+			LeadOut: ({ door, seconds }) => leadOut(door, seconds),
 		});
 		return () => connection.Disconnect();
 	}, []);

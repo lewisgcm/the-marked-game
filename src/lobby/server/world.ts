@@ -21,6 +21,8 @@ export interface LobbyZone {
 	model: Model;
 	zoneContainer: Part;
 	display: ZoneDisplay;
+	/** Just outside the pad's door, on the ground: where its parent leads the party out to. */
+	door: CFrame;
 }
 
 /** Height of the invisible ZonePlus detection box above the pad. */
@@ -28,6 +30,7 @@ const ZONE_CONTAINER_HEIGHT = 10;
 
 const PAD_TAG = "LobbyPad";
 const PARENT_TAG = "ParentSpot";
+const DOOR_TAG = "LobbyDoor";
 
 /** Where a pad's parent stands (on the floor, facing the way they look) and what they do while they wait. */
 export interface ParentSpot {
@@ -82,7 +85,7 @@ function hiddenPart(name: string, size: Vector3, at: CFrame, parent: Instance): 
 	return part;
 }
 
-function buildZone(parent: Instance, index: number, pad: CFrame, displayAt: CFrame): LobbyZone {
+function buildZone(parent: Instance, index: number, pad: CFrame, displayAt: CFrame, door: CFrame): LobbyZone {
 	const model = new Instance("Model");
 	model.Name = `TeleportZone${index + 1}`;
 	model.Parent = parent;
@@ -97,7 +100,7 @@ function buildZone(parent: Instance, index: number, pad: CFrame, displayAt: CFra
 	zoneContainer.CanQuery = true;
 	// The billboard floats above this (zoneDisplay.tsx: StudsOffset): over the pad's parent.
 	const anchor = hiddenPart("DisplayAnchor", new Vector3(0.2, 0.2, 0.2), displayAt, model);
-	return { model, zoneContainer, display: createZoneDisplay(anchor, anchor) };
+	return { model, zoneContainer, display: createZoneDisplay(anchor, anchor), door };
 }
 
 /** Server-only lobby tunables in ServerStorage (see config.ts). */
@@ -149,12 +152,13 @@ export function buildLobbyWorld(): LobbyWorld {
 	teleportZones.Parent = Workspace;
 	const pads = takeMarkers(hall, PAD_TAG).map((pad) => pad.at);
 	const parents = takeMarkers(hall, PARENT_TAG);
+	const doors = takeMarkers(hall, DOOR_TAG).map((door) => door.at);
 	if (pads.size() === 0) {
 		warn("[Lobby] The hall has no LobbyPad markers: run `npm run tiles:build`, then sync again.");
 	}
 	return {
 		configuration: buildConfiguration(),
-		zones: pads.map((pad, i) => buildZone(teleportZones, i, pad, parents[i]?.at ?? pad)),
+		zones: pads.map((pad, i) => buildZone(teleportZones, i, pad, parents[i]?.at ?? pad, doors[i] ?? pad)),
 		parents,
 	};
 }

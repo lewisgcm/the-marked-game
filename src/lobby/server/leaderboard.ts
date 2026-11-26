@@ -1,17 +1,16 @@
 import { CollectionService, Players, Workspace } from "@rbxts/services";
-import { LeaderboardEntry, loadTopWins, loadWins } from "shared/lobby/stats";
+import { Board, LeaderboardEntry, loadRunStats, loadTop } from "shared/lobby/stats";
 
 /**
- * Lobby scoreboard:
+ * The lobby's leaderboards (GAMEPLAY.md §1), saved by the main game at the end of each run
+ * (shared/lobby/stats.ts):
  *
- * - **Player list:** every player gets a `leaderstats` "Wins" value (their lifetime wins), which
- *   Roblox shows in the top-right player list.
- * - **Top-10 board:** on the hall's BEST RUN noticeboard (a `Noticeboard` part, `Board` BestRun, in
- *   tools/tiles/lobby/Hall.ts), the most wins of all time across every server, refreshed every
- *   REFRESH_SECONDS. (Best run and total nights replace wins later in M6.)
+ * - **Noticeboards:** a sheet pinned to each of the hall's two (`Noticeboard` parts, `Board` BestRun or
+ *   TotalNights, in tools/tiles/lobby/Hall.ts): the top 10 of all time across every server, refreshed every
+ *   REFRESH_SECONDS.
+ * - **Player list:** every player's `leaderstats` "Best Run", which Roblox shows in the top-right list.
  *
- * Wins are recorded by the main game at the end of each round (shared/lobby/stats.ts). If the
- * DataStore can't be reached (e.g. Studio without API access), the board says so.
+ * If the DataStore can't be reached (e.g. Studio without API access), the sheets say so.
  */
 
 const TOP_COUNT = 10;
@@ -19,6 +18,12 @@ const REFRESH_SECONDS = 60;
 
 const INK = new Color3(0.12, 0.1, 0.09);
 const RED_PEN = new Color3(0.7, 0.1, 0.1);
+
+/** What each board's sheet is headed. */
+const HEADINGS: Record<Board, string> = {
+	BestRun: "Most nights in one run",
+	TotalNights: "Most nights, all time",
+};
 
 const nameCache = new Map<number, string>();
 function nameOf(userId: number): string {
@@ -47,19 +52,19 @@ function label(parent: Instance, text: string, size: number, position: UDim2, he
 	return l;
 }
 
-/** The hall's noticeboard for `board` (BestRun or TotalNights), if the hall has it. */
-function noticeboard(board: string): BasePart | undefined {
+/** The hall's noticeboard for `board`, if the hall has it. */
+function noticeboard(board: Board): BasePart | undefined {
 	const hall = Workspace.WaitForChild("Hall");
 	return CollectionService.GetTagged("Noticeboard").find(
 		(p): p is BasePart => p.IsA("BasePart") && p.IsDescendantOf(hall) && p.GetAttribute("Board") === board,
 	);
 }
 
-/** Pins a sheet to the BEST RUN noticeboard and returns a function that rewrites its rows. */
-function buildBoard(): (entries: LeaderboardEntry[] | undefined) => void {
-	const board = noticeboard("BestRun");
-	if (!board) {
-		warn("[Lobby] The hall has no BestRun noticeboard: the scores have nowhere to go.");
+/** Pins a sheet to `board`'s noticeboard and returns a function that rewrites its rows. */
+function buildSheet(board: Board): (entries: LeaderboardEntry[] | undefined) => void {
+	const part = noticeboard(board);
+	if (!part) {
+		warn(`[Lobby] The hall has no ${board} noticeboard: those scores have nowhere to go.`);
 		return () => {};
 	}
 	const gui = new Instance("SurfaceGui");
@@ -67,21 +72,20 @@ function buildBoard(): (entries: LeaderboardEntry[] | undefined) => void {
 	gui.Face = Enum.NormalId.Front;
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud;
 	gui.PixelsPerStud = 40;
-	gui.Parent = board;
-	// A sheet of paper pinned to the cork.
+	gui.Parent = part;
+	// A sheet of paper pinned to the cork, a little crooked.
 	const sheet = new Instance("Frame");
 	sheet.Size = new UDim2(1, -60, 1, -30);
 	sheet.Position = new UDim2(0, 30, 0, 15);
 	sheet.BackgroundColor3 = new Color3(0.96, 0.95, 0.9);
 	sheet.BorderSizePixel = 0;
-	sheet.Rotation = -1;
+	sheet.Rotation = board === "BestRun" ? -1 : 1.2;
 	sheet.Parent = gui;
 
-	label(sheet, "Most wins", 36, new UDim2(0, 20, 0, 6), 40, RED_PEN);
-
+	label(sheet, HEADINGS[board], 34, new UDim2(0, 20, 0, 6), 40, RED_PEN);
 	const rows: TextLabel[] = [];
 	for (let i = 0; i < TOP_COUNT; i++) {
-		rows.push(label(sheet, "", 22, new UDim2(0, 20, 0, 50 + i * 24), 24));
+		rows.push(label(sheet, "", 25, new UDim2(0, 20, 0, 50 + i * 24), 24));
 	}
 
 	return (entries) => {
@@ -90,28 +94,28 @@ function buildBoard(): (entries: LeaderboardEntry[] | undefined) => void {
 			return;
 		}
 		if (entries.size() === 0) {
-			rows.forEach((row, i) => (row.Text = i === 0 ? "No one has won yet. Be the first." : ""));
+			rows.forEach((row, i) => (row.Text = i === 0 ? "No one's made it through a night yet." : ""));
 			return;
 		}
 		rows.forEach((row, i) => {
 			const entry = entries[i];
 			row.Text = entry
-				? `${i + 1}.  ${nameOf(entry.userId)}  —  ${entry.wins} win${entry.wins === 1 ? "" : "s"}`
+				? `${i + 1}.  ${nameOf(entry.userId)}  —  ${entry.nights} night${entry.nights === 1 ? "" : "s"}`
 				: "";
 		});
 	};
 }
 
-/** Adds the "Wins" value Roblox shows in the player list. */
+/** Adds the "Best Run" value Roblox shows in the player list. */
 function addLeaderstats(player: Player) {
 	const folder = new Instance("Folder");
 	folder.Name = "leaderstats";
-	const wins = new Instance("IntValue");
-	wins.Name = "Wins";
-	wins.Parent = folder;
+	const best = new Instance("IntValue");
+	best.Name = "Best Run";
+	best.Parent = folder;
 	folder.Parent = player;
 	task.spawn(() => {
-		wins.Value = loadWins(player.UserId) ?? 0;
+		best.Value = loadRunStats(player.UserId)?.best ?? 0;
 	});
 }
 
@@ -119,10 +123,12 @@ export function startLeaderboard() {
 	Players.GetPlayers().forEach(addLeaderstats);
 	Players.PlayerAdded.Connect(addLeaderstats);
 
-	const draw = buildBoard();
+	const sheets = (["BestRun", "TotalNights"] as const).map((board) => [board, buildSheet(board)] as const);
 	task.spawn(() => {
 		for (;;) {
-			draw(loadTopWins(TOP_COUNT));
+			for (const [board, draw] of sheets) {
+				draw(loadTop(board, TOP_COUNT));
+			}
 			task.wait(REFRESH_SECONDS);
 		}
 	});

@@ -26,7 +26,8 @@ import { Tile } from "../lib/tile.ts";
  * north wall (-z), with a pick-up pad inside each: a `LobbyPad` marker (`Order` 1, 2, 3) where the lobby's
  * code puts each party's zone (src/lobby/server/world.ts), and a `ParentSpot` marker (`Order`, `Habit`: Keys,
  * Coat or Phone) where that pad's parent waits, its front (-z) the way they face, with the billboard over
- * them (src/lobby/server/parents.ts). Players spawn at the south side.
+ * them (src/lobby/server/parents.ts), and a `LobbyDoor` marker outside, where they lead the party out to
+ * when the countdown ends. Players spawn at the south side.
  * The stage is at the east end, its noticeboards on the wall behind (`Noticeboard`, `Board` BestRun or
  * TotalNights) for the leaderboards. High windows on the south and west let the late sun in.
  */
@@ -226,6 +227,11 @@ function doors(t: Tile) {
 		});
 		t.box("LobbyPad", x, 2.5, (q0 + q1) / 2, 2, 5, 1, S.MARKER, undefined, {
 			tags: ["LobbyPad"],
+			attributes: { Order: `${k + 1}` },
+		});
+		// Out through the door: where the parent leads the party when the countdown ends.
+		t.box("LobbyDoor", x, 2.5, -HALF_Z - 7, 2, 5, 1, S.MARKER, undefined, {
+			tags: ["LobbyDoor"],
 			attributes: { Order: `${k + 1}` },
 		});
 		// The parent: at the pad's door end, to one side of the doorway, facing into the hall.

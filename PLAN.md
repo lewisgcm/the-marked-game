@@ -92,7 +92,8 @@ Notes — what changed from the plan:
 - Added a **Studio-only practice infected** (`practiceDummy.ts`) so melee can be tested; delete it
   once real infected exist (M1).
 - Added `noticeHud.tsx` (notices used to live in the objective HUD).
-- The lobby's Wins board no longer gets wins (there's no winning side). M6 replaces it.
+- The lobby's Wins board no longer gets wins (there's no winning side). M6 replaced it with best run and
+  total nights.
 - The lobby party minimum is still 2 (M6 makes it 1); solo only works in Studio for now.
 - `package.json` name is now `marked`.
 
@@ -383,13 +384,18 @@ Goal: the lobby looks like MARKED. Mostly visual (GAMEPLAY.md §1).
 - [x] **Import the three parents** (26 Nov 2026): models in `PARENT_MODELS` (`src/lobby/server/config.ts`);
       loaded, 15 joints each, feet on the floor, posed by the client code (checked through the MCP). A plain
       avatar stands in if one can't be loaded.
-- [ ] Countdown end: the parent walks the party out through the doors, fade, teleport.
+- [x] Countdown end: the parent walks the party out through the doors, fade, teleport (26 Nov 2026). The
+      queue's launching state waits `WALK_OUT_SECONDS` first: each client turns the pad's parent round and
+      walks them out past the door (`LeavingAt`, `LeaveTo`), and the party's kids lose their controls, walk
+      after them and fade to black (`lobby/client/leadOut.ts`). If the teleport fails, the party disbands,
+      the screen fades back, and the parent's back at the pad a few seconds later. (`LobbyDoor` markers.)
 - [x] Minimum party size **1**.
 - [x] Delete the last ghost-prototype leftovers: `ritualItems.ts`, the skull, book and candles models,
       the lobby kit, teleport pad and churchyard decor, and old ghost comments in the lobby's `queue.ts`
       and `config.ts`. (`recordWin` goes with the leaderboards.)
-- [ ] Leaderboards: **best run** and **total nights** (replace *Wins* in `stats.ts` and
-      `leaderboard.ts`; player list shows best run).
+- [x] Leaderboards: **best run** and **total nights** (26 Nov 2026): the main game saves each kid's run at
+      its end (`shared/lobby/stats.ts`; the rule, `runStats.ts`, has a spec); a sheet on each noticeboard
+      lists the top 10, the player list shows Best Run. Wins and `recordWin` are gone.
 
 ## M7 — First-run experience
 

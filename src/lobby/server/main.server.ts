@@ -1,7 +1,7 @@
 import { ReplicatedStorage } from "@rbxts/services";
 import { QUEUE_REMOTE_NAME } from "shared/core/remotes";
 import { startLeaderboard } from "./leaderboard";
-import { startHallGlitches, startParents } from "./parents";
+import { leadOut, startHallGlitches, startParents } from "./parents";
 import { QueueManager } from "./queue";
 import { startTitles } from "./titles";
 import { buildLobbyWorld } from "./world";
@@ -28,7 +28,7 @@ function ensureQueueRemote(): RemoteEvent {
 
 const world = buildLobbyWorld();
 const remote = ensureQueueRemote();
-const queue = new QueueManager(world, remote);
+const queue = new QueueManager(world, remote, (index) => leadOut(index, world.zones[index].door));
 queue.start();
 startParents(world.parents);
 startHallGlitches();

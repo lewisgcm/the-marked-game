@@ -61,9 +61,10 @@ stage with curtains and two noticeboards, and the news on a trolley.
   (late afternoon). A parent waits at each pad (`parents.ts`; models in `tools/blender/assets/parent_*.py`),
   posed by code on each client (`src/lobby/client/parents.ts`), with the pad's billboard over them. Now and
   then every screen in the hall glitches at once and they all freeze (`hallGlitch.ts`).
-- **Scoreboard:** a noticeboard shows the **top 10 players by total wins**, and each player's **Wins**
-  appear in the player list (`src/shared/lobby/stats.ts`, `src/lobby/server/leaderboard.ts`). Best run
-  and total nights replace it later in M6.
+- **Leaderboards:** a sheet on each of the stage's noticeboards: the **top 10 by best run** (most nights in
+  one run) and **by total nights** (all time), across every server; each player's **Best Run** is in the
+  player list. The main game saves them when a run ends (`src/shared/lobby/stats.ts`, the rule in
+  `runStats.ts`; `src/lobby/server/leaderboard.ts`).
 - The faulty strip lights flicker on each client (`src/lobby/client/faultyLights.ts`, `FaultyLight` tag).
 
 ## The main game
@@ -169,8 +170,8 @@ still join.
    `src/shared/run/scoreboard.ts`). **Back to lobby** leaves early; the title then floats over the
    player's head in the lobby for an hour (`src/shared/lobby/lastTitle.ts`, MemoryStore). Then everyone
    is teleported back to the lobby they came from; anyone the teleport can't move is kicked with a
-   "rejoin" message rather than left stuck. Nothing is recorded on the lobby's Wins board any more
-   (it becomes best run + total nights in M6).
+   "rejoin" message rather than left stuck. Each kid's run (the nights survived) is added to their best
+   run and total nights for the lobby's boards (`shared/lobby/stats.ts`).
 
 ### Server authority
 
@@ -399,9 +400,11 @@ apply from the next phase.
 - [ ] A parent waits at each pad: Mum (keys) turns her head to follow you; the dad with the coat twitches when the TV glitches; the one on the phone never moves.
 - [ ] Every minute or so every screen garbles and the strip lights stutter, and all three parents freeze for a moment.
 - [ ] Host who doesn't press Create in time is removed; the next player on the pad becomes host.
+- [ ] When the countdown ends, the pad's parent turns and walks out of the door; you walk after them and the screen fades to black, then the teleport.
+- [ ] (Studio) The teleport fails there: the screen fades back in, you can move again, and the parent's back at the pad soon after.
 - [ ] (Published places only) the party teleports to one reserved server together.
-- [ ] The scoreboard shows the top 10 by wins (or "No one has won yet" / a fog message if the DataStore is unavailable, e.g. Studio without API access).
-- [ ] The player list (top-right) shows each player's Wins.
+- [ ] The two noticeboards show the top 10 by best run and by total nights (or "No one's made it through a night yet", or "can't be reached" if the DataStore is unavailable, e.g. Studio without API access).
+- [ ] The player list (top-right) shows each player's Best Run.
 - [ ] (Published) After a run, each player's title from it (gold, or red if they were taken) floats above their head, above the name tag; it's still there after a reset, and gone after an hour.
 
 ### Main game: run
@@ -423,7 +426,7 @@ apply from the next phase.
 - [ ] Changing `NightSeconds` in ServerStorage → GameConfig during play changes the next night's length.
 - [ ] A player who resets respawns after ~3s in the basement with all four tools (by day).
 - [ ] (Published) After the end screen, everyone is teleported back to the lobby; nobody is left on the end screen.
-- [ ] (Published) Nothing changes on the lobby's Wins board.
+- [ ] (Published) Back in the lobby after a run of N nights: your Best Run is at least N, and the boards include you (within a minute).
 - [ ] No errors in the server or client output during a whole run.
 
 ### House lighting

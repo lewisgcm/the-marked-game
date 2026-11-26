@@ -1,75 +1,80 @@
 import { DataStoreService } from "@rbxts/services";
+import { addRun, readRunStats, RunStats } from "./runStats";
 
 /**
- * Lifetime player stats, saved with DataStore. Server only (DataStoreService errors on the
- * client). Every call is wrapped in pcall: a DataStore outage (or Studio without API access)
- * must never break a round — stats just don't update.
+ * Lifetime run stats, saved with DataStore (GAMEPLAY.md §1): each player's best run and total nights. Server
+ * only (DataStoreService errors on the client). Every call is wrapped in pcall: a DataStore outage (or
+ * Studio without API access) must never break a run or the lobby; stats just don't update.
  *
- * - "PlayerWins" (DataStore): userId -> total wins. The source of truth.
- * - "WinsLeaderboard" (OrderedDataStore): userId -> total wins, kept in step, for the top-10 board.
+ * - "PlayerRuns" (DataStore): userId -> { best, total }. The source of truth (shared/lobby/runStats.ts).
+ * - "BestRunBoard" and "TotalNightsBoard" (OrderedDataStores): userId -> best / total, kept in step, for the
+ *   lobby's two noticeboards.
  */
 
-const WINS_STORE = "PlayerWins";
-const LEADERBOARD_STORE = "WinsLeaderboard";
+const RUNS_STORE = "PlayerRuns";
+
+/** The lobby's two boards, and the ordered store behind each. */
+export type Board = "BestRun" | "TotalNights";
+const BOARD_STORES: Record<Board, string> = { BestRun: "BestRunBoard", TotalNights: "TotalNightsBoard" };
 
 function key(userId: number) {
 	return tostring(userId);
 }
 
-/** Adds one win for `userId`. Returns the new total, or undefined if saving failed. */
-export function recordWin(userId: number): number | undefined {
-	const [ok, total] = pcall(() => {
-		const [result] = DataStoreService.GetDataStore(WINS_STORE).UpdateAsync(key(userId), (old: unknown) => {
-			const previous = typeIs(old, "number") ? old : 0;
+/** Adds a run of `nights` to `userId`'s stats. Returns the new stats, or undefined if saving failed. Yields. */
+export function recordRun(userId: number, nights: number): RunStats | undefined {
+	const [ok, stats] = pcall(() => {
+		const [result] = DataStoreService.GetDataStore(RUNS_STORE).UpdateAsync(key(userId), (old: unknown) => {
 			// UpdateAsync's callback must return a LuaTuple; $tuple is the roblox-ts way to build
 			// one. (The roblox-ts lint "fix" rewrites it to a plain array, which doesn't compile.)
 			// eslint-disable-next-line roblox-ts/no-user-defined-lua-tuple
-			return $tuple(previous + 1);
+			return $tuple(addRun(old, nights));
 		});
-		return result as number;
+		return readRunStats(result);
 	});
 	if (!ok) {
-		warn(`[Stats] Couldn't save a win for ${userId}: ${total}`);
+		warn(`[Stats] Couldn't save a run for ${userId}: ${stats}`);
 		return undefined;
 	}
-	pcall(() => DataStoreService.GetOrderedDataStore(LEADERBOARD_STORE).SetAsync(key(userId), total));
-	return total;
+	pcall(() => DataStoreService.GetOrderedDataStore(BOARD_STORES.BestRun).SetAsync(key(userId), stats.best));
+	pcall(() => DataStoreService.GetOrderedDataStore(BOARD_STORES.TotalNights).SetAsync(key(userId), stats.total));
+	return stats;
 }
 
-/** Total wins for `userId` (0 if none), or undefined if loading failed. */
-export function loadWins(userId: number): number | undefined {
+/** `userId`'s stats (0s if none), or undefined if loading failed. Yields. */
+export function loadRunStats(userId: number): RunStats | undefined {
 	// GetAsync returns (value, keyInfo): unwrap it inside the pcall, where it's a real tuple.
 	const [ok, value] = pcall(() => {
-		const [stored] = DataStoreService.GetDataStore(WINS_STORE).GetAsync(key(userId));
+		const [stored] = DataStoreService.GetDataStore(RUNS_STORE).GetAsync(key(userId));
 		return stored;
 	});
 	if (!ok) {
-		warn(`[Stats] Couldn't load wins for ${userId}: ${value}`);
+		warn(`[Stats] Couldn't load runs for ${userId}: ${value}`);
 		return undefined;
 	}
-	return typeIs(value, "number") ? value : 0;
+	return readRunStats(value);
 }
 
 export interface LeaderboardEntry {
 	userId: number;
-	wins: number;
+	nights: number;
 }
 
-/** The top `count` players by wins, or undefined if loading failed. */
-export function loadTopWins(count: number): LeaderboardEntry[] | undefined {
+/** The top `count` players on `board`, or undefined if loading failed. Yields. */
+export function loadTop(board: Board, count: number): LeaderboardEntry[] | undefined {
 	const [ok, result] = pcall(() => {
-		const pages = DataStoreService.GetOrderedDataStore(LEADERBOARD_STORE).GetSortedAsync(false, count);
+		const pages = DataStoreService.GetOrderedDataStore(BOARD_STORES[board]).GetSortedAsync(false, count);
 		const entries: LeaderboardEntry[] = [];
 		for (const entry of pages.GetCurrentPage()) {
 			const userId = tonumber(entry.key);
 			if (userId !== undefined && typeIs(entry.value, "number") && entry.value > 0) {
-				entries.push({ userId, wins: entry.value });
+				entries.push({ userId, nights: entry.value });
 			}
 		}
 		return entries;
 	});
 	if (!ok) {
-		warn(`[Stats] Couldn't load the leaderboard: ${result}`);
+		warn(`[Stats] Couldn't load the ${board} board: ${result}`);
 		return undefined;
 	}
 	return result;

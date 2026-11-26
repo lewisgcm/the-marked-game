@@ -28,6 +28,9 @@ export const PARENT_MODELS = { Keys: 101541542749262, Coat: 83028498644523, Phon
 /** The parents are drawn at this times their model's size (the infected's 1.1: grown-ups, over the kids). */
 export const PARENT_SCALE = 1.1;
 
+/** Seconds from the countdown's end to the teleport: the parent leads the party out and the screen fades. */
+export const WALK_OUT_SECONDS = 3.5;
+
 /** Seconds between hall-wide glitches (every screen at once; the parents freeze): a random time in this range. */
 export const GLITCH_EVERY: [number, number] = [35, 75];
 

@@ -27,8 +27,10 @@ export interface LobbyServerMessages {
 	CreateParty: { lowest: number; highest: number; expireSeconds: number };
 	/** You're in a party now. */
 	JoinParty: undefined;
-	/** You're no longer in a party. */
+	/** You're no longer in a party (and if you were being led out, you're not now). */
 	LeaveParty: undefined;
+	/** The countdown's over: follow your parent out of `door` while the screen fades, over `seconds`. */
+	LeadOut: { door: Vector3; seconds: number };
 }
 
 export interface LobbyClientMessages {
