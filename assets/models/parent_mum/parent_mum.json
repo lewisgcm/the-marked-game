@@ -1,0 +1,24 @@
+{
+	"triangles": 1364,
+	"vertices": 784,
+	"size": [
+		2.6,
+		1.27,
+		5.24
+	],
+	"name": "parent_mum",
+	"size_roblox": [
+		2.6,
+		5.24,
+		1.27
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/parent_mum/parent_mum.fbx",
+		"assets/models/parent_mum/parent_mum.glb",
+		"assets/models/parent_mum/preview.png"
+	]
+}

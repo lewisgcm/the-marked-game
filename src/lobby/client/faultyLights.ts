@@ -1,7 +1,5 @@
 import { CollectionService } from "@rbxts/services";
-
-/** Strip lights in the hall that are on their way out (tagged in tools/tiles/lobby/Hall.ts). */
-const FAULTY_TAG = "FaultyLight";
+import { FAULTY_LIGHT_TAG as FAULTY_TAG } from "shared/lobby/hall";
 
 /** Turns a strip light (its tube and its light) on or off. */
 function setLit(tube: BasePart, lit: boolean) {

@@ -1,0 +1,24 @@
+{
+	"triangles": 1292,
+	"vertices": 752,
+	"size": [
+		2.774,
+		1.17,
+		5.08
+	],
+	"name": "parent_dad",
+	"size_roblox": [
+		2.774,
+		5.08,
+		1.17
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/parent_dad/parent_dad.fbx",
+		"assets/models/parent_dad/parent_dad.glb",
+		"assets/models/parent_dad/preview.png"
+	]
+}

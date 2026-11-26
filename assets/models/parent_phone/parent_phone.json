@@ -1,0 +1,24 @@
+{
+	"triangles": 1208,
+	"vertices": 696,
+	"size": [
+		2.6,
+		1.21,
+		5.12
+	],
+	"name": "parent_phone",
+	"size_roblox": [
+		2.6,
+		5.12,
+		1.21
+	],
+	"materials": [
+		"Palette"
+	],
+	"export_scale": 0.01,
+	"files": [
+		"assets/models/parent_phone/parent_phone.fbx",
+		"assets/models/parent_phone/parent_phone.glb",
+		"assets/models/parent_phone/preview.png"
+	]
+}

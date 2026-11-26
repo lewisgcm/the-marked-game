@@ -13,7 +13,8 @@ import { createZoneDisplay, ZoneDisplay } from "./zoneDisplay";
 /**
  * The lobby around the hall: the gym hall itself is a model Rojo puts in Workspace (`Hall`, built from
  * tools/tiles/lobby/Hall.ts, so it shows in Studio without playing). This puts a party zone at each of
- * its pick-up pads (`LobbyPad` markers, sorted by `Order`), and sets the light.
+ * its pick-up pads (`LobbyPad` markers, sorted by `Order`), with its billboard over the pad's parent
+ * (`ParentSpot` markers: parents.ts puts them there), and sets the light.
  */
 
 export interface LobbyZone {
@@ -26,6 +27,13 @@ export interface LobbyZone {
 const ZONE_CONTAINER_HEIGHT = 10;
 
 const PAD_TAG = "LobbyPad";
+const PARENT_TAG = "ParentSpot";
+
+/** Where a pad's parent stands (on the floor, facing the way they look) and what they do while they wait. */
+export interface ParentSpot {
+	at: CFrame;
+	habit: string;
+}
 
 export interface LobbyWorld {
 	configuration: {
@@ -35,20 +43,28 @@ export interface LobbyWorld {
 		timeBeforeExpires: IntValue;
 	};
 	zones: LobbyZone[];
+	/** One per pad, in the pads' order. */
+	parents: ParentSpot[];
 }
 
-/** The hall's pad markers, in order, then removed: where each pad's middle is, on the floor. */
-function takePads(hall: Instance): CFrame[] {
-	const found: Array<{ at: CFrame; order: number }> = [];
-	for (const marker of CollectionService.GetTagged(PAD_TAG)) {
+/**
+ * The hall's markers tagged `tag`, in `Order`, then removed: where each stands on the floor (its middle,
+ * dropped to its bottom), and the marker's `Habit`.
+ */
+function takeMarkers(hall: Instance, tag: string): ParentSpot[] {
+	const found: Array<ParentSpot & { order: number }> = [];
+	for (const marker of CollectionService.GetTagged(tag)) {
 		if (marker.IsA("BasePart") && marker.IsDescendantOf(hall)) {
-			const floor = marker.CFrame.mul(new CFrame(0, -marker.Size.Y / 2, 0));
-			found.push({ at: floor, order: tonumber(marker.GetAttribute("Order")) ?? math.huge });
+			found.push({
+				at: marker.CFrame.mul(new CFrame(0, -marker.Size.Y / 2, 0)),
+				habit: tostring(marker.GetAttribute("Habit") ?? ""),
+				order: tonumber(marker.GetAttribute("Order")) ?? math.huge,
+			});
 			marker.Destroy();
 		}
 	}
 	found.sort((a, b) => a.order < b.order);
-	return found.map((f) => f.at);
+	return found.map(({ at, habit }) => ({ at, habit }));
 }
 
 /** An invisible, non-colliding part. */
@@ -66,7 +82,7 @@ function hiddenPart(name: string, size: Vector3, at: CFrame, parent: Instance): 
 	return part;
 }
 
-function buildZone(parent: Instance, index: number, pad: CFrame): LobbyZone {
+function buildZone(parent: Instance, index: number, pad: CFrame, displayAt: CFrame): LobbyZone {
 	const model = new Instance("Model");
 	model.Name = `TeleportZone${index + 1}`;
 	model.Parent = parent;
@@ -79,8 +95,8 @@ function buildZone(parent: Instance, index: number, pad: CFrame): LobbyZone {
 	);
 	// ZonePlus needs the box to be queryable.
 	zoneContainer.CanQuery = true;
-	// The billboard floats above this (zoneDisplay.tsx: StudsOffset).
-	const anchor = hiddenPart("DisplayAnchor", new Vector3(0.2, 0.2, 0.2), pad, model);
+	// The billboard floats above this (zoneDisplay.tsx: StudsOffset): over the pad's parent.
+	const anchor = hiddenPart("DisplayAnchor", new Vector3(0.2, 0.2, 0.2), displayAt, model);
 	return { model, zoneContainer, display: createZoneDisplay(anchor, anchor) };
 }
 
@@ -131,9 +147,14 @@ export function buildLobbyWorld(): LobbyWorld {
 	const teleportZones = new Instance("Folder");
 	teleportZones.Name = "TeleportZones";
 	teleportZones.Parent = Workspace;
-	const pads = takePads(hall);
+	const pads = takeMarkers(hall, PAD_TAG).map((pad) => pad.at);
+	const parents = takeMarkers(hall, PARENT_TAG);
 	if (pads.size() === 0) {
 		warn("[Lobby] The hall has no LobbyPad markers: run `npm run tiles:build`, then sync again.");
 	}
-	return { configuration: buildConfiguration(), zones: pads.map((pad, i) => buildZone(teleportZones, i, pad)) };
+	return {
+		configuration: buildConfiguration(),
+		zones: pads.map((pad, i) => buildZone(teleportZones, i, pad, parents[i]?.at ?? pad)),
+		parents,
+	};
 }

@@ -24,13 +24,17 @@ import { Tile } from "../lib/tile.ts";
  *
  * The hall is 100 x 64 inside (x -50..50, z -32..32), 30 tall. The car park's double doors are along the
  * north wall (-z), with a pick-up pad inside each: a `LobbyPad` marker (`Order` 1, 2, 3) where the lobby's
- * code puts each party's zone and billboard (src/lobby/server/world.ts). Players spawn at the south side.
+ * code puts each party's zone (src/lobby/server/world.ts), and a `ParentSpot` marker (`Order`, `Habit`: Keys,
+ * Coat or Phone) where that pad's parent waits, its front (-z) the way they face, with the billboard over
+ * them (src/lobby/server/parents.ts). Players spawn at the south side.
  * The stage is at the east end, its noticeboards on the wall behind (`Noticeboard`, `Board` BestRun or
  * TotalNights) for the leaderboards. High windows on the south and west let the late sun in.
  */
 
 const [HALF_X, HALF_Z, HEIGHT] = [50, 32, 30];
 const DOORS = [-30, 0, 30];
+/** Who waits at each door's pad (src/lobby/server/parents.ts has their models). */
+const HABITS = ["Keys", "Coat", "Phone"];
 const DOOR: [number, number] = [10, 12]; // width, height
 const SOUTH_WINDOWS = [-42, -30, -18, -6, 6, 18, 30, 42];
 const WEST_WINDOWS = [-18, -6, 6, 18];
@@ -194,6 +198,9 @@ function doors(t: Tile) {
 		// Thresholds in the gap the wall leaves under each door.
 		t.slab("Threshold", x - w / 2, x + w / 2, -HALF_Z - 1, -HALF_Z, 0.03, S.CONCRETE);
 		t.box("DoorFrame", x, h + 0.4, -HALF_Z - 0.5, w + 1.2, 0.8, 1.3, S.STEEL);
+		// Kids wait for their lift: an invisible wall across each doorway. (The parent walks them out at the
+		// countdown's end, M6.)
+		t.box("DoorBlock", x, h / 2, -HALF_Z - 0.5, w, h, 1, S.COLLIDER);
 		for (const side of [-1, 1]) {
 			t.box("DoorFrame", x + side * (w / 2 + 0.3), h / 2, -HALF_Z - 0.5, 0.6, h, 1.3, S.STEEL);
 			// Each leaf swung right out, against the outside wall.
@@ -220,6 +227,11 @@ function doors(t: Tile) {
 		t.box("LobbyPad", x, 2.5, (q0 + q1) / 2, 2, 5, 1, S.MARKER, undefined, {
 			tags: ["LobbyPad"],
 			attributes: { Order: `${k + 1}` },
+		});
+		// The parent: at the pad's door end, to one side of the doorway, facing into the hall.
+		t.part("ParentSpot", [2, 5, 1], new CFrame(x + 3.2, 2.5, q0 + 1.5).mul(turn(180)), S.MARKER, {
+			tags: ["ParentSpot"],
+			attributes: { Order: `${k + 1}`, Habit: HABITS[k] },
 		});
 		t.folder("Doors");
 	});

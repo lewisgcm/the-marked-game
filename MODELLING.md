@@ -2,7 +2,8 @@
 
 Notes for making a character for MARKED, from Blender to walking around in the game. Static props:
 `tools/blender/README.md`. Worked examples: `tools/blender/assets/infected_dad.py` and
-`infected_neighbour.py`.
+`infected_neighbour.py`; for ordinary people, the lobby's parents (`parent_mum.py`, `parent_dad.py`,
+`parent_phone.py`), built from the pieces in `lib/people.py` (same proportions and joints, a human face).
 
 ## Look
 

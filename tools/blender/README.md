@@ -235,4 +235,5 @@ the centre, so a centred mesh lands exactly where the code puts it.
 | `street_wrecks` | five meshes, up to 11.4 × 8.9 × 22.7 | 4084 | wrecks: CrashedCar, BurntCar, SchoolBus, Ambulance, Tank (one import, Merge Meshes off); `src/main/server/world/wrecks.ts` places them |
 | `street_cars` | four meshes, up to 7.25 × 9.3 × 14.6 | 3712 | Maple Street: Minivan, Hatchback, Estate, IceCreamVan (`lib/vehicle.py`); `src/main/server/world/cars.ts` loads them as one model |
 | `infected_dad` | 2.64 × 5.26 × 1.28 | 1264 | Dad, the first infected, on an R15 rig (`infected/body.ts` loads it) |
+| `parent_mum`, `parent_dad`, `parent_phone` | about 2.7 × 5.2 × 1.2 | 1200–1400 each | the lobby's parents on R15 rigs (`lib/people.py`); `src/lobby/server/parents.ts` loads them (`PARENT_MODELS`) |
 | `infected_neighbour` | 2.62 × 5.28 × 1.38 | 1292 | the ordinary shambler, on an R15 rig (`infected/body.ts` loads it) |

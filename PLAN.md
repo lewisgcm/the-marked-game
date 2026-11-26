@@ -373,8 +373,16 @@ Goal: the lobby looks like MARKED. Mostly visual (GAMEPLAY.md §1).
       double doors, a pick-up pad inside each (`LobbyPad` markers; `world.ts` puts the zones there).
       Plain parts for now; the map kit's meshes outside.
 - [ ] The hall's props as meshes (a `lobby_hall` kit: bags, coats, hoops, wall bars, mats, trolley).
-- [ ] A **parent NPC at each pad**, billboard above them; idle "slightly off" animations; the
-      hall's screens glitch and every parent freezes now and then.
+- [x] A **parent NPC at each pad**, billboard above them; idle "slightly off" animations; the
+      hall's screens glitch and every parent freezes now and then (26 Nov 2026). Three original rigged
+      parents (`tools/blender/assets/parent_mum.py`, `parent_dad.py`, `parent_phone.py`, shared body in
+      `lib/people.py`) at the hall's `ParentSpot` markers (`lobby/server/parents.ts`); posed by code on each
+      client, no uploaded animations (`lobby/client/parents.ts`): Mum follows the nearest kid with her head
+      and jingles her keys, the dad twitches when the TV glitches, the phone parent never moves. The server
+      times a hall-wide glitch (every screen garbles, every strip light stutters, all freeze).
+- [x] **Import the three parents** (26 Nov 2026): models in `PARENT_MODELS` (`src/lobby/server/config.ts`);
+      loaded, 15 joints each, feet on the floor, posed by the client code (checked through the MCP). A plain
+      avatar stands in if one can't be loaded.
 - [ ] Countdown end: the parent walks the party out through the doors, fade, teleport.
 - [x] Minimum party size **1**.
 - [x] Delete the last ghost-prototype leftovers: `ritualItems.ts`, the skull, book and candles models,

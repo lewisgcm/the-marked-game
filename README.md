@@ -57,8 +57,10 @@ stage with curtains and two noticeboards, and the news on a trolley.
 - **The hall is a model, not runtime code:** `tools/tiles/lobby/Hall.ts` builds
   `build/lobby/Hall.model.json` (`npm run tiles:build`), which Rojo puts in the lobby's Workspace, so it
   shows in Studio without playing. Its trees, lamps and fence are the map kit's meshes.
-- `src/lobby/server/world.ts` puts a party zone and billboard at each `LobbyPad` marker in the hall, and
-  sets the light (late afternoon).
+- `src/lobby/server/world.ts` puts a party zone at each `LobbyPad` marker in the hall, and sets the light
+  (late afternoon). A parent waits at each pad (`parents.ts`; models in `tools/blender/assets/parent_*.py`),
+  posed by code on each client (`src/lobby/client/parents.ts`), with the pad's billboard over them. Now and
+  then every screen in the hall glitches at once and they all freeze (`hallGlitch.ts`).
 - **Scoreboard:** a noticeboard shows the **top 10 players by total wins**, and each player's **Wins**
   appear in the player list (`src/shared/lobby/stats.ts`, `src/lobby/server/leaderboard.ts`). Best run
   and total nights replace it later in M6.
@@ -193,8 +195,8 @@ src/
     world/             # parts, walls, flicker, assets (mesh lookup), tiles + layout + mapRules (the map, MAP.md)
     lobby/             # partyHandoff (lobby -> main), lastTitle, stats
   lobby/
-    server/            # world.ts (zones at the hall's pads, light), queue.ts (parties), zoneDisplay.tsx, config.ts
-    client/            # main.client.tsx, partyUi.tsx, faultyLights.ts
+    server/            # world.ts (zones at the hall's pads, light), parents.ts, queue.ts (parties), zoneDisplay.tsx, config.ts
+    client/            # main.client.tsx, partyUi.tsx; hall.client.ts: faultyLights, hallGlitch, parents
   main/
     server/            # main.server.ts (entry: the start-up order), systems.ts (starts and connects
                        #   everything), phaseEvents.ts (what each phase does), and:
@@ -386,14 +388,16 @@ apply from the next phase.
 
 ### Lobby
 - [ ] Joining fresh on a **phone/tablet** (or Studio's Device Emulator), you can move straight away (streaming is off).
-- [ ] You spawn in the gym hall on the south side of the court; you can't leave the hall and car park.
+- [ ] You spawn in the gym hall on the south side of the court; you can't walk out of the doors (invisible walls in the doorways).
 - [ ] The hall: court lines, wall bars, crash mats, hoops, coats and bags, the stage and noticeboards, the news trolley; late sun through the high windows; two strip lights flicker now and then.
 - [ ] First player onto a pick-up pad becomes host and gets the size picker (1–6).
 - [ ] Players already standing on the pad join when the host presses Create.
 - [ ] Solo: a party of one counts down and starts.
 - [ ] Countdown only runs with at least the minimum party; stepping off below it returns to "Need N more".
 - [ ] Walking off the pad leaves the party; the bottom hint says so; there's no Leave button.
-- [ ] Pad billboard shows count and state and isn't oversized.
+- [ ] Pad billboard shows count and state, floats over the pad's parent, and isn't oversized.
+- [ ] A parent waits at each pad: Mum (keys) turns her head to follow you; the dad with the coat twitches when the TV glitches; the one on the phone never moves.
+- [ ] Every minute or so every screen garbles and the strip lights stutter, and all three parents freeze for a moment.
 - [ ] Host who doesn't press Create in time is removed; the next player on the pad becomes host.
 - [ ] (Published places only) the party teleports to one reserved server together.
 - [ ] The scoreboard shows the top 10 by wins (or "No one has won yet" / a fog message if the DataStore is unavailable, e.g. Studio without API access).

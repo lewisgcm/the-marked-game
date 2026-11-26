@@ -19,5 +19,17 @@ export const DEFAULT_HIGHEST_PLAYERS = 6;
 /** Seconds the host has to create the party before being kicked. */
 export const DEFAULT_TIME_BEFORE_EXPIRES = 20;
 
+/**
+ * The parents' models (tools/blender/assets/parent_*.py), by habit: the model's asset ID once it's imported
+ * (MODELLING.md → Import), 0 until then (a plain avatar stands in).
+ */
+export const PARENT_MODELS = { Keys: 101541542749262, Coat: 83028498644523, Phone: 82184380612314 };
+
+/** The parents are drawn at this times their model's size (the infected's 1.1: grown-ups, over the kids). */
+export const PARENT_SCALE = 1.1;
+
+/** Seconds between hall-wide glitches (every screen at once; the parents freeze): a random time in this range. */
+export const GLITCH_EVERY: [number, number] = [35, 75];
+
 /** Length of one side of a pick-up pad's zone, in studs (the pads are painted in the hall: tools/tiles/lobby). */
 export const ZONE_PLATFORM_SIZE = 10;
