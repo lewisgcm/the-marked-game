@@ -1,6 +1,6 @@
 import React from "@rbxts/react";
 import { GuiService } from "@rbxts/services";
-import { isUsable, STACK_SIZE } from "shared/items/inventory";
+import { isUsable, itemName, STACK_SIZE } from "shared/items/inventory";
 import { serverSender } from "shared/core/net";
 import { GameClientMessages } from "shared/core/remotes";
 import { inventorySpace, slotGrid } from "shared/items/slotLayout";
@@ -68,7 +68,7 @@ function Gains({ panelWidth }: { panelWidth: number }) {
 					TextColor3={line.item === "Coins" ? GOLD : CREAM}
 					TextStrokeTransparency={0.5}
 					TextXAlignment={Enum.TextXAlignment.Right}
-					Text={`+${line.count} ${line.item}`}
+					Text={`+${line.count} ${itemName(line.item)}`}
 				/>
 			))}
 		</frame>
@@ -108,7 +108,7 @@ export function InventoryHud({ remote }: { remote: RemoteEvent }) {
 				Font={Enum.Font.GothamBold}
 				TextSize={12}
 				TextColor3={CREAM}
-				Text={stack ? `${stack.item}\n${stack.count}/${STACK_SIZE[stack.item]}` : ""}
+				Text={stack ? `${itemName(stack.item)}\n${stack.count}/${STACK_SIZE[stack.item]}` : ""}
 				Event={{ Activated: () => setSelected(stack && !isSelected ? i : undefined) }}
 			>
 				<uicorner CornerRadius={new UDim(0, 8)} />

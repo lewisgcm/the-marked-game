@@ -4,7 +4,7 @@ import { ItemId } from "shared/items/inventory";
 import { coinsText, Stall, startStallDay, TradeView, tradeView } from "shared/economy/pricing";
 import { TRADER_TAG } from "shared/core/tags";
 import { buyLot, isTrading, parseTradeRequest, SaleStatus, sellItems } from "shared/economy/trade";
-import { BaseReport } from "shared/economy/walkie";
+import { BaseCondition, BaseReport } from "shared/economy/walkie";
 import { gameConfig } from "../core/config";
 import { inReach, makePrompt, promptAnchor } from "../core/prompts";
 import { getClock } from "../core/round";
@@ -27,6 +27,8 @@ export interface TradingHooks {
 	update: (view: TradeView) => void;
 	/** How much of an order is left changed. */
 	onOrderChanged: () => void;
+	/** How the Signal's treating a base (signal.ts): only a Standing one trades. */
+	signalOf: (id: BaseId) => { marks?: number; condition: BaseCondition; underAttack: boolean };
 }
 
 let hooks: TradingHooks | undefined;
@@ -46,14 +48,18 @@ function openAll(): boolean {
 	return gameConfig.openAllBases.Value !== 0;
 }
 
+function isStanding(base: Base): boolean {
+	return hooks?.signalOf(base.id).condition === "Standing";
+}
+
 function isOpenNow(base: Base): boolean {
 	const { night, phase } = getClock();
-	return isTrading(base, night, phase === "Night", openAll());
+	return isStanding(base) && isTrading(base, night, phase === "Night", openAll());
 }
 
 /** Whether a base trades today, though maybe not right now. */
 function isInContact(base: Base): boolean {
-	return isTrading(base, getClock().night, false, openAll());
+	return isStanding(base) && isTrading(base, getClock().night, false, openAll());
 }
 
 function viewOf(base: Base): TradeView {
@@ -75,6 +81,9 @@ function canTrade(player: Player, base: Base): boolean {
 	}
 	if (isOpenNow(base)) {
 		return true;
+	}
+	if (!isStanding(base)) {
+		return false; // turning (its grab prompt's there instead) or gone
 	}
 	hooks.notify(
 		player,
@@ -127,6 +136,8 @@ export function baseReports(): BaseReport[] {
 	return BASES.map((base) => {
 		const order = viewOf(base).buys.find((row) => row.wanted > 0);
 		return {
+			id: base.id,
+			...hooks!.signalOf(base.id),
 			name: base.name,
 			trader: base.trader,
 			where: base.where,
@@ -166,9 +177,15 @@ export function startTradingDay() {
 	}
 }
 
-/** Updates every base's list for anyone who has it open (bases open, close and restock). */
+/** Updates every base's list for anyone who has it open (bases open, close and restock, or turn). */
 export function refreshTrading() {
-	BASES.forEach((base) => hooks?.update(viewOf(base)));
+	for (const base of BASES) {
+		hooks?.update(viewOf(base));
+		const prompt = prompts.get(base.id);
+		if (prompt) {
+			prompt.Enabled = isStanding(base); // a turning base has its grab prompt instead
+		}
+	}
 }
 
 /** Sets up the traders' prompts. Call once, after the bases are built. */

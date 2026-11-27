@@ -1,7 +1,7 @@
 import React from "@rbxts/react";
 import { CollectionService } from "@rbxts/services";
 import { findBase } from "shared/economy/bases";
-import { countOf, Inventory, roomFor } from "shared/items/inventory";
+import { countOf, Inventory, itemName, roomFor } from "shared/items/inventory";
 import { serverSender } from "shared/core/net";
 import { BuyRow, coinsText, SaleRow, TradeView } from "shared/economy/pricing";
 import { GameClientMessages } from "shared/core/remotes";
@@ -34,7 +34,7 @@ function tradeRows(view: TradeView, coins: number, inventory: Inventory, send: S
 		const room = roomFor(inventory, sale.item);
 		rows.push({
 			order: rows.size(),
-			name: sale.count > 1 ? `${sale.item} x${sale.count}` : sale.item,
+			name: sale.count > 1 ? `${itemName(sale.item)} x${sale.count}` : itemName(sale.item),
 			description: `${sale.stock} left today`,
 			button: saleButton(sale, coins, room),
 			enabled: saleStatus(sale, coins, room) === "ok",
@@ -45,7 +45,7 @@ function tradeRows(view: TradeView, coins: number, inventory: Inventory, send: S
 		const have = countOf(inventory, want.item);
 		rows.push({
 			order: rows.size(),
-			name: `Sell ${want.item.lower()}`,
+			name: `Sell ${itemName(want.item).lower()}`,
 			description: want.wanted > 0 ? `They need ${want.wanted}!  You have ${have}` : `You have ${have}`,
 			button: sellButton(want, have),
 			enabled: have > 0,

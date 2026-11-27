@@ -1,4 +1,5 @@
 import { Workspace } from "@rbxts/services";
+import { openingSlots } from "shared/combat/openings";
 import { rootOf } from "shared/core/characters";
 import { Entry } from "../world/world";
 import { flatDistance } from "./movement";
@@ -7,9 +8,12 @@ import { Infected } from "./types";
 
 /** What an infected knows: the openings worth attacking, the nearest kid, and whether it can see them. */
 
-/** Just outside an opening, at ground level. */
+/** How far out from an opening's middle (in the wall) one stands to bash it: up against the wall. */
+const BASH_DISTANCE = 2.1;
+
+/** Just outside an opening, at ground level: where one stands to bash it, close enough for a kid inside to hit. */
 export function outsidePoint(entry: Entry): Vector3 {
-	const p = entry.cframe.Position.add(entry.cframe.LookVector.mul(3));
+	const p = entry.cframe.Position.add(entry.cframe.LookVector.mul(BASH_DISTANCE));
 	return new Vector3(p.X, 3, p.Z);
 }
 
@@ -65,7 +69,9 @@ export function canSee(inf: Infected, kid: Player): boolean {
 	}
 	const params = new RaycastParams();
 	params.FilterType = Enum.RaycastFilterType.Exclude;
-	const ignore: Instance[] = [holder];
+	// They see in between planks (not through glass, a shutter or a shut door), so a kid at a smashed window
+	// can be hit back, as they can hit it.
+	const ignore: Instance[] = [holder, ...openingSlots()];
 	if (kid.Character) {
 		ignore.push(kid.Character);
 	}

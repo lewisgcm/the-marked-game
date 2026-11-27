@@ -4,7 +4,8 @@
  * does is a number in the server config.
  */
 
-export type UpgradeId = "ReinforcedPlanks" | "DoorBar" | "SchoolRucksack" | "HikingRucksack" | "TuneUp" | "ScrapPress";
+export type UpgradeId =
+	"ReinforcedPlanks" | "DoorBar" | "SchoolRucksack" | "HikingRucksack" | "TuneUp" | "ScrapPress" | "WallMap";
 
 export interface Upgrade {
 	id: UpgradeId;
@@ -28,7 +29,7 @@ export const UPGRADES: Upgrade[] = [
 	{
 		id: "DoorBar",
 		name: "Door bar",
-		description: "Front and back doors take a fourth, sturdier plank",
+		description: "Front and back doors take a fourth, sturdier board",
 		cost: 30,
 		personal: false,
 	},
@@ -59,6 +60,13 @@ export const UPGRADES: Upgrade[] = [
 		name: "Scrap press",
 		description: "Make a few nails or stones from scrap",
 		cost: 30,
+		personal: false,
+	},
+	{
+		id: "WallMap",
+		name: "Neighbourhood map",
+		description: "A map in the hall: the bases, how they're holding up, and where everyone is",
+		cost: 25,
 		personal: false,
 	},
 ];

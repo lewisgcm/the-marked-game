@@ -5,6 +5,7 @@ import {
 	DORMANT_SPOT_TAG,
 	HOME_PLOT_TAG,
 	INFECTED_SPAWN_TAG,
+	MAP_TILE_TAG,
 	WRECK_SPOT_TAG,
 } from "shared/core/tags";
 import {
@@ -207,7 +208,7 @@ export function buildMap(): { world: MainWorld; street: Street } {
 		const { x, z, yaw } = tilePlacement({ tile: "", column, row, turns }, home, HOME_ORIGIN);
 		return new CFrame(x, 0, z).mul(CFrame.Angles(0, yaw, 0));
 	};
-	const put = (name: string, at: CFrame) => {
+	const put = (name: string, at: CFrame, turns?: number) => {
 		const template = models.get(name);
 		if (!template) {
 			warn(`[Map] There's no tile called ${name}.`);
@@ -215,10 +216,15 @@ export function buildMap(): { world: MainWorld; street: Street } {
 		}
 		const tile = template.Clone();
 		place(tile, at);
+		if (turns !== undefined) {
+			// For the wall map (client/hud/wallMap.tsx): its edge attributes are the template's, before turning.
+			tile.SetAttribute("Turns", turns);
+			CollectionService.AddTag(tile, MAP_TILE_TAG);
+		}
 		tile.Parent = map;
 	};
 	for (const placement of layout.tiles) {
-		put(placement.tile, frameOf(placement.column, placement.row, placement.turns));
+		put(placement.tile, frameOf(placement.column, placement.row, placement.turns), placement.turns);
 	}
 	for (const border of borderPlacements(MAP_RULES, SOUTH_BORDER, home, HOME_ORIGIN)) {
 		put(border.tile, new CFrame(border.x, 0, border.z));

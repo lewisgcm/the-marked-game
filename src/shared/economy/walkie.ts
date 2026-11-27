@@ -1,4 +1,8 @@
 import { ItemId } from "shared/items/inventory";
+import type { BaseId } from "./bases";
+
+/** How an adult base is holding up against the Signal (economy/signal.ts). Kids' bases are always Standing. */
+export type BaseCondition = "Standing" | "Turning" | "Fallen";
 
 /**
  * The walkie-talkie (GAMEPLAY.md §4): what's said every morning, how each base is doing, and which
@@ -20,6 +24,7 @@ export interface WalkieMessage extends WalkieLine {
 
 /** What the walkie knows about a base. */
 export interface BaseReport {
+	id: BaseId;
 	name: string;
 	trader: string;
 	/** Where it is, e.g. "the left end of Maple Street". */
@@ -35,14 +40,25 @@ export interface BaseReport {
 	wanted?: ItemId;
 	wantedCount: number;
 	wantedPrice: string;
+	/** An adult base's marks (0-3); undefined for kids' bases, which never turn. */
+	marks?: number;
+	condition: BaseCondition;
+	/** It's calling for help: "We're under attack!" */
+	underAttack: boolean;
 }
 
-/** A base as the walkie's list shows it. */
+/** A base as the walkie's list (and the wall map) shows it. */
 export interface BaseStatus {
+	id: BaseId;
 	name: string;
 	status: string;
 	detail: string;
 	open: boolean;
+	/** An adult base's marks, for its meter. */
+	marks?: number;
+	condition: BaseCondition;
+	/** Something's happening there now (turning, or under attack): shown in red. */
+	alarm: boolean;
 }
 
 export interface WalkieState {
@@ -87,20 +103,46 @@ export function morningReport(day: number, reports: BaseReport[]): WalkieLine[] 
 
 /** How a base is doing, for the walkie's list. */
 export function baseStatus(base: BaseReport): BaseStatus {
+	// Kids only know how a base is doing once they've met it.
+	const known = base.inContact || base.condition !== "Standing";
+	const status = (text: string, detail: string, open = false, alarm = false): BaseStatus => ({
+		id: base.id,
+		name: base.name,
+		status: text,
+		detail,
+		open,
+		marks: known ? base.marks : undefined,
+		condition: base.condition,
+		alarm,
+	});
+	if (base.condition === "Fallen") {
+		return status("Gone", `The Signal took them. It's a nest now, at ${base.where}: keep away.`);
+	}
+	if (base.condition === "Turning") {
+		return status("TURNING", `At ${base.where}. Grab what you can before they change!`, false, true);
+	}
+	if (base.underAttack) {
+		return status("UNDER ATTACK", `At ${base.where}. They need help: coins for anyone who comes.`, false, true);
+	}
 	if (!base.inContact) {
-		return { name: base.name, status: "No contact yet", detail: `Trades from Day ${base.opens}`, open: false };
+		return status("No contact yet", `Trades from Day ${base.opens}`);
 	}
 	const want =
 		base.wanted !== undefined
 			? `. Wants ${base.wantedCount} ${base.wanted.lower()} (${base.wantedPrice} each)`
 			: "";
-	return {
-		name: base.name,
-		status: base.openNow ? "Trading" : "Closed until morning",
-		detail: `At ${base.where}${want}`,
-		open: base.openNow,
-	};
+	return status(base.openNow ? "Trading" : "Closed until morning", `At ${base.where}${want}`, base.openNow);
 }
+
+/** What an adult base's trader says after a broadcast gives it a mark (1 or 2; the third is the turning). */
+export function markLine(marks: number): string {
+	return marks <= 1
+		? "That broadcast gave everyone here a headache. We're fine. We're fine."
+		: "We're... not feeling right. If you need anything from us, come soon.";
+}
+
+/** The garbled call the dusk a base turns. */
+export const TURNING_LINE = "S-something's wrong with us... the screens... come quick, take what you can, b-before...";
 
 /** The newest `most` messages. */
 export function trimLog(messages: WalkieMessage[], most: number): WalkieMessage[] {

@@ -1,4 +1,7 @@
-import { Players, Workspace } from "@rbxts/services";
+import { CollectionService, Players, Workspace } from "@rbxts/services";
+import { INFECTED_TAG } from "shared/combat/combat";
+import { WINDOW_GLASS_TAG } from "shared/core/tags";
+import { openingSlots } from "shared/combat/openings";
 import {
 	BEAM_VISUAL_LENGTH,
 	CONE_PLANES,
@@ -213,7 +216,13 @@ export function litBy(target: Model): Player[] {
 		const aim = beamDirection(root);
 		const params = new RaycastParams();
 		params.FilterType = Enum.RaycastFilterType.Exclude;
-		params.FilterDescendantsInstances = [character, target];
+		// Other infected don't shadow it (a crowd at a window can all be lit), and it shines through glass.
+		params.FilterDescendantsInstances = [
+			character,
+			...openingSlots(),
+			...CollectionService.GetTagged(INFECTED_TAG),
+			...CollectionService.GetTagged(WINDOW_GLASS_TAG),
+		];
 
 		for (const point of points) {
 			if (!inBeamCone(origin, aim, point, FLASHLIGHT_RANGE, cosHalfAngle)) {

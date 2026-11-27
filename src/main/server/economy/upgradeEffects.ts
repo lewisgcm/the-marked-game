@@ -3,6 +3,7 @@ import { refreshBarricades } from "../house/barricades";
 import { gameConfig } from "../core/config";
 import { refreshGenerator } from "../house/generator";
 import { setSlots } from "../items/inventory";
+import { unlockWallMap } from "../house/wallMap";
 
 /**
  * What happens the moment each upgrade is bought. Every upgrade must be listed (leaving one out
@@ -16,4 +17,5 @@ export const UPGRADE_EFFECTS: Record<UpgradeId, (buyer: Player) => void> = {
 	HikingRucksack: (buyer) => setSlots(buyer, gameConfig.hikingSlots.Value),
 	TuneUp: () => refreshGenerator(),
 	ScrapPress: () => {},
+	WallMap: () => unlockWallMap(),
 };

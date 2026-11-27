@@ -1,4 +1,5 @@
 import { Players, RunService, Workspace } from "@rbxts/services";
+import { startFacing, stopFacing } from "./faceCamera";
 import { findMeshAsset } from "shared/world/assets";
 import {
 	BEAM_VISUAL_LENGTH,
@@ -61,8 +62,27 @@ function removeMeshCones(player: Player) {
 	meshCones.delete(player);
 }
 
+/** With the torch out you face where the camera looks, so the beam goes where you're looking. */
+function faceWithTorch(character: Model) {
+	character.ChildAdded.Connect((child) => {
+		if (child.IsA("Tool") && child.Name === FLASHLIGHT_TOOL_NAME) {
+			startFacing(character);
+		}
+	});
+	character.ChildRemoved.Connect((child) => {
+		if (child.IsA("Tool") && child.Name === FLASHLIGHT_TOOL_NAME) {
+			stopFacing();
+		}
+	});
+}
+
 export function startFlashlight() {
 	Players.PlayerRemoving.Connect(removeMeshCones);
+	const me = Players.LocalPlayer;
+	if (me.Character) {
+		faceWithTorch(me.Character);
+	}
+	me.CharacterAdded.Connect(faceWithTorch);
 
 	RunService.RenderStepped.Connect(() => {
 		for (const player of Players.GetPlayers()) {

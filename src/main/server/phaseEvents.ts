@@ -17,6 +17,7 @@ import { setStreetLights } from "./house/streetlights";
 import { isPlaying, livingKids } from "./core/teams";
 import { itemsOnOrder, refreshTrading, startTradingDay } from "./economy/trading";
 import { refreshWalkie, say, sayMorningReport } from "./economy/walkie";
+import { nestGuardSpots, signalBroadcast, signalDawn, signalNight } from "./economy/signal";
 
 /** What happens as each phase of the day/night clock begins. */
 
@@ -38,20 +39,28 @@ function onSundown() {
 
 function onDay(clock: Clock, street: Street) {
 	clearSummary();
-	spawnDormant(street.dormantSpots, clock.night, clock.night === 1 ? street.dadSpot : undefined);
+	const spots = [...street.dormantSpots, ...nestGuardSpots()];
+	spawnDormant(spots, clock.night, clock.night === 1 ? street.dadSpot : undefined);
 	startTradingDay();
 	restockContainers(itemsOnOrder());
 	later(clock, gameConfig.morningReportDelay.Value, () => sayMorningReport(clock.night));
 	later(clock, gameConfig.daySeconds.Value - gameConfig.sundownSeconds.Value, onSundown);
 }
 
+/** Partway through dusk, the broadcast: the Signal marks the adult bases. */
+function onDusk(clock: Clock) {
+	later(clock, gameConfig.duskSeconds.Value * gameConfig.broadcastAt.Value, () => signalBroadcast(clock.night));
+}
+
 function onNight(clock: Clock) {
 	beginNight();
 	startNight(clock.night, gameConfig.nightSeconds.Value, livingKids().size());
+	signalNight(clock.night);
 }
 
 function onDawn(clock: Clock) {
 	retreatAll();
+	signalDawn();
 	refillPile();
 	healAll(livingKids());
 	refillGardens();
@@ -65,7 +74,7 @@ function onDawn(clock: Clock) {
 
 const ON_PHASE: Record<DayPhase, (clock: Clock, street: Street) => void> = {
 	Day: onDay,
-	Dusk: () => {},
+	Dusk: onDusk,
 	Night: onNight,
 	Dawn: onDawn,
 };

@@ -341,13 +341,41 @@ to buy?*
 Goal: the world gets worse on its own. Playtest question: *do distress calls create good
 "do we go?" arguments?*
 
-- [ ] `shared/baseMarks.ts` (pure): marks per broadcast, random fall windows per base (Fire
-      Station 4–6, Hardware 6–8, Church 10–14). Spec.
-- [ ] Mark meters on the walkie.
-- [ ] Distress call 1, **"We're under attack!"**: an off-site wave at the base, with a reward.
-- [ ] Distress call 2, **"Something's wrong with us…"**: a 60 s grab window, then the base turns.
-- [ ] Fallen base → **infected nest**: extra spawns from that direction; taken kids go there.
-- [ ] Rescue radio parts (battery pack, tuner, aerial) and where they come from.
+- [x] `shared/economy/baseMarks.ts` (pure, spec): each adult base's fall night drawn from its window
+      (`Base.falls` in bases.ts: Fire Station 4–6; Hardware 6–8 and Church 10–14 when those bases exist, M5), and its
+      first two marks on two earlier nights; the under-attack chance and the nest's share of a wave (27 Nov 2026).
+- [x] **The dusk broadcast** (none until now): every screen on the map flares (`client/world/broadcast.ts`, from a
+      Workspace attribute), and bases due a mark get one (`economy/signal.ts`). Dormant infected *don't* wake at it
+      yet (GAMEPLAY §4 says they do): decide after a playtest, it changes the nights a lot.
+- [x] Mark meters on the walkie (●●○), and the trader's line after each mark.
+- [x] Distress call 1, **"We're under attack!"**: from Night 3, at most one a night, likelier with more marks
+      (`AttackChance0-2`); infected gather at the counter; bring them all down before dawn for coins (every kid
+      within `AttackHelpRange`). Not yet: the better prices the next day.
+- [x] Distress call 2, **"Something's wrong with us…"**: the dusk of the third mark, `TurnSeconds` (60) to grab
+      one of every lot the base sells (once each), then it falls. (No kids sheltering inside yet.)
+- [x] Fallen base → **infected nest**: trader gone, guards behind the counter (back every morning), red light and
+      screens; `NestWaveShare` of every wave sets off from it; a kid taken at night is held there and can be
+      freed (`run/elimination.ts`).
+- [x] Rescue radio parts: the **radio battery** (sold at the Fire Station, or grabbed as it turns). The tuner
+      (School) and aerial (Church) come with those places (M5); the radio itself is M8.
+- [x] **Neighbourhood map** (workbench upgrade, 25 coins): on the hall's cork board and full screen; tiles, roads,
+      bases with their meters and calls, kids, and kids held at a nest (`shared/world/wallMap.ts`, spec).
+- [ ] **Studio check** (you): README → "The Signal" and "Neighbourhood map".
+- [ ] **Runner** (from M5): fast, goes for windows, gives up quickly when stunned. Needs its model.
+- [ ] **Playtest**: do distress calls create good "do we go?" arguments?
+
+## The house: doors and furniture (27 Nov 2026)
+
+From a playtest (a boarded-up gap where the front door should be looked wrong).
+
+- [x] **Real doors** (`shared/house/barricade.ts`, spec; `house/barricades.ts`): open and close (E, anyone);
+      boards go onto the door (R), so it still opens; boards take the hits, then the door; broken, it hangs open
+      until fixed (3 planks, 3 nails). The garage door rolls up.
+- [x] **Glazed windows**: the glass smashes at the first hit, then planks as before.
+- [x] **Fog** per phase (`house/lighting.ts`, `FogDensity`), and touch shooting at the tapped point (slingshot).
+- [ ] **Furniture**: drag the sofa, fridge, wardrobe… (hold E, slow walk); dropped in a doorway (inside or
+      out) it snaps in and blocks it; the infected shove it aside; it blocks kids too.
+- [ ] **Studio check** (you): README → "Doors and windows"; a broken door's look and fixing it.
 
 ## M5 — More infected, weapons and map
 

@@ -14,3 +14,5 @@ export const INFECTED_TAG = "Infected";
 
 /** Player attribute (boolean): set while a kid has been taken and is spectating. */
 export const TAKEN_ATTRIBUTE = "Taken";
+/** On a taken kid held at a nest (run/elimination.ts): where it is, for the wall map. */
+export const HELD_AT_ATTRIBUTE = "HeldAt";

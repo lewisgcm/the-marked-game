@@ -13,7 +13,7 @@ import { isPowered, keepsThemWary, startGenerator } from "./house/generator";
 import { damageKid, startHealth } from "./combat/health";
 import { startHints } from "./run/hints";
 import { attackedEntry } from "./infected/behaviours";
-import { hearNoise, startInfected } from "./infected/director";
+import { hearNoise, spawnGroup, startInfected } from "./infected/director";
 import { itemCount, onDropRequest, onUseRequest, startInventory } from "./items/inventory";
 import { ITEM_USES } from "./items/itemUses";
 import { noteInfectedDowned, notePlankLost } from "./run/nightReport";
@@ -22,11 +22,14 @@ import { getClock } from "./core/round";
 import { onLeaveRequest } from "./run/roundEnd";
 import { onShootRequest, startSlingshot } from "./combat/slingshot";
 import { canKidAct, isPlaying, livingKids } from "./core/teams";
-import { baseReports, onTradeBuyRequest, onTradeSellRequest, startTrading } from "./economy/trading";
+import { baseReports, onTradeBuyRequest, onTradeSellRequest, refreshTrading, startTrading } from "./economy/trading";
 import { UPGRADE_EFFECTS } from "./economy/upgradeEffects";
 import { refreshWalkie, startWalkie } from "./economy/walkie";
+import { nestFrames, signalOf, startSignal } from "./economy/signal";
 import { canUseWorkbench, hasUpgrade, onBuyRequest, startWorkbench, upgradesOf } from "./economy/workbench";
 import { MainWorld } from "./world/world";
+import { startWallMap } from "./house/wallMap";
+import { startRescue } from "./run/elimination";
 
 /**
  * Starts the gameplay systems and connects each to the rest of the game: the hooks given here are
@@ -69,12 +72,27 @@ export function startSystems(world: MainWorld) {
 		onBought: (id, buyer) => UPGRADE_EFFECTS[id](buyer),
 	});
 	startCrafting({ canUseWorkbench, upgradesOf, notify });
+	startWallMap();
+	startRescue({ getNests: nestFrames });
 	startTrading({
 		canAct: canKidAct,
 		notify,
 		open: (player, view) => send(player, "OpenTrade", view),
 		update: (view) => Players.GetPlayers().forEach((p) => send(p, "UpdateTrade", view)),
 		onOrderChanged: refreshWalkie,
+		signalOf,
+	});
+	startSignal({
+		canAct: canKidAct,
+		notify,
+		notifyAll,
+		alertAll,
+		getKids: () => (isPlaying() ? livingKids() : []),
+		spawnGroup,
+		onChanged: () => {
+			refreshTrading();
+			refreshWalkie();
+		},
 	});
 	startWalkie({
 		getReports: baseReports,
@@ -99,6 +117,7 @@ export function startSystems(world: MainWorld) {
 		isPowered: keepsThemWary,
 		onPlankBroken: notePlankLost,
 		onDowned: noteInfectedDowned,
+		getNests: nestFrames,
 	});
 	startGenerator(world, {
 		canAct: canKidAct,

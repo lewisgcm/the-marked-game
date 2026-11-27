@@ -1,11 +1,16 @@
 import { Players, RunService, Workspace } from "@rbxts/services";
 import { rootOf } from "shared/core/characters";
+import { MELEE_TOOL_NAMES, SLINGSHOT_TOOL_NAME } from "shared/combat/combat";
+import { FLASHLIGHT_TOOL_NAME } from "shared/combat/flashlight";
 
 /**
  * Turns the local character to face where the camera looks (like shift-lock), while a weapon is
- * held, so you hit or shoot what you're looking at — on PC and touch. Used by melee.ts and
- * slingshot.ts.
+ * held, so you hit, shoot or shine at what you're looking at — on PC and touch. Used by melee.ts,
+ * slingshot.ts and flashlight.ts.
  */
+
+/** Tools you face the camera with. Swapping one for another keeps facing on. */
+const FACING_TOOLS = [...MELEE_TOOL_NAMES, SLINGSHOT_TOOL_NAME, FLASHLIGHT_TOOL_NAME];
 
 /** How quickly the character turns to face the camera (0..1 per frame). */
 const TURN_SPEED = 0.35;
@@ -13,12 +18,19 @@ const BINDING = "FaceCamera";
 
 const player = Players.LocalPlayer;
 
+/** Stops facing the camera, unless another facing tool is in hand by then (a swap: one goes, the next comes). */
 export function stopFacing() {
-	RunService.UnbindFromRenderStep(BINDING);
-	const humanoid = player.Character?.FindFirstChildOfClass("Humanoid");
-	if (humanoid) {
-		humanoid.AutoRotate = true;
-	}
+	task.defer(() => {
+		const character = player.Character;
+		if (character && FACING_TOOLS.some((name) => character.FindFirstChild(name)?.IsA("Tool"))) {
+			return;
+		}
+		RunService.UnbindFromRenderStep(BINDING);
+		const humanoid = character?.FindFirstChildOfClass("Humanoid");
+		if (humanoid) {
+			humanoid.AutoRotate = true;
+		}
+	});
 }
 
 export function startFacing(character: Model) {

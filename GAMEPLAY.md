@@ -188,11 +188,20 @@ marked. (Parked idea: a screen left on at the broadcast draws the waves to that 
 ## 5. Survival mechanics
 
 ### Barricades
-- Every **door and window** has 3 plank slots. Each plank has health; the infected wear it down.
-  A breach with no planks left lets them in.
+- **Windows** start glazed; the glass smashes at the first hit. Each window has 3 plank slots behind it.
+  Each plank has health; the infected wear it down. A breach with no planks left lets them in.
+- **Doors are real doors**: kids open and close them (and must, to get in and out), and the infected can't
+  open one: they have to break it. Planks go **onto the door** as boards (3 slots, 4 with the door bar), so it
+  still opens. The boards take the hits first, then the door. A broken door hangs off its hinge, an open
+  gap, until a kid **fixes** it with the hammer (3 planks, 3 nails): it's back, patched up. An open door
+  lets anyone in, so close it behind you.
 - **Build mode:** openings only offer anything to a kid holding their **hammer**, so they're out of the way
   in a fight, and nailing means putting your weapon down.
-- Kids **repair** (hold to nail a plank, costs 1 plank) and **reinforce** with upgrades (metal
+- Kids **repair** under attack: once an opening's planks are all up, the same prompt tops the outermost
+  worn plank (or the door) back to full for a nail. Planks darken as they wear.
+- **Fight back at the window**: any hit knocks an infected back a step and stops it for about a second, so a
+  kid who keeps hitting a basher keeps it off the window while another repairs.
+- Kids **reinforce** with upgrades (metal
   bars, shutters).
 - Your house: front door, back door, garage door, ~6 windows, all on the ground floor. (Upstairs
   windows only matter if we add a Climber later.)

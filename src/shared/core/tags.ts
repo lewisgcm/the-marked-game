@@ -34,6 +34,14 @@ export const TRADER_TAG = "Trader";
 export const GENERATOR_TAG = "Generator";
 export const WORKBENCH_TAG = "Workbench";
 export const PLANK_PILE_TAG = "PlankPile";
+/** Window glass: stops stones and hits, but a torch shines through it (combat/flashlight.ts). */
+export const WINDOW_GLASS_TAG = "WindowGlass";
+
+/** The board in the hall where the neighbourhood map goes (a workbench upgrade). */
+export const WALL_MAP_TAG = "WallMap";
+
+/** Tiles placed on the run's map (not the woods round it): their "Turns" attribute says how they're turned. */
+export const MAP_TILE_TAG = "MapTile";
 
 /** Map tiles' markers (MAP.md): where a dormant infected stands, and where Dad waits on Day 1. */
 export const DORMANT_SPOT_TAG = "DormantSpot";

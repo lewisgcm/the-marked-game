@@ -22,8 +22,8 @@ export interface HintSituation {
 }
 
 export const GRAB_PLANKS = "Grab planks from the pile in the garage.";
-export const TAKE_HAMMER = "Take out your hammer to board up the doors and windows.";
-export const BOARD_UP = "Hold E at a door or window to nail a plank up.";
+export const TAKE_HAMMER = "Take out your hammer to board up the windows and reinforce the doors.";
+export const BOARD_UP = "Hold E at a window to nail a plank up (R at a door, to reinforce it).";
 export const START_GENERATOR = "Start the generator in the garage.";
 export const EXPLORE = "Search the houses on Maple Street. Be home before dark.";
 export const GET_INSIDE = "Get inside. They come at night.";

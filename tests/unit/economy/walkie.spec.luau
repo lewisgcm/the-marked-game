@@ -4,6 +4,7 @@ return function(t)
 
 	local function report(overrides)
 		local r = {
+			id = "Treehouse",
 			name = "Treehouse",
 			trader = "Gang",
 			where = "the left end",
@@ -14,6 +15,8 @@ return function(t)
 			wanted = "Food",
 			wantedCount = 3,
 			wantedPrice = "4 coins",
+			condition = "Standing",
+			underAttack = false,
 		}
 		for k, v in overrides do
 			r[k] = if v == "none" then nil else v
@@ -70,6 +73,27 @@ return function(t)
 			t.expect(s.status).toBe("Closed until morning")
 			t.expect(s.detail).toBe("At the left end")
 			t.expect(s.open).toBe(false)
+		end)
+		t.it("passes on an adult base's marks", function()
+			t.expect(W.baseStatus(report({ marks = 2 })).marks).toBe(2)
+			t.expect(W.baseStatus(report({})).marks).toBe(nil)
+			-- Not before kids have met it.
+			t.expect(W.baseStatus(report({ marks = 1, inContact = false })).marks).toBe(nil)
+		end)
+		t.it("a turning base, or one under attack, is an alarm and doesn't trade", function()
+			local turning = W.baseStatus(report({ condition = "Turning", marks = 3 }))
+			t.expect(turning.status).toBe("TURNING")
+			t.expect(turning.alarm).toBe(true)
+			t.expect(turning.open).toBe(false)
+			local attacked = W.baseStatus(report({ underAttack = true, marks = 1 }))
+			t.expect(attacked.status).toBe("UNDER ATTACK")
+			t.expect(attacked.alarm).toBe(true)
+		end)
+		t.it("a fallen base is gone, whatever else it says", function()
+			local s = W.baseStatus(report({ condition = "Fallen", marks = 3, underAttack = true }))
+			t.expect(s.status).toBe("Gone")
+			t.expect(s.open).toBe(false)
+			t.expect(s.alarm).toBe(false)
 		end)
 	end)
 

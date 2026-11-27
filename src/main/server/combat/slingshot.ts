@@ -1,5 +1,6 @@
 import { CollectionService, Players, TweenService, Workspace } from "@rbxts/services";
 import { INFECTED_TAG, SLINGSHOT_TOOL_NAME } from "shared/combat/combat";
+import { openingSlots } from "shared/combat/openings";
 import { cooldownReady, normaliseAim } from "shared/combat/ranged";
 import { gameConfig } from "../core/config";
 import { takeItem } from "../items/inventory";
@@ -87,7 +88,7 @@ export function onShootRequest(player: Player, payload: unknown) {
 	const range = gameConfig.slingshotRange.Value;
 	const params = new RaycastParams();
 	params.FilterType = Enum.RaycastFilterType.Exclude;
-	params.FilterDescendantsInstances = [character];
+	params.FilterDescendantsInstances = [character, ...openingSlots()];
 	const result = Workspace.Spherecast(origin, gameConfig.slingshotHitRadius.Value, direction.mul(range), params);
 	const landed = result ? origin.add(direction.mul(result.Distance)) : origin.add(direction.mul(range));
 
@@ -95,6 +96,12 @@ export function onShootRequest(player: Player, payload: unknown) {
 	flyStone(origin, landed);
 
 	const target = result ? infectedOf(result.Instance) : undefined;
+	if (gameConfig.debugShots.Value !== 0) {
+		// To find what's in the way of a shot (Studio): what it hit first, and how far.
+		print(
+			`[Slingshot] ${player.Name}: ${result ? `${result.Instance.GetFullName()} at ${math.floor(result.Distance * 10) / 10} studs` : "nothing"}${target ? " (an infected)" : ""}`,
+		);
+	}
 	const outcome = target && damageInfected(player, target, gameConfig.slingshotDamage.Value);
 	if (outcome) {
 		hooks.sendHitResult(player, outcome);

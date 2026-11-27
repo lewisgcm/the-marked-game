@@ -105,6 +105,36 @@ function loadGameConfig() {
 		/** 1: every base trades from Day 1 (Studio, to try them without waiting). */
 		openAllBases: int("OpenAllBases", 0, 1),
 
+		// --- The Signal takes the adult bases (shared/economy/baseMarks.ts, economy/signal.ts) -----------------
+		/** The broadcast comes this far through dusk (0-1). */
+		broadcastAt: num("BroadcastAt", 0.65),
+		/** 0: each adult base falls on a night in its window. Otherwise every one falls on this night (3 or later). */
+		fallNight: int("FallNight", 0, 3),
+		/** Seconds kids have to grab a turning base's stock before it's gone. */
+		turnSeconds: num("TurnSeconds", 60),
+		/** Each fallen base sends this share of every wave from its nest. */
+		nestWaveShare: num("NestWaveShare", 0.3),
+		/** Infected standing in a fallen base. */
+		nestGuards: int("NestGuards", 2),
+		/** "We're under attack!": the chance a base calls on a night (from Night 3) with 0, 1 and 2 marks. */
+		attackChance0: num("AttackChance0", 0.25, 1),
+		attackChance1: num("AttackChance1", 0.35, 1),
+		attackChance2: num("AttackChance2", 0.5, 1),
+		/** The call comes somewhere in this part of the night (0-1)... */
+		attackFrom: num("AttackFrom", 0.2),
+		/** ...to here. */
+		attackTo: num("AttackTo", 0.5),
+		/** Infected attacking the base: this many, plus one every 3 nights. */
+		attackSize: int("AttackSize", 3),
+		/** Coins for each kid near the base when the last attacker goes down. */
+		attackReward: int("AttackReward", 20),
+		/** How near counts as there to help, in studs. */
+		attackHelpRange: num("AttackHelpRange", 80),
+		/** Coins for getting taken kids out of a nest. */
+		rescueReward: int("RescueReward", 15),
+		/** Seconds to hold "Free them" at a nest. */
+		rescueHoldSeconds: num("RescueHoldSeconds", 2),
+
 		// --- Walkie-talkie (what's said: shared/economy/walkie.ts) ----------------------------------------------
 		/** Seconds into the day the morning report comes (after the day's title). */
 		morningReportDelay: num("MorningReportDelay", 4),
@@ -146,6 +176,8 @@ function loadGameConfig() {
 		 * Applies live when edited in Studio.
 		 */
 		darkness: num("DarkRoomLight", 0.8),
+		/** Scales every phase's fog (house/lighting.ts): 0 for none, 1 as designed, 2 sees half as far. Applies live. */
+		fogDensity: num("FogDensity", 1),
 
 		// --- Barricades -------------------------------------------------------------------------
 		/** Planks each door or window holds. */
@@ -160,6 +192,14 @@ function loadGameConfig() {
 		plankPileStart: int("PlankPileStart", 30),
 		/** Planks added to the pile at every dawn. */
 		plankPileDawnRefill: int("PlankPileDawnRefill", 10),
+		/** Health of a door (its boards take the hits first). The front, back and garage doors. */
+		doorHealth: num("DoorHealth", 250),
+		/** Fixing a broken door takes this many planks... */
+		fixDoorPlanks: int("FixDoorPlanks", 3),
+		/** ...and this many nails. */
+		fixDoorNails: int("FixDoorNails", 3),
+		/** Seconds to hold "Fix door". */
+		fixDoorSeconds: num("FixDoorSeconds", 3),
 		/** Health of a window shutter (only Dad can hurt it). */
 		shutterHealth: num("ShutterHealth", 300),
 		/** How close to a door or window its prompts show (with the hammer), in studs. Read at the start of a run. */
@@ -206,10 +246,16 @@ function loadGameConfig() {
 		powerOffWaveMultiplier: num("PowerOffWaveMultiplier", 1.4),
 		/** At dawn, one still walking off after this long dissolves where it is, in seconds. */
 		infectedRetreatSeconds: num("InfectedRetreatSeconds", 15),
+		/** A hit knocks one back this far, in studs... */
+		hitKnockback: num("HitKnockback", 3),
+		/** ...and it does nothing else for this long, in seconds (a kid who keeps hitting keeps it off a window). */
+		hitStaggerSeconds: num("HitStaggerSeconds", 0.9),
 		/** Most infected alive at once (the rest of a wave waits). */
 		maxInfected: int("MaxInfected", 20),
 
 		// --- Slingshot -------------------------------------------------------------------------
+		/** 1: print what every stone hits first (Studio, to find what's in the way of a shot). */
+		debugShots: int("DebugShots", 0, 1),
 		/** Damage per stone. */
 		slingshotDamage: num("SlingshotDamage", 10),
 		/** How far a stone flies, in studs. */

@@ -125,6 +125,16 @@ still join.
      and every base in contact report in (what they want, and what they pay). The first new message
      pops up in the message bar; the button on the left (or T) opens the bases and the log. Mum
      gives the sundown warning. Any system can speak with `say(from, text)`.
+   - **The Signal** (`signal.ts`, the schedule in `shared/economy/baseMarks.ts`): partway through every dusk the
+     broadcast flares every screen, and the adult bases (the Fire Station, for now) gain marks on a schedule drawn
+     at the start of the run (●●○ on the walkie). The dusk of its third mark a base **turns**: a garbled call
+     and 60 s to grab one of everything it sells (the radio battery too); then it's a **nest**, with infected in
+     it and part of every wave setting off from there. Some nights a standing base is **under attack**: bring
+     down the infected at its counter before dawn for coins. A kid taken at night while there's a nest is held
+     there; a teammate can **free them** (hold the prompt at the nest) before dawn.
+   - **Neighbourhood map** (a workbench upgrade, `house/wallMap.ts` and `client/hud/wallMap.tsx`): a map on the
+     hall's cork board, and full screen from its prompt: the run's tiles and roads, each base with its marks and
+     any call, every kid, and where taken kids are held. Never the infected.
    - **The map** (`world/map.ts`, MAP.md): tiles laid out from a seed each run, round the family house;
      the neighbours' houses, cars and wrecks have things to search (`containers.ts`, tables in
      `shared/items/loot.ts`). A searched container stays empty for the run, except that 3 get something the bases have on
@@ -204,17 +214,18 @@ src/
       core/            # config (tuning), party, life, teams, round (day/night clock), roundStats, gameRemote, prompts, effects
       run/             # gatekeeper, admission, loadout (setup on spawn), elimination (taken, spectating),
                        #   roundEnd, resync (re-send state on "Ready"), nightReport, hints
-      house/           # barricades, hammer, generator, lighting, streetlights
+      house/           # barricades, hammer, generator, lighting, streetlights, wallMap
       combat/          # combat (bat), slingshot, flashlight, torch, health, infectedDamage
       infected/        # director (spawning, waves), behaviours (one function per mode), senses,
                        #   movement, body, state, types
       items/           # inventory, itemUses, containers
-      economy/         # coins, wallet, workbench, upgradeEffects, crafting, trading, walkie
+      economy/         # coins, wallet, workbench, upgradeEffects, crafting, trading, walkie, signal
       world/           # map (tiles, from a seed), world (the house), building, bases (traders), npc, cars,
                        #   wrecks, fire, models
     client/            # main.client.tsx (entry), and:
       core/            # gameState (stores for server messages), theme, sound, device, panel, useViewport
-      hud/             # roundHud, messageBar, messageQueue, inventoryHud, gainFeed, walkieUi, dawnCard
+      hud/             # roundHud, messageBar, messageQueue, inventoryHud, gainFeed, walkieUi, dawnCard, wallMap
+      world/           # broadcast (the dusk broadcast's flare)
       house/           # buildMode (prompts only with the hammer)
       shops/           # shopPanel, workbenchUi, tradeUi
       combat/          # melee, slingshot, flashlight (beam visuals), faceCamera, combatFeedback
@@ -433,6 +444,9 @@ apply from the next phase.
 - [ ] An unlit room is dim and blue-ish (DarkRoomLight 0.8 for now), and you can clearly see walls, doorways and furniture without a torch.
 - [ ] Lamp rooms have warm pools of light that clearly stand out from the dark rooms; a torch is still much brighter than the dark.
 - [ ] In Studio, changing ServerStorage → GameConfig → DarkRoomLight during play brightens/darkens the house straight away.
+- [ ] Fog: by day the far end of the street fades into a pale haze (about 180 studs), warmer and closer at dusk, a dark
+      murk at night (about 100), and a thick pale mist at dawn (about 90). It blends with each phase. `FogDensity`
+      changes it live: 2 sees half as far, 0 turns it off.
 
 ### Flashlight
 - [ ] Every kid has a Flashlight (a teal and black torch held in the hand, pointing forward); equip = on, click toggles; the lens in its open end glows when on.
@@ -476,7 +490,7 @@ apply from the next phase.
 - [ ] Every kid still in at dawn gets 5 coins.
 
 ### Workbench
-- [ ] The garage workbench's prompt ("Upgrade") opens a list: the window shutter, then six upgrades, with costs and your coins (Studio starts you with 150).
+- [ ] The garage workbench's prompt ("Upgrade") opens a list: the window shutter, then seven upgrades, with costs and your coins (Studio starts you with 150).
 - [ ] You can only buy what you can afford; bought ones say "Owned"; the hiking rucksack says "Needs school rucksack" first.
 - [ ] Planks nailed after buying reinforced planks have two metal strips; ones already up don't, until they're taken down and nailed again. No description in the list is cut off.
 - [ ] Reinforced planks and the door bar are for everyone (the buyer gets a bottom line, the others news in the bar, and it shows Owned for them). Front and back doors then take 4 planks; the garage door and windows still take 3.
@@ -516,6 +530,38 @@ apply from the next phase.
 - [ ] Popups don't show while it's open, and typing a "t" in chat doesn't open it.
 - [ ] Two players see the same messages. Someone who loads in late has the log but no old popups.
 
+### The Signal (adult bases turning)
+In Studio the Fire Station falls on Night 3 (`FallNight`: its marks come at the broadcasts of dusks 1, 2 and 3; 0 is
+the real window, Nights 4–6), and a base is under attack every night from Night 3 (the `AttackChance` values).
+- [ ] The Output says `[Signal] The Fire Station gets its marks on nights …`. With `FallNight` at 0, the last is 4, 5 or 6.
+- [ ] Partway through every dusk the broadcast hits: every TV on the map flares and garbles for ~3 s, a low tone
+      plays and static washes over the screen.
+- [ ] The broadcast that gives the Fire Station a mark: its meter on the walkie fills (○○○ → ●○○ → ●●○), and a few
+      seconds later the Fire Chief says something's off (not before the Fire Station's in contact).
+- [ ] Its third mark: a garbled call, a red alert ("The Fire Station is turning! 60 seconds…"), the walkie shows
+      TURNING in red. "Trade" is gone from the counter; "Grab supplies" gives you fuel, a medkit and a radio battery
+      (what doesn't fit is dropped at the counter), once each. The chief greys over the minute.
+- [ ] After the minute: "The Fire Station has gone quiet. It's a nest now.", Mum warns everyone off. The chief's
+      gone, two infected stand behind the counter (back every morning), a red light hangs over it, its TVs are red.
+      The walkie says "Gone". Its grab prompt's gone too.
+- [ ] Every later night, part of each wave walks in from the Fire Station's direction, along the roads.
+- [ ] "We're under attack!" (from Night 3, while it's standing): a red alert, UNDER ATTACK on the walkie, and
+      infected stand round its counter, facing it. They come for you when they see you. Bring them all down: the
+      trader thanks you and every kid within ~80 studs gets 20 coins. Leave them: at dawn they go, and the trader
+      says "No thanks to anyone."
+- [ ] With a nest about, a kid taken at night (not Night 1) is "dragged off to the nest". A "Free them" prompt (hold
+      2 s, it names who) is in front of the nest's counter; using it brings them back beside you, with their
+      starter tools, everyone's told, and you get 15 coins. Anyone not freed is back in the basement at dawn.
+
+### Neighbourhood map
+- [ ] The hall has a cork board on the garage wall with a note: "A map would go here. (The workbench can make one.)"
+- [ ] "Neighbourhood map" (25 coins) at the workbench, for the whole party: the board shows the run's tiles (town,
+      grass, forest, swamp), roads and paths joining up, the bases (⌂) with their names (and the Fire Station's
+      meter), and every kid as a dot with their name (yours gold). It matches the map you walk round, north up.
+- [ ] "Look at the map" opens it big; X closes it. Dots move as kids do.
+- [ ] A turning base or one under attack pulses red with a ring; a fallen one is a red ✕ and says NEST. A kid held at
+      a nest is a red diamond there, "(held!)". No infected are ever shown.
+
 ### The map (MAP.md)
 - [ ] The Output says `[Map] Seed N: ...` and the map matches `npm run tiles -- N`. Setting `MapSeed` to that N in `ServerStorage.GameConfig` before Play gives the same map again; 0 gives a new one each run.
 - [ ] Home is at the bottom middle with the family house on its plot (no blue box, nothing to bump into); kids start in the basement as before. The Treehouse is beside home, the Fire Station beside it or in the row behind, and every road joins up.
@@ -541,7 +587,7 @@ apply from the next phase.
 ### Slingshot
 - [ ] Every kid has a Slingshot, and "Stones 20/20" in a slot from the very start.
 - [ ] Holding it turns you to face the camera, like the bat.
-- [ ] PC: clicking fires a small stone toward the mouse; it flies visibly and stops at walls. Touch: it fires at the middle of the screen.
+- [ ] PC: clicking fires a small stone toward the mouse; it flies visibly and stops at walls. Touch (phone or tablet): tapping the world fires at what you tapped; tapping a button (walkie, a slot) doesn't fire.
 - [ ] Hitting an infected: it flashes red, a hit marker shows, Stones drops by one. Six hits bring a Night 1 shambler down (60 health, 10 each).
 - [ ] Holding the mouse/spamming fires at most about one stone every 0.6s.
 - [ ] At 0 stones clicking does nothing; gathering from a garden patch gives 10, and the patch is back at dawn.
@@ -551,11 +597,14 @@ apply from the next phase.
 - [ ] Hold your beam on an infected for about half a second: it stops dead and its eyes go dark red for ~2s, then carries on.
 - [ ] Keeping the beam on it doesn't stun it again for ~5s.
 - [ ] A stunned infected can still be hit with the bat and slingshot.
+- [ ] With the torch out you turn to face where the camera looks (like the bat), so the beam goes where you look.
+      Swapping between torch, bat and slingshot keeps you facing the camera; the hammer doesn't.
+- [ ] Several infected at one window can each be stunned: one in front doesn't shadow the others.
 
 ### Barricades
 - [ ] The garage pile prompt says "Take planks (30 left)"; using it gives 5 and the count drops to 25. With no room: "Your pockets are full."
 - [ ] With the hammer put away, no door or window shows a prompt, whatever else you hold. (The plank pile, generator and workbench always do.)
-- [ ] With the hammer in hand, within about 5 studs of any door or window (from inside, and outside): "Board up (0/3)" (E, hold ~1s) and, once a plank is up, "Take down" (F). Putting it away mid-hold cancels it.
+- [ ] With the hammer in hand, within about 5 studs of any window (from inside, and outside): "Board up (0/3)" (E, hold ~1s) and, once a plank is up, "Take down" (F). At a door it's "Reinforce (0/3)" on R instead. Putting the hammer away mid-hold cancels it.
 - [ ] Two players: one kid's hammer doesn't show the prompts to the other.
 - [ ] After respawning or being taken and returned, the prompts are hidden until the new hammer is out.
 - [ ] Boarding up uses a plank and a nail; without nails: "You need nails...".
@@ -566,6 +615,28 @@ apply from the next phase.
 - [ ] At dawn the pile goes up by 10.
 - [ ] Two players: planks one kid nails show for the other; each has their own count.
 - [ ] Prompts do nothing behind the "DAY 1" card.
+
+### Defending a window
+- [ ] An infected bashing a window stands right up against it, swinging its arms at it with every hit.
+- [ ] While the glass is whole, stones and the bat stop at it (a torch still shines through). Once it's smashed,
+      they hit an infected between the planks (not through a shutter or a shut door).
+- [ ] Every hit knocks it back a step from the window, and it stops for about a second before coming back to bash.
+      Hitting it every second or so keeps it off the window. (`HitKnockback`, `HitStaggerSeconds`.)
+- [ ] It works both ways: standing right at a smashed window, a basher can reach in and hit you between the planks.
+      Behind whole glass it can't.
+- [ ] Planks darken as they wear. With every slot full, the hammer prompt says "Repair (40%)": a nail brings that
+      plank back to full and it's light again. Without nails: "You need a nail to repair it." On a door it's the same
+      on R, for its boards and then the door itself.
+
+### Doors and windows
+- [ ] The front and back doors are shut brown doors with a handle each side; the garage door is a ribbed metal door. Every window has pale glass in it. You can't walk through any of them.
+- [ ] "Open" (E, anyone, no hammer) from either side: a door swings into the house on its hinge, the garage door rolls up under the ceiling, and you can walk through. "Close" shuts it again.
+- [ ] Reinforce a door (R, with the hammer): a board goes on the house side of the door, and it swings open with the door. Up to 3 (4 on the front and back doors with the door bar).
+- [ ] At night an infected bashes a shut door: its boards break first, then the door. When it breaks: "The front door is broken!", the door hangs off its hinge, the boards are gone, and they walk in.
+- [ ] An open door: they walk straight in without breaking anything.
+- [ ] A broken door: "Fix door" (R, hold 3 s, with the hammer) takes 3 planks and 3 nails (without them it says so). It's back shut, a lighter, patched door with battens nailed across it, and can be reinforced again.
+- [ ] Windows: the first hit smashes the glass (a smash you can hear across the garden). With no planks behind it they climb in; with planks they carry on bashing those.
+- [ ] A torch shines through window glass; stones and the bat stop at it.
 
 ### The infected
 - [ ] Day and dusk: no infected. A few seconds into NIGHT 1, Dad (his own model: blue shirt, one slipper, taller than the rest) and one hooded shambler come from the street and the sides; ~25s later (Studio) two more.

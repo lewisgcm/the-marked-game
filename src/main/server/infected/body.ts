@@ -16,6 +16,8 @@ const EYE_COLOR = new Color3(1, 0.08, 0.05);
 const STUNNED_EYE_COLOR = new Color3(0.3, 0.05, 0.05);
 /** The default R15 walk animation. */
 const WALK_ANIMATION = "rbxassetid://507777826";
+/** The default R15 tool slash, two of them: an overarm swing, for hitting a window, a door or a kid. */
+const SWING_ANIMATIONS = ["rbxassetid://522635514", "rbxassetid://522638767"];
 
 /** Glowing eyes, `apart` either side of `at` (in the head's space; it faces -Z), and a faint red light. */
 function addEyes(model: Model, head: BasePart, apart: number, size: Vector3, at: Vector3) {
@@ -169,6 +171,31 @@ export function startWalkAnimation(humanoid: Humanoid) {
 			track.Stop();
 		}
 	});
+}
+
+const swings = new Map<Humanoid, AnimationTrack[]>();
+
+/** Plays a swing (one of two, at random): it's hitting something. */
+export function playSwing(humanoid: Humanoid) {
+	let tracks = swings.get(humanoid);
+	if (!tracks) {
+		const animator = humanoid.FindFirstChildOfClass("Animator") ?? new Instance("Animator", humanoid);
+		tracks = [];
+		for (const id of SWING_ANIMATIONS) {
+			const animation = new Instance("Animation");
+			animation.AnimationId = id;
+			const [ok, track] = pcall(() => animator.LoadAnimation(animation));
+			if (ok && typeIs(track, "Instance")) {
+				track.Priority = Enum.AnimationPriority.Action;
+				tracks.push(track);
+			}
+		}
+		swings.set(humanoid, tracks);
+		humanoid.Destroying.Connect(() => swings.delete(humanoid));
+	}
+	if (tracks.size() > 0) {
+		tracks[math.random(1, tracks.size()) - 1].Play(0.05, 1, 1.3);
+	}
 }
 
 /** Fades the body out in a flicker of static, then removes it. */

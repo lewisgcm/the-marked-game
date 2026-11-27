@@ -7,6 +7,7 @@ import { CombatFeedback } from "./combat/combatFeedback";
 import { DawnCard } from "./hud/dawnCard";
 import { startFlashlight } from "./combat/flashlight";
 import { startBuildMode } from "./house/buildMode";
+import { startBroadcast } from "./world/broadcast";
 import { startGainFeed } from "./hud/gainFeed";
 import { startGameState } from "./core/gameState";
 import { InventoryHud } from "./hud/inventoryHud";
@@ -18,6 +19,7 @@ import { startSlingshot } from "./combat/slingshot";
 import { Spectate } from "./run/spectate";
 import { TradeUi } from "./shops/tradeUi";
 import { WalkieUi } from "./hud/walkieUi";
+import { WallMapUi } from "./hud/wallMap";
 import { WorkbenchUi } from "./shops/workbenchUi";
 
 startFlicker();
@@ -33,6 +35,7 @@ startGameState(remote);
 startMelee(remote);
 startSlingshot(remote);
 startBuildMode();
+startBroadcast();
 
 function App() {
 	return (
@@ -44,6 +47,7 @@ function App() {
 			<WorkbenchUi remote={remote} />
 			<TradeUi remote={remote} />
 			<WalkieUi />
+			<WallMapUi />
 			<Spectate />
 			<CombatFeedback />
 		</>

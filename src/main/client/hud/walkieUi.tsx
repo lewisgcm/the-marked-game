@@ -5,7 +5,8 @@ import { isTouch } from "../core/device";
 import { useStore, walkieOpenStore, walkieStore } from "../core/gameState";
 import { Panel } from "../core/panel";
 import { useViewport } from "../core/useViewport";
-import { GOLD, GREEN, GREY, PALE, PANEL, ROW } from "../core/theme";
+import { GOLD, GREEN, GREY, PALE, PANEL, RED, ROW } from "../core/theme";
+import { markMeter } from "shared/economy/baseMarks";
 
 /**
  * The walkie-talkie: a button on the left (or T) opens the bases and the message log. New messages
@@ -90,10 +91,10 @@ function Log(props: { bases: BaseStatus[]; messages: WalkieMessage[]; onClose: (
 			<Entry
 				key={`base${base.name}`}
 				order={entries.size()}
-				heading={base.name}
+				heading={base.marks !== undefined ? `${base.name}  ${markMeter(base.marks)}` : base.name}
 				aside={base.status}
 				text={base.detail}
-				color={base.open ? GREEN : GREY}
+				color={base.alarm ? RED : base.open ? GREEN : GREY}
 			/>,
 		);
 	}

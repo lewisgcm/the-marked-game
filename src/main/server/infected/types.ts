@@ -29,6 +29,8 @@ export interface InfectedHooks {
 	onPlankBroken: () => void;
 	/** An infected was brought down. */
 	onDowned: () => void;
+	/** Where each fallen base's nest is: part of every wave sets off from there. */
+	getNests: () => CFrame[];
 }
 
 /** What an infected is doing (one behaviour each, behaviours.ts). */
@@ -42,6 +44,8 @@ export interface Infected {
 	mode: Mode;
 	/** Where a dormant one stands (and goes back to); undefined for the night's waves. */
 	spot?: CFrame;
+	/** It goes at dawn even if it's dormant (a base's attackers). */
+	leavesAtDawn: boolean;
 	entry?: Entry;
 	/** It found no way in to a kid: it goes for openings until then (os.clock()). */
 	blockedUntil: number;
@@ -54,5 +58,7 @@ export interface Infected {
 	lastPosition: Vector3;
 	stuckSince: number;
 	stun: StunState;
+	/** Knocked back by a hit: it does nothing else until then (os.clock()). */
+	staggeredUntil: number;
 	eyes: BasePart[];
 }

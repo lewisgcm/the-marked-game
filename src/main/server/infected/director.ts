@@ -2,9 +2,10 @@ import { CollectionService } from "@rbxts/services";
 import { INFECTED_TAG } from "shared/combat/combat";
 import { newStun } from "shared/infected/stun";
 import { infectedHealth, planNight, Wave, waveSize } from "shared/infected/waves";
+import { splitWave } from "shared/economy/baseMarks";
 import { gameConfig } from "../core/config";
 import { MainWorld } from "../world/world";
-import { dissolve, think, wake } from "./behaviours";
+import { dissolve, stagger, think, wake } from "./behaviours";
 import { buildDadTemplate, buildTemplate, eyesOf, startWalkAnimation } from "./body";
 import { activeCount, alive, getHooks, getWorld, holder, isDadAround, setMode, setUpState } from "./state";
 import { Infected, InfectedHooks } from "./types";
@@ -51,17 +52,17 @@ let templateReady = false;
 /** Bumped every night and at dawn, so waves scheduled for an old night don't spawn. */
 let generation = 0;
 
-/** Spawns one at `at`; `spot` makes it dormant there. */
-function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame) {
+/** Spawns one at `at`; `spot` makes it dormant there. `leavesAtDawn`: it goes at dawn, even dormant. */
+function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame, leavesAtDawn = false): Model | undefined {
 	if (!template || (!spot && activeCount() >= gameConfig.maxInfected.Value)) {
-		return;
+		return undefined;
 	}
 	const model = (isDad && dadTemplate ? dadTemplate : template).Clone();
 	const humanoid = model.FindFirstChildOfClass("Humanoid");
 	const root = model.FindFirstChild("HumanoidRootPart");
 	if (!humanoid || !root || !root.IsA("BasePart")) {
 		model.Destroy();
-		return;
+		return undefined;
 	}
 	model.Name = isDad ? "Dad" : "Infected";
 	const health = infectedHealth(night, gameConfig.infectedBaseHealth.Value, gameConfig.infectedHealthPerNight.Value);
@@ -83,6 +84,7 @@ function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame) {
 		isDad,
 		mode: spot ? "dormant" : "approach",
 		spot,
+		leavesAtDawn,
 		waypoints: [],
 		waypointIndex: 0,
 		lastPathAt: 0,
@@ -92,6 +94,7 @@ function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame) {
 		lastPosition: root.Position,
 		stuckSince: os.clock(),
 		stun: newStun(),
+		staggeredUntil: 0,
 		eyes: eyesOf(model),
 	};
 	alive.set(model, inf);
@@ -99,6 +102,7 @@ function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame) {
 	humanoid.HealthChanged.Connect((now) => {
 		if (now < lastHealth) {
 			wake(inf); // hitting it wakes it
+			stagger(inf); // and knocks it back a step
 		}
 		lastHealth = now;
 	});
@@ -115,6 +119,7 @@ function spawnOne(at: CFrame, night: number, isDad: boolean, spot?: CFrame) {
 			task.wait(THINK_SECONDS);
 		}
 	});
+	return model;
 }
 
 function spawnWave(wave: Wave, night: number) {
@@ -136,10 +141,17 @@ function spawnWave(wave: Wave, night: number) {
 	}
 	const powered = getHooks().isPowered();
 	const count = waveSize(wave.shamblers, night, powered, gameConfig.powerOffWaveMultiplier.Value);
-	for (let i = 0; i < count; i++) {
-		const spawn = spawns[rng.NextInteger(0, spawns.size() - 1)];
-		const offset = new CFrame(rng.NextNumber(-8, 8), 0, rng.NextNumber(-4, 4));
-		spawnOne(spawn.mul(offset), night, false);
+	// Each fallen base sends its share from that direction: they set off from the nest itself.
+	const nests = getHooks().getNests();
+	const split = splitWave(count, nests.size(), gameConfig.nestWaveShare.Value);
+	const offset = () => new CFrame(rng.NextNumber(-8, 8), 0, rng.NextNumber(-4, 4));
+	for (let i = 0; i < split.house; i++) {
+		spawnOne(spawns[rng.NextInteger(0, spawns.size() - 1)].mul(offset()), night, false);
+	}
+	for (const nest of nests) {
+		for (let i = 0; i < split.perNest; i++) {
+			spawnOne(nest.mul(offset()), night, false);
+		}
 	}
 }
 
@@ -161,7 +173,7 @@ export function retreatAll() {
 	generation += 1;
 	for (const [, inf] of alive) {
 		inf.entry = undefined;
-		if (inf.mode !== "dormant") {
+		if (inf.mode !== "dormant" || inf.leavesAtDawn) {
 			inf.spot = undefined; // a woken one leaves too; its spot is filled again in the morning
 			setMode(inf, "retreat");
 		}
@@ -187,6 +199,24 @@ export function spawnDormant(spots: CFrame[], night: number, dadSpot?: CFrame) {
 			spawnOne(dadSpot, night, true, dadSpot);
 		}
 	});
+}
+
+/**
+ * Stands one dormant at each of `spots` (as by day: it wakes when it sees a kid), e.g. the infected
+ * attacking a base, or a nest's. `leavesAtDawn`: they go at dawn. Returns them. Yields until the body's made.
+ */
+export function spawnGroup(spots: CFrame[], night: number, leavesAtDawn: boolean): Model[] {
+	while (!templateReady) {
+		task.wait(0.5);
+	}
+	const models: Model[] = [];
+	for (const spot of spots) {
+		const model = spawnOne(spot, night, false, spot, leavesAtDawn);
+		if (model) {
+			models.push(model);
+		}
+	}
+	return models;
 }
 
 /** A noise at `position`: wakes dormant infected within `radius` studs. */

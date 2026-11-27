@@ -1,4 +1,5 @@
 import { ItemId } from "shared/items/inventory";
+import type { FallWindow } from "./baseMarks";
 
 /**
  * The bases kids trade with (GAMEPLAY.md §7), and what each sells and buys. Adding an item to a
@@ -33,8 +34,10 @@ export interface Want {
 export interface Base {
 	id: BaseId;
 	name: string;
-	/** Kids' bases never turn; adult ones do (M4). */
+	/** Kids' bases never turn; adult ones do (shared/economy/baseMarks.ts). */
 	kind: "Kids" | "Adults";
+	/** An adult base: the nights it can fall on (its third mark). The spec checks every adult base has one. */
+	falls?: FallWindow;
 	trader: string;
 	/** Where it is, for notices. */
 	where: string;
@@ -74,9 +77,11 @@ export const BASES: Base[] = [
 		where: "the right end of Maple Street",
 		hello: "Fire Station here, right end of Maple Street. We've got fuel and medkits.",
 		opens: 3,
+		falls: { first: 4, last: 6 },
 		sells: [
 			{ item: "Fuel", count: 1, price: 15, stock: 2 },
 			{ item: "Medkit", count: 1, price: 10, stock: 3 },
+			{ item: "RadioBattery", count: 1, price: 40, stock: 1 },
 		],
 		buys: [
 			{ item: "Batteries", price: 3 },

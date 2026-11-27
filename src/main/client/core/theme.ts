@@ -18,5 +18,7 @@ export const GREY = new Color3(0.65, 0.65, 0.7);
 export const GOLD = new Color3(1, 0.85, 0.4);
 /** The walkie, and anything open. */
 export const GREEN = new Color3(0.55, 0.85, 0.55);
+/** Something's wrong (a base turning, or calling for help). */
+export const RED = new Color3(1, 0.35, 0.3);
 /** Dawn. */
 export const PINK = new Color3(1, 0.82, 0.8);

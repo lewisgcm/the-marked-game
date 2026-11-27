@@ -2,6 +2,7 @@ import { CollectionService, Players, Workspace } from "@rbxts/services";
 import { aliveHumanoidOf, rootOf } from "shared/core/characters";
 import { BAT_TOOL_NAME, INFECTED_TAG } from "shared/combat/combat";
 import { checkMeleeReach, parseSwingCandidates } from "shared/combat/melee";
+import { openingSlots } from "shared/combat/openings";
 import { gameConfig } from "../core/config";
 import { playSound } from "../core/effects";
 import { damageInfected } from "./infectedDamage";
@@ -82,7 +83,7 @@ function canReach(attacker: Player, target: Model, reach: number): boolean {
 	}
 	const params = new RaycastParams();
 	params.FilterType = Enum.RaycastFilterType.Exclude;
-	const ignore: Instance[] = [target];
+	const ignore: Instance[] = [target, ...openingSlots()];
 	if (attacker.Character) {
 		ignore.push(attacker.Character);
 	}

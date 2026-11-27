@@ -14,6 +14,13 @@ import { MainWorld } from "../world/world";
  */
 
 let world: MainWorld | undefined;
+/** Where a kid's next spawn goes instead of the basement (once): e.g. rescued from a nest. */
+const nextSpawn = new Map<Player, CFrame>();
+
+/** Puts `player`'s next spawn at `at` instead of the basement. */
+export function spawnNextAt(player: Player, at: CFrame) {
+	nextSpawn.set(player, at);
+}
 
 export function setUpCharacter(player: Player, character: Model) {
 	if (!isMember(player) || !world) {
@@ -24,7 +31,8 @@ export function setUpCharacter(player: Player, character: Model) {
 	giveSlingshot(player);
 	giveHammer(player);
 	setUpHealth(character);
-	const spawnAt = world.kidSpawn;
+	const spawnAt = nextSpawn.get(player) ?? world.kidSpawn;
+	nextSpawn.delete(player);
 	// Wait a frame so the character is fully parented before moving it.
 	task.defer(() => {
 		character.PivotTo(spawnAt);

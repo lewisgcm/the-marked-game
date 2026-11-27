@@ -7,6 +7,7 @@ import {
 	HOUSE_LIGHT_TAG,
 	PLANK_PILE_TAG,
 	SCREEN_TAG,
+	WALL_MAP_TAG,
 	WORKBENCH_TAG,
 } from "shared/core/tags";
 import { Opening } from "shared/world/walls";
@@ -403,6 +404,13 @@ function furnish(parent: Instance) {
 		color: new Color3(0.85, 0.85, 0.82),
 	});
 	part(f, "Fridge", new Vector3(3.5, 7, 3), at(28, 3.5, 19.5), METAL);
+
+	// Hall: a cork board on the garage wall, for the neighbourhood map (a workbench upgrade).
+	const board = part(f, "MapBoard", new Vector3(0.3, 4, 6), at(HALL_X1 - THICK / 2 - 0.15, 5.5, -3), {
+		material: Enum.Material.Fabric,
+		color: new Color3(0.6, 0.45, 0.3),
+	});
+	tag(board, WALL_MAP_TAG);
 
 	// Garage: workbench, generator, the plank pile.
 	const bench = part(f, "Workbench", new Vector3(3, 3.5, 7), at(28, 1.75, -6), WOOD);

@@ -5,7 +5,7 @@ import { shouldWake } from "shared/infected/wake";
 import { gameConfig } from "../core/config";
 import { playSound } from "../core/effects";
 import { Entry, isInsideHouse } from "../world/world";
-import { dimEyes, fadeToStatic } from "./body";
+import { dimEyes, fadeToStatic, playSwing } from "./body";
 import { face, flat, flatDistance, pathTo, stop, walkTo } from "./movement";
 import {
 	breaksShutters,
@@ -42,6 +42,7 @@ function tryHitKid(inf: Infected, kid: Player, kidRoot: BasePart) {
 		return;
 	}
 	inf.lastHitAt = now;
+	playSwing(inf.humanoid);
 	playSound(inf.root, HIT_SOUND, { volume: 0.8, range: 60 });
 	const multiplier = getHooks().isFirstNight() ? gameConfig.firstNightDamageMultiplier.Value : 1;
 	getHooks().damageKid(kid, gameConfig.infectedKidDamage.Value * multiplier);
@@ -64,7 +65,8 @@ function approach(inf: Infected) {
 		return;
 	}
 	const outside = outsidePoint(entry);
-	if (flatDistance(inf.root.Position, outside) > 4) {
+	const distance = flatDistance(inf.root.Position, outside);
+	if (distance > 4) {
 		// It may be round the other side of the house.
 		if (!pathTo(inf, outside)) {
 			walkTo(inf, outside);
@@ -75,6 +77,12 @@ function approach(inf: Infected) {
 		setMode(inf, "enter");
 		return;
 	}
+	// Up against it (so a kid inside can hit back), unless others are in the way and it's stopped moving.
+	const crowded = distance < 3 && os.clock() - inf.stuckSince > 0.8;
+	if (distance > 1 && !crowded) {
+		walkTo(inf, outside);
+		return;
+	}
 	// Bash the planks.
 	face(inf, entry.cframe.Position);
 	stop(inf);
@@ -82,6 +90,7 @@ function approach(inf: Infected) {
 	if (now - inf.lastHitAt >= gameConfig.infectedPlankHitSeconds.Value) {
 		inf.lastHitAt = now;
 		lastBash = { entry, at: now };
+		playSwing(inf.humanoid);
 		const result = getHooks().damageEntry(entry, gameConfig.infectedPlankDamage.Value, breaksShutters(inf));
 		if (result.broken > 0) {
 			getHooks().onPlankBroken();
@@ -229,14 +238,39 @@ const BEHAVIOURS: Record<Mode, (inf: Infected) => void> = {
 };
 
 /**
- * One step, `dt` seconds after the last: the flashlight stun, then whatever its mode says. A stunned
- * infected stands still instead.
+ * A hit knocks it back: off the opening it's bashing (away from the house), or away from the kid nearest
+ * it, and it does nothing else for HitStaggerSeconds. A kid who keeps hitting a basher keeps it off the
+ * window.
+ */
+export function stagger(inf: Infected) {
+	if (inf.mode === "retreat" || inf.mode === "dormant") {
+		return;
+	}
+	inf.staggeredUntil = os.clock() + gameConfig.hitStaggerSeconds.Value;
+	let away: Vector3 | undefined;
+	if (inf.entry && inf.mode === "approach") {
+		away = flat(inf.entry.cframe.LookVector);
+	} else {
+		const kid = nearestKid(inf.root.Position);
+		away = kid ? flat(inf.root.Position.sub(kid.root.Position)) : undefined;
+	}
+	if (away && away.Magnitude > 0.01) {
+		inf.humanoid.MoveTo(inf.root.Position.add(away.Unit.mul(gameConfig.hitKnockback.Value)));
+	}
+}
+
+/**
+ * One step, `dt` seconds after the last: a stagger, the flashlight stun, then whatever its mode says. A
+ * stunned infected stands still instead.
  */
 export function think(inf: Infected, dt: number) {
 	const now = os.clock();
 	if (inf.mode === "dormant") {
 		dormant(inf); // a beam wakes it rather than stunning it
 		return;
+	}
+	if (now < inf.staggeredUntil) {
+		return; // reeling back from a hit (it's walking to where stagger() sent it)
 	}
 	const lit = inf.mode !== "retreat" && getHooks().isLit(inf.model);
 	const settings = {

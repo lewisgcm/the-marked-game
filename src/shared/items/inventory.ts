@@ -4,7 +4,8 @@
  * unit-tested; main/server/items/inventory.ts owns the real ones.
  */
 
-export type ItemId = "Planks" | "Nails" | "Stones" | "Food" | "Batteries" | "Scrap" | "Medkit" | "Fuel" | "Shutter";
+export type ItemId =
+	"Planks" | "Nails" | "Stones" | "Food" | "Batteries" | "Scrap" | "Medkit" | "Fuel" | "Shutter" | "RadioBattery";
 
 /** How many of each item fit in one slot. */
 export const STACK_SIZE: Record<ItemId, number> = {
@@ -17,7 +18,15 @@ export const STACK_SIZE: Record<ItemId, number> = {
 	Medkit: 1,
 	Fuel: 1,
 	Shutter: 1,
+	/** A rescue radio part (GAMEPLAY.md §8): from the Fire Station. The radio itself is M8. */
+	RadioBattery: 1,
 };
+
+/** What an item's called on screen: "RadioBattery" is "Radio Battery". */
+export function itemName(item: ItemId | "Coins"): string {
+	const [spaced] = item.gsub("(%l)(%u)", "%1 %2");
+	return spaced;
+}
 
 /** Items with a "Use" button (what each does: main/server/items/itemUses.ts). */
 export type UsableItem = "Medkit" | "Shutter";
